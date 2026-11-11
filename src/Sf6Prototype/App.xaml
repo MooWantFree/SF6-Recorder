@@ -1,0 +1,98 @@
+<Application x:Class="Sf6Prototype.App" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:primitives="clr-namespace:System.Windows.Controls.Primitives;assembly=PresentationFramework"
+             ShutdownMode="OnMainWindowClose">
+  <Application.Resources>
+    <Style x:Key="Card" TargetType="Border"><Setter Property="Background" Value="White"/><Setter Property="CornerRadius" Value="5"/><Setter Property="BorderBrush" Value="#E0E0E5"/><Setter Property="BorderThickness" Value="1"/><Setter Property="Padding" Value="0"/></Style>
+    <Style x:Key="FilterLabel" TargetType="TextBlock"><Setter Property="Foreground" Value="#777780"/><Setter Property="Margin" Value="0,0,0,4"/><Setter Property="FontSize" Value="11"/></Style>
+    <Style x:Key="SectionLabel" TargetType="TextBlock"><Setter Property="Foreground" Value="#72727D"/><Setter Property="Margin" Value="2,0,0,8"/><Setter Property="FontWeight" Value="SemiBold"/><Setter Property="FontSize" Value="11"/></Style>
+    <Style x:Key="NavIcon" TargetType="TextBlock"><Setter Property="FontFamily" Value="Segoe Fluent Icons"/><Setter Property="FontSize" Value="14"/><Setter Property="Width" Value="25"/><Setter Property="VerticalAlignment" Value="Center"/><Setter Property="Foreground" Value="#6B6B76"/></Style>
+    <Style x:Key="NavList" TargetType="ListBox">
+      <Setter Property="Background" Value="Transparent"/><Setter Property="BorderThickness" Value="0"/><Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+      <Setter Property="ItemContainerStyle"><Setter.Value><Style TargetType="ListBoxItem">
+        <Setter Property="Padding" Value="10,9"/><Setter Property="Margin" Value="0,1"/><Setter Property="Foreground" Value="#595963"/>
+        <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ListBoxItem">
+          <Border x:Name="Surface" Padding="{TemplateBinding Padding}" Background="Transparent" CornerRadius="4" BorderThickness="1" BorderBrush="Transparent"><ContentPresenter/></Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Surface" Property="Background" Value="#E9E9EE"/></Trigger>
+            <Trigger Property="IsSelected" Value="True"><Setter TargetName="Surface" Property="Background" Value="White"/><Setter TargetName="Surface" Property="BorderBrush" Value="#DDDDE3"/><Setter Property="Foreground" Value="#29292F"/><Setter Property="FontWeight" Value="Medium"/></Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate></Setter.Value></Setter>
+      </Style></Setter.Value></Setter>
+    </Style>
+    <Style TargetType="Button">
+      <Setter Property="Padding" Value="11,6"/><Setter Property="Margin" Value="0,0,8,0"/><Setter Property="MinHeight" Value="29"/>
+      <Setter Property="Background" Value="White"/><Setter Property="BorderBrush" Value="#DCDCE2"/><Setter Property="Foreground" Value="#34343C"/><Setter Property="BorderThickness" Value="1"/><Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
+        <Border x:Name="Surface" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="4" Padding="{TemplateBinding Padding}"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
+        <ControlTemplate.Triggers>
+          <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Surface" Property="Opacity" Value="0.76"/></Trigger>
+          <Trigger Property="IsPressed" Value="True"><Setter TargetName="Surface" Property="Opacity" Value="0.6"/></Trigger>
+          <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Surface" Property="BorderBrush" Value="#7373D7"/></Trigger>
+          <Trigger Property="IsEnabled" Value="False"><Setter TargetName="Surface" Property="Opacity" Value="0.4"/></Trigger>
+        </ControlTemplate.Triggers>
+      </ControlTemplate></Setter.Value></Setter>
+    </Style>
+    <Style TargetType="TextBox">
+      <Setter Property="Padding" Value="8,5"/><Setter Property="MinHeight" Value="29"/><Setter Property="Background" Value="White"/><Setter Property="BorderBrush" Value="#DCDCE2"/><Setter Property="BorderThickness" Value="1"/><Setter Property="VerticalContentAlignment" Value="Center"/>
+      <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="TextBox">
+        <Border x:Name="Surface" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="4"><ScrollViewer x:Name="PART_ContentHost"/></Border>
+        <ControlTemplate.Triggers><Trigger Property="IsKeyboardFocusWithin" Value="True"><Setter TargetName="Surface" Property="BorderBrush" Value="#8585CD"/></Trigger><Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.5"/></Trigger></ControlTemplate.Triggers>
+      </ControlTemplate></Setter.Value></Setter>
+    </Style>
+    <Style TargetType="ComboBoxItem">
+      <Setter Property="Padding" Value="8,6"/><Setter Property="Foreground" Value="#34343C"/><Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+      <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ComboBoxItem">
+        <Border x:Name="Surface" Background="Transparent" CornerRadius="3" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border>
+        <ControlTemplate.Triggers><Trigger Property="IsHighlighted" Value="True"><Setter TargetName="Surface" Property="Background" Value="#F0F0F5"/></Trigger><Trigger Property="IsSelected" Value="True"><Setter TargetName="Surface" Property="Background" Value="#EAEAF4"/></Trigger></ControlTemplate.Triggers>
+      </ControlTemplate></Setter.Value></Setter>
+    </Style>
+    <Style TargetType="ComboBox">
+      <Setter Property="MinHeight" Value="29"/><Setter Property="Padding" Value="8,5"/><Setter Property="Foreground" Value="#34343C"/><Setter Property="Background" Value="White"/><Setter Property="BorderBrush" Value="#DCDCE2"/><Setter Property="BorderThickness" Value="1"/><Setter Property="ScrollViewer.CanContentScroll" Value="True"/>
+      <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ComboBox">
+        <Grid>
+          <ToggleButton Focusable="False" ClickMode="Press" IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent},Mode=TwoWay}" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}">
+            <ToggleButton.Template><ControlTemplate TargetType="ToggleButton"><Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" CornerRadius="4"><TextBlock Text="&#xE70D;" FontFamily="Segoe Fluent Icons" FontSize="9" Foreground="#8B8B95" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,9,0"/></Border></ControlTemplate></ToggleButton.Template>
+          </ToggleButton>
+          <ContentPresenter Margin="8,0,26,0" VerticalAlignment="Center" HorizontalAlignment="Left" IsHitTestVisible="False" Content="{TemplateBinding SelectionBoxItem}" ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"/>
+          <Popup x:Name="PART_Popup" Placement="Bottom" IsOpen="{TemplateBinding IsDropDownOpen}" AllowsTransparency="True" Focusable="False" PopupAnimation="Fade">
+            <Border Background="White" BorderBrush="#DCDCE2" BorderThickness="1" CornerRadius="5" Padding="4" MinWidth="{Binding ActualWidth,RelativeSource={RelativeSource TemplatedParent}}" MaxHeight="320" Margin="0,3,0,0">
+              <ScrollViewer CanContentScroll="True" VerticalScrollBarVisibility="Auto"><ItemsPresenter KeyboardNavigation.DirectionalNavigation="Contained"/></ScrollViewer>
+            </Border>
+          </Popup>
+        </Grid>
+        <ControlTemplate.Triggers><Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.5"/></Trigger><Trigger Property="IsKeyboardFocusWithin" Value="True"><Setter Property="BorderBrush" Value="#8585CD"/></Trigger></ControlTemplate.Triggers>
+      </ControlTemplate></Setter.Value></Setter>
+    </Style>
+    <Style TargetType="DatePicker">
+      <Setter Property="MinHeight" Value="29"/><Setter Property="Background" Value="White"/><Setter Property="BorderBrush" Value="#DCDCE2"/><Setter Property="VerticalContentAlignment" Value="Center"/>
+      <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="DatePicker">
+        <Grid>
+          <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" CornerRadius="4"/>
+          <Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="27"/></Grid.ColumnDefinitions>
+            <primitives:DatePickerTextBox x:Name="PART_TextBox" BorderThickness="0" Background="Transparent" Margin="4,1,0,1" VerticalContentAlignment="Center" FontSize="12"/>
+            <Button x:Name="PART_Button" Grid.Column="1" Margin="0" Padding="0" MinHeight="0" BorderThickness="0" Background="Transparent" Focusable="False" ToolTip="打开日历" AutomationProperties.Name="打开日历"><TextBlock Text="&#xE787;" FontFamily="Segoe Fluent Icons" FontSize="12" Foreground="#777780"/></Button>
+          </Grid>
+          <Popup x:Name="PART_Popup" Placement="Bottom" StaysOpen="False" AllowsTransparency="True"/>
+        </Grid>
+      </ControlTemplate></Setter.Value></Setter>
+    </Style>
+    <Style x:Key="Switch" TargetType="CheckBox">
+      <Setter Property="Cursor" Value="Hand"/><Setter Property="VerticalAlignment" Value="Center"/><Setter Property="Width" Value="32"/><Setter Property="Height" Value="18"/>
+      <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="CheckBox">
+        <Border x:Name="Track" Background="#CACAD2" CornerRadius="9"><Ellipse x:Name="Thumb" Width="14" Height="14" Fill="White" HorizontalAlignment="Left" Margin="2"/></Border>
+        <ControlTemplate.Triggers><Trigger Property="IsChecked" Value="True"><Setter TargetName="Track" Property="Background" Value="#5B5BD6"/><Setter TargetName="Thumb" Property="HorizontalAlignment" Value="Right"/></Trigger><Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.45"/></Trigger><Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Track" Property="BorderBrush" Value="#5555C8"/><Setter TargetName="Track" Property="BorderThickness" Value="1"/></Trigger></ControlTemplate.Triggers>
+      </ControlTemplate></Setter.Value></Setter>
+    </Style>
+    <Style TargetType="DataGrid">
+      <Setter Property="AutoGenerateColumns" Value="False"/><Setter Property="IsReadOnly" Value="True"/><Setter Property="CanUserAddRows" Value="False"/><Setter Property="CanUserDeleteRows" Value="False"/>
+      <Setter Property="HeadersVisibility" Value="Column"/><Setter Property="GridLinesVisibility" Value="Horizontal"/><Setter Property="HorizontalGridLinesBrush" Value="#F0F0F3"/><Setter Property="Background" Value="White"/><Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="RowHeight" Value="30"/><Setter Property="ColumnHeaderHeight" Value="31"/><Setter Property="AlternatingRowBackground" Value="White"/><Setter Property="EnableRowVirtualization" Value="True"/><Setter Property="EnableColumnVirtualization" Value="True"/>
+      <Setter Property="RowStyle"><Setter.Value><Style TargetType="DataGridRow"><Setter Property="Background" Value="White"/><Setter Property="Foreground" Value="#34343C"/><Style.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="#F8F8FB"/></Trigger><Trigger Property="IsSelected" Value="True"><Setter Property="Background" Value="#EDEDF6"/><Setter Property="Foreground" Value="#292938"/></Trigger></Style.Triggers></Style></Setter.Value></Setter>
+    </Style>
+    <Style TargetType="DataGridColumnHeader"><Setter Property="Background" Value="#F9F9FB"/><Setter Property="Foreground" Value="#7A7A84"/><Setter Property="BorderThickness" Value="0"/><Setter Property="Padding" Value="10,6"/><Setter Property="FontSize" Value="11"/><Setter Property="FontWeight" Value="Normal"/></Style>
+    <Style TargetType="DataGridCell"><Setter Property="BorderThickness" Value="0"/><Setter Property="Padding" Value="10,0"/><Setter Property="Foreground" Value="#34343C"/>
+      <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="DataGridCell"><Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}"><ContentPresenter VerticalAlignment="Center"/></Border></ControlTemplate></Setter.Value></Setter>
+      <Style.Triggers><Trigger Property="IsSelected" Value="True"><Setter Property="Background" Value="#EDEDF6"/><Setter Property="Foreground" Value="#292938"/></Trigger></Style.Triggers>
+    </Style>
+  </Application.Resources>
+</Application>

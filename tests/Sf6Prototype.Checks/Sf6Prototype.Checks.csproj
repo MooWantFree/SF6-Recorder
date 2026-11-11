@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../src/Sf6Prototype/BattleParser.cs" Link="BattleParser.cs"/>
+    <Compile Include="../../src/Sf6Prototype/SessionEvidence.cs" Link="SessionEvidence.cs"/>
+    <Compile Include="../../src/Sf6Prototype/Models.cs" Link="Models.cs"/>
+    <Compile Include="../../src/Sf6Prototype/Storage.cs" Link="Storage.cs"/>
+    <Compile Include="../../src/Sf6Prototype/ConnectionSettings.cs" Link="ConnectionSettings.cs"/>
+    <Compile Include="../../src/Sf6Prototype/CookieVault.cs" Link="CookieVault.cs"/>
+    <Compile Include="../../src/Sf6Prototype/BucklerClient.cs" Link="BucklerClient.cs"/>
+    <Compile Include="../../src/Sf6Prototype/SyncService.cs" Link="SyncService.cs"/>
+    <Compile Include="../../src/Sf6Prototype/ProfileCache.cs" Link="ProfileCache.cs"/>
+    <Compile Include="../../src/Sf6Prototype/DateRanges.cs" Link="DateRanges.cs"/>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.15"/>
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.0"/>
+  </ItemGroup>
+</Project>

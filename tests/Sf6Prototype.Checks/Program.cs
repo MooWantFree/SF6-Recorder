@@ -1,0 +1,41 @@
+using System.Text.Json;
+using Sf6Prototype;
+
+var assertions = 0;
+void Check(bool condition, string description)
+{
+    if (!condition) throw new Exception(description);
+    assertions++;
+}
+const string data = """
+{"pageProps":{"access_token":"must-not-be-exported","replay_list":[
+ {"replay_id":"DEMO","uploaded_at":1794384000,"replay_battle_type_name":"Ranked Match",
+  "player1_info":{"character_name":"RYU","round_results":[0,1,0],"player":{"short_id":1234567890,"fighter_id":"Other"}},
+  "player2_info":{"character_name":"CHUN-LI","round_results":[1,0,1],"player":{"short_id":3396336472,"fighter_id":"Me"}}}
+]}}
+""";
+var result = BattleParser.Parse(data, "3396336472");
+Check(result.HasReplayList && result.Matches.Count == 1, "Expected one match");
+Check(result.Matches[0].Player == "Me" && result.Matches[0].Opponent == "Other", "Player two must be recognized as the user");
+Check(result.Matches[0].Result == "胜" && result.Matches[0].Score == "2 : 1", "Round results must be from the user's perspective");
+Check(!JsonSerializer.Serialize(result).Contains("must-not-be-exported"), "Credentials must not enter persisted match objects");
+Check(BattleParser.Parse(data, "9999999999").Matches.Count == 0, "Unrelated players must not count as successful retrieval");
+Check(BattleParser.Parse("{\"pageProps\":{\"replay_list\":[]}}", "3396336472").HasReplayList, "An empty battle history is valid data");
+Check(!BattleParser.Parse("{\"error\":\"login required\"}", "3396336472").HasReplayList, "A login response is not battle history");
+Check(BattleParser.Parse("{\"props\":" + data + "}", "3396336472").Matches.Count == 1, "Next.js page wrapper must be supported");
+var previous = new CaptureEvidence("first", "3396336472", "account", DateTimeOffset.UtcNow, 1);
+Check(SessionEvidence.Restored(previous, "second", "3396336472", "account", false, 200, 200, true), "Fresh successful requests after restart should verify persistence");
+Check(!SessionEvidence.Restored(previous, "first", "3396336472", "account", false, 200, 200, true), "A refresh in the same process is not a restart");
+Check(!SessionEvidence.Restored(previous, "second", "3396336472", "account", true, 200, 200, true), "Logging in again must not count as restored login");
+Check(!SessionEvidence.Restored(previous, "second", "3396336472", "account", false, 200, 403, true), "Cached records cannot override a failed live request");
+Check(!SessionEvidence.Restored(previous, "second", "3396336472", "different", false, 200, 200, true), "Different accounts cannot satisfy persistence");
+Check(!SessionEvidence.Restored(previous, "second", "3396336472", "account", false, 200, 200, false), "Missing battle data cannot satisfy persistence");
+var scored = data.Replace("\"pageProps\":{", "\"pageProps\":{\"current_page\":1,\"total_page\":1,")
+    .Replace("\"character_name\":\"RYU\"", "\"character_id\":1,\"character_name\":\"RYU\",\"league_point\":12000")
+    .Replace("\"character_name\":\"CHUN-LI\"", "\"character_id\":7,\"character_name\":\"CHUN-LI\",\"league_point\":12500,\"master_rating\":1500")
+    .Replace("3396336472", "3396336472.0");
+var parsedPage = MatchParser.Parse(scored, "3396336472", "rank");
+Check(parsedPage.Battles.Single().Lp == 12500 && parsedPage.Battles.Single().Mr == 1500, "Scores must be taken from the user's side");
+Check(parsedPage.Battles.Single().CharacterId == 7 && parsedPage.Battles.Single().Outcome == "胜", "Decimal user IDs and character identity must parse correctly");
+assertions += await IntegrationChecks.Run();
+Console.WriteLine($"Passed {assertions} checks.");

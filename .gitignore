@@ -1,0 +1,8 @@
+.tools/
+.nuget/
+.local/
+artifacts/
+**/bin/
+**/obj/
+**/Data/
+*.user
