@@ -62,11 +62,19 @@ public sealed class BucklerClient : IBattleSource, IDisposable
     }
     public async Task<string> FetchPlayAsync(string owner, CancellationToken token)
     {
+        if (!Regex.IsMatch(owner,@"^\d{10}$")) throw new ArgumentException("无效的用户代码。");
         if (string.IsNullOrEmpty(_session.BuildId)) await RefreshBuildAsync(owner, token);
         string Url() => $"/6/buckler/_next/data/{Uri.EscapeDataString(_session.BuildId)}/zh-hans/profile/{owner}/play.json?sid={owner}";
         var (code, body) = await GetAsync(Url(), token);
         if (code == 404) { await RefreshBuildAsync(owner, token); (code, body) = await GetAsync(Url(), token); }
         EnsureSuccess(code); return body;
+    }
+    public async Task<string> FetchSeasonRanksAsync(string owner, int season, bool peakMr, CancellationToken token)
+    {
+        if (!Regex.IsMatch(owner,@"^\d{10}$") || season < 0) throw new ArgumentException("无效的玩家或赛季。");
+        var endpoint = peakMr ? "highest/master_rating_info" : "leagueinfo";
+        var payload = JsonSerializer.Serialize(new { targetShortId=long.Parse(owner),targetSeasonId=season,locale="zh-hans",peak=false });
+        var (code,body) = await GetAsync($"/6/buckler/api/profile/play/act/{endpoint}",token,payload); EnsureSuccess(code); return body;
     }
     public async Task<string> FetchCardAsync(string owner, CancellationToken token)
     {
@@ -96,7 +104,7 @@ public sealed class BucklerClient : IBattleSource, IDisposable
         using var data = JsonDocument.Parse(match.Groups[1].Value);
         _session = _session with { BuildId = data.RootElement.GetProperty("buildId").GetString()! }; Persist();
     }
-    private async Task<(int Code, string Body)> GetAsync(string path, CancellationToken token)
+    private async Task<(int Code, string Body)> GetAsync(string path, CancellationToken token, string? payload = null)
     {
         for (var attempt = 0; ; attempt++)
         {
@@ -105,7 +113,10 @@ public sealed class BucklerClient : IBattleSource, IDisposable
             _lastRequest = DateTimeOffset.UtcNow; Requests++;
             try
             {
-                using var response = await _http.GetAsync(Origin + path, token);
+                using var request = new HttpRequestMessage(payload==null ? HttpMethod.Get : HttpMethod.Post,Origin+path);
+                request.Headers.CacheControl = new() { NoCache=true,NoStore=true };
+                if(payload!=null) request.Content = new StringContent(payload,System.Text.Encoding.UTF8,"application/json");
+                using var response = await _http.SendAsync(request, token);
                 Persist();
                 var code = (int)response.StatusCode;
                 if (code == 429)

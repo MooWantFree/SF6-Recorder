@@ -1,0 +1,47 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <SolidColorBrush x:Key="Ink" Color="#292930"/>
+  <SolidColorBrush x:Key="SecondaryInk" Color="#73737E"/>
+  <SolidColorBrush x:Key="Hairline" Color="#E8E8ED"/>
+  <SolidColorBrush x:Key="Accent" Color="#6060C8"/>
+  <Style x:Key="Number" TargetType="TextBlock"><Setter Property="FontFamily" Value="Segoe UI"/><Setter Property="Typography.NumeralAlignment" Value="Tabular"/></Style>
+  <Style x:Key="ColumnLabel" TargetType="TextBlock"><Setter Property="FontSize" Value="11"/><Setter Property="Foreground" Value="{StaticResource SecondaryInk}"/><Setter Property="VerticalAlignment" Value="Center"/></Style>
+  <Style x:Key="CategoryTab" TargetType="ListBoxItem">
+    <Setter Property="AutomationProperties.Name" Value="{Binding ShortName}"/>
+    <Setter Property="Padding" Value="13,10"/><Setter Property="Margin" Value="0,0,5,0"/><Setter Property="Foreground" Value="#74747D"/><Setter Property="VerticalContentAlignment" Value="Center"/>
+    <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ListBoxItem">
+      <Border x:Name="Tab" Padding="{TemplateBinding Padding}" Background="Transparent" BorderBrush="Transparent" BorderThickness="0,0,0,2"><ContentPresenter/></Border>
+      <ControlTemplate.Triggers>
+        <Trigger Property="IsMouseOver" Value="True"><Setter Property="Foreground" Value="#303038"/></Trigger>
+        <Trigger Property="IsSelected" Value="True"><Setter TargetName="Tab" Property="BorderBrush" Value="{StaticResource Accent}"/><Setter Property="Foreground" Value="#4949A3"/><Setter Property="FontWeight" Value="Medium"/></Trigger>
+      </ControlTemplate.Triggers>
+    </ControlTemplate></Setter.Value></Setter>
+  </Style>
+  <Style x:Key="CharacterTile" TargetType="ListBoxItem">
+    <Setter Property="Padding" Value="9,6"/><Setter Property="Margin" Value="0,0,8,0"/><Setter Property="VerticalContentAlignment" Value="Top"/>
+    <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ListBoxItem">
+      <Border x:Name="Tile" Padding="{TemplateBinding Padding}" CornerRadius="4" Background="Transparent" BorderBrush="Transparent" BorderThickness="1"><ContentPresenter/></Border>
+      <ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Tile" Property="Background" Value="#F2F2F6"/></Trigger><Trigger Property="IsSelected" Value="True"><Setter TargetName="Tile" Property="Background" Value="#F1F1FA"/><Setter TargetName="Tile" Property="BorderBrush" Value="#CECEE6"/><Setter Property="Foreground" Value="#5050AE"/></Trigger></ControlTemplate.Triggers>
+    </ControlTemplate></Setter.Value></Setter>
+  </Style>
+  <Style x:Key="Disclosure" TargetType="Expander">
+    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+    <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Expander">
+      <Border x:Name="Surface" Background="White" BorderBrush="#ECECF0" BorderThickness="0,0,0,1">
+        <StackPanel>
+          <ToggleButton x:Name="HeaderSite" Content="{TemplateBinding Header}" ContentTemplate="{TemplateBinding HeaderTemplate}" IsChecked="{Binding IsExpanded,RelativeSource={RelativeSource TemplatedParent},Mode=TwoWay}" HorizontalContentAlignment="Stretch" AutomationProperties.Name="{Binding Path=(AutomationProperties.Name),RelativeSource={RelativeSource TemplatedParent}}">
+            <ToggleButton.Template><ControlTemplate TargetType="ToggleButton"><Border x:Name="HitArea" Background="Transparent"><Grid Margin="0,0,12,0"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="18"/></Grid.ColumnDefinitions><ContentPresenter Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"/><TextBlock x:Name="Chevron" Grid.Column="1" Text="&#xE76C;" FontFamily="Segoe Fluent Icons" FontSize="10" Foreground="#9797A2" HorizontalAlignment="Center" VerticalAlignment="Center" RenderTransformOrigin=".5,.5"/></Grid></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="HitArea" Property="Background" Value="#F9F9FC"/></Trigger><Trigger Property="IsChecked" Value="True"><Setter TargetName="Chevron" Property="RenderTransform"><Setter.Value><RotateTransform Angle="90"/></Setter.Value></Setter></Trigger><Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="HitArea" Property="Background" Value="#F0F0F9"/></Trigger></ControlTemplate.Triggers></ControlTemplate></ToggleButton.Template>
+          </ToggleButton>
+          <ContentPresenter x:Name="Details" Visibility="Collapsed"/>
+        </StackPanel>
+      </Border>
+      <ControlTemplate.Triggers><Trigger Property="IsExpanded" Value="True"><Setter TargetName="Details" Property="Visibility" Value="Visible"/><Setter TargetName="Surface" Property="Background" Value="#FAFAFC"/></Trigger></ControlTemplate.Triggers>
+    </ControlTemplate></Setter.Value></Setter>
+  </Style>
+  <Style x:Key="MatchItem" TargetType="ListBoxItem">
+    <Setter Property="HorizontalContentAlignment" Value="Stretch"/><Setter Property="Padding" Value="0"/>
+    <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ListBoxItem"><ContentPresenter/></ControlTemplate></Setter.Value></Setter>
+  </Style>
+  <Style x:Key="IconButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+    <Setter Property="Width" Value="30"/><Setter Property="Height" Value="30"/><Setter Property="Padding" Value="0"/><Setter Property="Margin" Value="0"/><Setter Property="FontFamily" Value="Segoe Fluent Icons"/><Setter Property="FontSize" Value="13"/>
+  </Style>
+</ResourceDictionary>

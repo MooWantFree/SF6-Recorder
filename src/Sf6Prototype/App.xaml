@@ -2,6 +2,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:primitives="clr-namespace:System.Windows.Controls.Primitives;assembly=PresentationFramework"
              ShutdownMode="OnMainWindowClose">
   <Application.Resources>
+    <Style TargetType="ToolTip">
+      <Setter Property="FontFamily" Value="Microsoft YaHei UI"/><Setter Property="FontSize" Value="12"/><Setter Property="Padding" Value="12,10"/><Setter Property="Background" Value="White"/><Setter Property="BorderBrush" Value="#DCDCE5"/><Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ToolTip"><Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}" CornerRadius="5"><ContentPresenter/></Border></ControlTemplate></Setter.Value></Setter>
+    </Style>
     <Style x:Key="Card" TargetType="Border"><Setter Property="Background" Value="White"/><Setter Property="CornerRadius" Value="5"/><Setter Property="BorderBrush" Value="#E0E0E5"/><Setter Property="BorderThickness" Value="1"/><Setter Property="Padding" Value="0"/></Style>
     <Style x:Key="FilterLabel" TargetType="TextBlock"><Setter Property="Foreground" Value="#777780"/><Setter Property="Margin" Value="0,0,0,4"/><Setter Property="FontSize" Value="11"/></Style>
     <Style x:Key="SectionLabel" TargetType="TextBlock"><Setter Property="Foreground" Value="#72727D"/><Setter Property="Margin" Value="2,0,0,8"/><Setter Property="FontWeight" Value="SemiBold"/><Setter Property="FontSize" Value="11"/></Style>
@@ -20,10 +24,11 @@
       </Style></Setter.Value></Setter>
     </Style>
     <Style TargetType="Button">
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
       <Setter Property="Padding" Value="11,6"/><Setter Property="Margin" Value="0,0,8,0"/><Setter Property="MinHeight" Value="29"/>
       <Setter Property="Background" Value="White"/><Setter Property="BorderBrush" Value="#DCDCE2"/><Setter Property="Foreground" Value="#34343C"/><Setter Property="BorderThickness" Value="1"/><Setter Property="Cursor" Value="Hand"/>
       <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
-        <Border x:Name="Surface" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="4" Padding="{TemplateBinding Padding}"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
+        <Border x:Name="Surface" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="4" Padding="{TemplateBinding Padding}"><ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center"/></Border>
         <ControlTemplate.Triggers>
           <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Surface" Property="Opacity" Value="0.76"/></Trigger>
           <Trigger Property="IsPressed" Value="True"><Setter TargetName="Surface" Property="Opacity" Value="0.6"/></Trigger>

@@ -11,12 +11,13 @@ namespace Sf6Prototype;
 public sealed class DateRangePicker : UserControl
 {
     private readonly Button _button = new() { Margin = new(0), Padding = new(10,5,10,5), HorizontalContentAlignment = HorizontalAlignment.Left };
+    private readonly TextBlock _label = new() { Text = "全部日期",FontSize=12,VerticalAlignment=VerticalAlignment.Center };
     private readonly Popup _popup = new() { AllowsTransparency = true, StaysOpen = false, Placement = PlacementMode.Bottom, VerticalOffset = 5 };
     private readonly TextBlock _title = new() { FontWeight = FontWeights.SemiBold, FontSize = 15, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
     private readonly TextBlock _hint = new() { Text = "先选第一天，再选最后一天", Foreground = Brushes.Gray, Margin = new(2,0,0,10) };
     private readonly UniformGrid _days = new() { Columns = 7 };
     private readonly List<(Button Button,DateTime Date)> _dayButtons = [];
-    private readonly Button _next = new() { Content = "›", Width = 30, Margin = new(0), BorderThickness = new(0) };
+    private readonly Button _next = new() { Content = "\uE76C", FontFamily = new("Segoe Fluent Icons"),FontSize=11,Width = 30, Margin = new(0), BorderThickness = new(0) };
     private DateTime _month, _today;
     private DateTime? _anchor, _preview;
     public DateTime? Start { get; private set; }
@@ -24,7 +25,10 @@ public sealed class DateRangePicker : UserControl
     public event EventHandler? RangeChanged;
     public DateRangePicker()
     {
-        Content = _button; _button.Content = "▦  全部日期"; _popup.PlacementTarget = _button;
+        Content = _button;
+        var label = new StackPanel { Orientation=Orientation.Horizontal };
+        label.Children.Add(new TextBlock { Text="\uE787",FontFamily=new("Segoe Fluent Icons"),FontSize=12,Margin=new(0,0,8,0),VerticalAlignment=VerticalAlignment.Center,Foreground=Brush("#858590") });
+        label.Children.Add(_label); _button.Content = label; _popup.PlacementTarget = _button;
         AutomationProperties.SetName(_button, "日期范围");
         var panel = new StackPanel(); panel.Children.Add(_hint);
         var presets = new StackPanel { Orientation = Orientation.Horizontal, Margin = new(0,0,0,12) };
@@ -35,7 +39,7 @@ public sealed class DateRangePicker : UserControl
         }
         panel.Children.Add(presets);
         var head = new Grid { Margin = new(0,6,0,10) }; head.Children.Add(_title);
-        var previous = new Button { Content = "‹", Width = 30, Margin = new(0), HorizontalAlignment = HorizontalAlignment.Left, BorderThickness = new(0) };
+        var previous = new Button { Content = "\uE76B", FontFamily=new("Segoe Fluent Icons"),FontSize=11,Width = 30, Margin = new(0), HorizontalAlignment = HorizontalAlignment.Left, BorderThickness = new(0) };
         previous.Click += (_,_) => { _month = _month.AddMonths(-1); DrawMonth(); }; AutomationProperties.SetName(previous,"上个月日历"); head.Children.Add(previous);
         _next.HorizontalAlignment = HorizontalAlignment.Right; _next.Click += (_,_) => { _month = _month.AddMonths(1); DrawMonth(); }; AutomationProperties.SetName(_next,"下个月日历"); head.Children.Add(_next); panel.Children.Add(head);
         var week = new UniformGrid { Columns = 7, Margin = new(0,0,0,5) };
@@ -56,7 +60,7 @@ public sealed class DateRangePicker : UserControl
     {
         if (start.HasValue && end.HasValue) { var r = DateRanges.Normalize(start.Value,end.Value); Start = r.Start; End = r.End; }
         else Start = End = null;
-        _button.Content = Start == null ? "▦  全部日期" : Start == End ? $"▦  {Start:yyyy-MM-dd}" : $"▦  {Start:MM/dd} — {End:MM/dd}";
+        _label.Text = Start == null ? "全部日期" : Start == End ? $"{Start:yyyy-MM-dd}" : $"{Start:MM/dd} — {End:MM/dd}";
         _button.ToolTip = Start == null ? "选择日期范围" : $"{Start:yyyy-MM-dd} — {End:yyyy-MM-dd}";
         RangeChanged?.Invoke(this,EventArgs.Empty);
     }

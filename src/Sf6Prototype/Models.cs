@@ -5,6 +5,7 @@ namespace Sf6Prototype;
 
 public record BattleCategory(string Key, string Name)
 {
+    public string ShortName => Key switch { "rank" => "排位", "casual" => "休闲", "custom" => "比赛间", "hub" => "格斗中心", _ => "全部" };
     public static readonly BattleCategory[] All = [new("rank", "排位赛"), new("casual", "休闲赛"), new("custom", "比赛间对战"), new("hub", "格斗中心对战")];
     public override string ToString() => Name;
 }
@@ -29,6 +30,7 @@ public record Battle
     public int? MyRounds { get; init; }
     public int? OpponentRounds { get; init; }
     public int? InputType { get; init; }
+    public int? MasterLeague { get; init; }
     public int? Season { get; init; }
     public string Outcome => MyRounds is null || OpponentRounds is null ? "待确认" : MyRounds > OpponentRounds ? "胜" : MyRounds < OpponentRounds ? "负" : "平";
     public string Score => MyRounds is null || OpponentRounds is null ? "—" : $"{MyRounds} : {OpponentRounds}";
@@ -82,7 +84,9 @@ public static class MatchParser
                 Opponent = Text(other.GetProperty("player"), "fighter_id"), OpponentCharacter = Text(other, "character_name"),
                 Lp = Int(mine, "league_point"), Mr = Int(mine, "master_rating"), LeagueRank = Int(mine, "league_rank"),
                 OpponentLp = Int(other, "league_point"), OpponentMr = Int(other, "master_rating"),
-                InputType = Int(mine, "battle_input_type"), Season = Int(mine, "master_league"),
+                InputType = Int(mine, "battle_input_type"), MasterLeague = Int(mine, "master_league"),
+                // master_league is a rank badge, not a season ID. Most replay responses omit season_id.
+                Season = Int(r, "season_id"),
                 MyRounds = Rounds(mine), OpponentRounds = Rounds(other)
             });
         }

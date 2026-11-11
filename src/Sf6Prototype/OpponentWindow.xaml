@@ -1,0 +1,24 @@
+<Window x:Class="Sf6Prototype.OpponentWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="对手资料" Width="700" Height="560" MinWidth="620" MinHeight="360" WindowStartupLocation="CenterOwner" Background="#FCFCFD" Foreground="#292930" FontFamily="Microsoft YaHei UI" FontSize="13" TextOptions.TextFormattingMode="Display">
+  <Grid Margin="24,20"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+    <DockPanel Margin="0,0,0,18">
+      <Button x:Name="RefreshButton" Content="刷新" DockPanel.Dock="Right" Click="Refresh_Click" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0"/>
+      <StackPanel><TextBlock x:Name="PlayerName" FontSize="20" FontWeight="SemiBold"/><Button x:Name="UidButton" Click="CopyUid_Click" HorizontalAlignment="Left" BorderThickness="0" Background="Transparent" Foreground="#81818C" Padding="0,5" Margin="0" ToolTip="复制对手 UID" AutomationProperties.Name="复制对手 UID"/></StackPanel>
+    </DockPanel>
+    <Grid Grid.Row="1" Margin="0,0,0,14"><Grid.ColumnDefinitions><ColumnDefinition Width="145"/><ColumnDefinition Width="160"/><ColumnDefinition/></Grid.ColumnDefinitions>
+      <ComboBox x:Name="SeasonPicker" SelectionChanged="Selection_Changed" Margin="0,0,8,0" AutomationProperties.Name="对手赛季"/>
+      <ComboBox x:Name="ModePicker" Grid.Column="1" SelectedIndex="0" SelectionChanged="Mode_Changed" AutomationProperties.Name="段位查询类型"><ComboBoxItem Content="赛季记录"/><ComboBoxItem Content="最高 MR"/></ComboBox>
+      <CheckBox x:Name="ShowUnranked" Grid.Column="2" Content="包含未定级" HorizontalAlignment="Right" VerticalAlignment="Center" Checked="Unranked_Changed" Unchecked="Unranked_Changed"/>
+    </Grid>
+    <Border Grid.Row="2" Background="White" BorderBrush="#E4E4EB" BorderThickness="1" CornerRadius="5"><Grid>
+      <DataGrid x:Name="RankGrid" RowHeight="46" SelectionMode="Single" AutomationProperties.Name="对手角色段位">
+        <DataGrid.Columns>
+          <DataGridTemplateColumn Header="角色" Width="*"><DataGridTemplateColumn.CellTemplate><DataTemplate><StackPanel Orientation="Horizontal"><Image Source="{Binding Image}" Width="32" Height="32" Stretch="Uniform"/><TextBlock Text="{Binding Rank.Name}" VerticalAlignment="Center" Margin="10,0,0,0"/></StackPanel></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+          <DataGridTextColumn Header="段位" Binding="{Binding Rank.RankName}" Width="135"/><DataGridTextColumn Header="LP" Binding="{Binding LpText}" Width="95"/><DataGridTextColumn Header="MR" Binding="{Binding Rank.MrText}" Width="90"/>
+        </DataGrid.Columns>
+      </DataGrid>
+      <TextBlock x:Name="EmptyText" Text="该赛季暂无段位记录" Foreground="#858590" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
+    </Grid></Border>
+    <TextBlock x:Name="Status" Grid.Row="3" Foreground="#858590" FontSize="11" Margin="0,12,0,0" TextWrapping="Wrap"/>
+  </Grid>
+</Window>

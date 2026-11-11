@@ -1,11 +1,11 @@
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -20,6 +20,7 @@ public partial class MainWindow : Window
     private ProfileCache _profiles = null!;
     private ConnectionSettings _settings = new();
     private List<Battle> _all = [], _filtered = [];
+    private Dictionary<string,ScorePoint> _scoreLookup = [];
     private bool _ready, _busy, _closeRequested;
     private int _page;
     private CancellationTokenSource? _cancellation;
@@ -32,9 +33,18 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         AccountPopup.Opened += (_,_) => UiCapture.SaveLater((FrameworkElement)AccountPopup.Child,"ui-account-menu.png");
+        FilterPopup.Opened += (_,_) => UiCapture.SaveLater((FrameworkElement)FilterPopup.Child,"ui-filters.png");
+        PreviewMouseDown += (_,e) =>
+        {
+            if(ScoreMatchLayer.Visibility==Visibility.Visible && !new Rect(ScoreMatchFlyout.RenderSize).Contains(e.GetPosition(ScoreMatchFlyout))) CloseScoreMatch();
+        };
+        Deactivated += (_,_) => CloseScoreMatch();
+        SizeChanged += (_,_) => CloseScoreMatch();
+        Chart.SizeChanged += (_,_) => CloseScoreMatch();
         Loaded += async (_, _) => await InitializeAsync();
         PreviewKeyDown += async (_, e) =>
         {
+            if(e.Key==Key.Escape && ScoreMatchLayer.Visibility==Visibility.Visible) { CloseScoreMatch(); Chart.Focus(); e.Handled=true; return; }
             if (Keyboard.Modifiers != ModifierKeys.Control) return;
             if (e.Key == Key.F) { Navigation.SelectedIndex = 0; SearchBox.Focus(); SearchBox.SelectAll(); e.Handled = true; }
             else if (e.Key == Key.R && !_busy) { e.Handled = true; await SynchronizeAsync(); }
@@ -199,6 +209,7 @@ public partial class MainWindow : Window
         var oldCharacter = CharacterFilter.SelectedItem as string;
         var oldScore = (CharacterGrid.SelectedItem as CharacterChoice)?.Id;
         _all = _store.Query(new(_settings.PlayerId));
+        _scoreLookup = _all.GroupBy(b=>b.CharacterId).SelectMany(g=>BattleStore.Scores(g)).ToDictionary(p=>p.ReplayId);
         _ready = false;
         CharacterFilter.ItemsSource = new[] { "全部角色" }.Concat(_all.Select(b => b.Character).Distinct().Order());
         CharacterFilter.SelectedItem = oldCharacter != null && _all.Any(b => b.Character == oldCharacter) ? oldCharacter : "全部角色";
@@ -206,8 +217,6 @@ public partial class MainWindow : Window
         var choices = summaries.Select(s=>new CharacterChoice(s,Pictures.Load(_profiles.CharacterImage(s.CharacterId,s.Character)))).ToList();
         CharacterGrid.ItemsSource = choices;
         CharacterGrid.SelectedItem = choices.FirstOrDefault(s => s.Id == oldScore) ?? choices.FirstOrDefault();
-        ArchiveCount.Text = $"{_all.Count:N0} 条战绩";
-        RangeMetric.Text = _all.Count == 0 ? "尚无记录" : $"{_all[^1].Time[..10]} — {_all[0].Time[..10]}";
         _ready = true; ApplyFilter(); UpdateScores();
     }
     private void ApplyFilter()
@@ -222,7 +231,10 @@ public partial class MainWindow : Window
         var wins = _filtered.Count(b => b.Outcome == "胜"); var losses = _filtered.Count(b => b.Outcome == "负"); var draws = _filtered.Count(b => b.Outcome == "平");
         TotalMetric.Text = _filtered.Count.ToString("N0");
         WinRateMetric.Text = wins + losses + draws == 0 ? "—" : $"{100d * wins / (wins + losses + draws):F1}%";
-        ResultsMetric.Text = $"{wins} / {losses} / {draws}";
+        ResultsMetric.Text = $"{wins} 胜 · {losses} 负" + (draws > 0 ? $" · {draws} 平" : "");
+        RangeMetric.Text = _filtered.Count == 0 ? "" : $"{_filtered[^1].Time.Substring(5,5).Replace('-','/')} — {_filtered[0].Time.Substring(5,5).Replace('-','/')}";
+        FilterCaption.Text = OutcomeFilter.SelectedIndex > 0 ? "筛选 · 1" : "筛选";
+        ResetButton.Visibility = CharacterFilter.SelectedIndex > 0 || OutcomeFilter.SelectedIndex > 0 || DateRange.Start != null || !string.IsNullOrWhiteSpace(SearchBox.Text) ? Visibility.Visible : Visibility.Collapsed;
         _page = 0; ShowPage();
     }
     private void ShowPage()
@@ -235,8 +247,10 @@ public partial class MainWindow : Window
             var path = _profiles.CharacterImage(id,name); if(path == null) return null;
             if(!images.TryGetValue(path,out var value)) { value = Pictures.Load(path); images[path] = value; } return value;
         }
-        MatchesGrid.ItemsSource = _filtered.Skip(_page * PageSize).Take(PageSize).Select(b=>new MatchListRow(b,GetImage(b.CharacterId,b.Character),GetImage(-1,b.OpponentCharacter))).ToList();
-        PageLabel.Text = $"{_page + 1} / {count} · {_filtered.Count:N0} 条";
+        var rows = _filtered.Skip(_page * PageSize).Take(PageSize).Select(b=>new MatchListRow(b,GetImage(b.CharacterId,b.Character),GetImage(-1,b.OpponentCharacter),_scoreLookup.GetValueOrDefault(b.ReplayId))).ToList();
+        var view = new ListCollectionView(rows); view.GroupDescriptions.Add(new PropertyGroupDescription(nameof(MatchListRow.DateGroup)));
+        MatchesGrid.ItemsSource = view;
+        PageLabel.Text = $"{_page + 1} / {count}";
         PreviousButton.IsEnabled = _page > 0; NextButton.IsEnabled = _page + 1 < count;
         EmptyHint.Visibility = _filtered.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         EmptyHint.Text = _all.Count == 0 ? "暂无战绩，点击「刷新」开始保存。" : "没有符合筛选条件的战绩。";
@@ -246,18 +260,73 @@ public partial class MainWindow : Window
     private void Search_Changed(object sender, TextChangedEventArgs e) { if (_ready) { _searchTimer.Stop(); _searchTimer.Start(); } }
     private void Reset_Click(object sender, RoutedEventArgs e)
     {
-        _ready = false; CategoryFilter.SelectedIndex = CharacterFilter.SelectedIndex = OutcomeFilter.SelectedIndex = 0;
+        _ready = false; CharacterFilter.SelectedIndex = OutcomeFilter.SelectedIndex = 0;
         DateRange.SetRange(null,null); SearchBox.Text = ""; _ready = true; ApplyFilter();
+        FilterPopup.IsOpen = false;
+    }
+    private void MoreFilters_Click(object sender, RoutedEventArgs e) => FilterPopup.IsOpen = !FilterPopup.IsOpen;
+    private void Match_Expanded(object sender, RoutedEventArgs e)
+    {
+        if (App.Capture) UiCapture.SaveLater((FrameworkElement)Content,"ui-match-expanded.png");
+    }
+    private void ScoreDetails_Expanded(object sender, RoutedEventArgs e)
+    {
+        if (App.Capture) UiCapture.SaveLater((FrameworkElement)Content,"ui-score-details.png");
+    }
+    private void Chart_PointInvoked(object sender, ScorePointInvokedEventArgs e)
+    {
+        var battle=_all.FirstOrDefault(b=>b.ReplayId==e.Record.ReplayId && b.OwnerId==_settings.PlayerId);
+        if(battle==null) { CloseScoreMatch(); return; }
+        ScoreMatchContent.Content=new MatchListRow(battle,Pictures.Load(_profiles.CharacterImage(battle.CharacterId,battle.Character)),
+            Pictures.Load(_profiles.CharacterImage(-1,battle.OpponentCharacter)),e.Record);
+        ScoreMatchLayer.Visibility=Visibility.Visible;
+        ScoreMatchLayer.UpdateLayout();
+        ScoreMatchFlyout.Width=Math.Min(760,Math.Max(0,ScoreMatchLayer.ActualWidth-16));
+        ScoreMatchFlyout.Measure(new Size(ScoreMatchFlyout.Width,double.PositiveInfinity));
+        var anchor=Chart.TranslatePoint(e.Position,ScoreMatchLayer);
+        var size=ScoreMatchFlyout.DesiredSize;
+        var x=Math.Clamp(anchor.X-size.Width/2,8,Math.Max(8,ScoreMatchLayer.ActualWidth-size.Width-8));
+        var y=anchor.Y+18;
+        if(y+size.Height>ScoreMatchLayer.ActualHeight-8) y=anchor.Y-size.Height-18;
+        Canvas.SetLeft(ScoreMatchFlyout,x);
+        Canvas.SetTop(ScoreMatchFlyout,Math.Clamp(y,8,Math.Max(8,ScoreMatchLayer.ActualHeight-size.Height-8)));
+        UiCapture.SaveLater((FrameworkElement)Content,"ui-score-match.png");
+    }
+    private void CloseScoreMatch()
+    {
+        if(ScoreMatchLayer==null || ScoreMatchLayer.Visibility!=Visibility.Visible) return;
+        ScoreMatchLayer.Visibility=Visibility.Collapsed; ScoreMatchContent.Content=null; Chart.SelectedReplay=null;
+    }
+    private void CloseScoreMatch_Click(object sender, RoutedEventArgs e) { CloseScoreMatch(); Chart.Focus(); }
+    private async void CopyReplay_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button button || button.Tag is not string id) return;
+        try
+        {
+            Clipboard.SetText(id); var tooltip = button.ToolTip; button.ToolTip = "已复制";
+            var original = button.Content; button.Content = new TextBlock { Text="已复制",FontSize=11,Foreground=Brushes.Gray };
+            await Task.Delay(1200); button.Content = original; button.ToolTip = tooltip;
+        }
+        catch (System.Runtime.InteropServices.ExternalException) { StatusText.Text = "剪贴板暂时不可用，请重试。"; StatusText.Visibility = Visibility.Visible; }
+    }
+    private void OpponentRanks_Click(object sender, RoutedEventArgs e)
+    {
+        if(sender is not Button { DataContext: MatchListRow row }) return;
+        if(_busy) { StatusText.Text="请等待刷新完成后查询。"; StatusText.Visibility=Visibility.Visible; return; }
+        var session=_vault.Load();
+        if(session==null) { SetStatus("login_needed","请先登录。"); return; }
+        new OpponentWindow(this,row.Battle.OpponentId,row.Battle.Opponent,_settings,session,_vault,_profiles).ShowDialog();
     }
     private void Previous_Click(object sender, RoutedEventArgs e) { _page--; ShowPage(); }
     private void Next_Click(object sender, RoutedEventArgs e) { _page++; ShowPage(); }
     private void Navigation_Changed(object sender, SelectionChangedEventArgs e)
     {
         if (HistoryView == null || ScoresView == null || SettingsView == null) return;
+        CloseScoreMatch();
         HistoryView.Visibility = Navigation.SelectedIndex == 0 ? Visibility.Visible : Visibility.Collapsed;
         ScoresView.Visibility = Navigation.SelectedIndex == 1 ? Visibility.Visible : Visibility.Collapsed;
         SettingsView.Visibility = Navigation.SelectedIndex == 2 ? Visibility.Visible : Visibility.Collapsed;
-        PageTitle.Text = Navigation.SelectedIndex switch { 1 => "角色分数", 2 => "连接设置", _ => "战绩总览" };
+        PageTitle.Text = Navigation.SelectedIndex switch { 1 => "角色分数", 2 => "连接设置", _ => "战绩" };
         if (App.Capture && _ready) Dispatcher.BeginInvoke(new Action(Capture), DispatcherPriority.ContextIdle);
     }
     private void ScoreCharacter_Changed(object sender, SelectionChangedEventArgs e) => UpdateScores();
@@ -265,12 +334,23 @@ public partial class MainWindow : Window
     private void UpdateScores()
     {
         if (!_ready || Chart == null) return;
+        CloseScoreMatch();
         var character = (CharacterGrid.SelectedItem as CharacterChoice)?.Summary;
         var points = character == null ? [] : BattleStore.Scores(_all.Where(b => b.CharacterId == character.CharacterId));
         var count = int.TryParse((ScoreCount.SelectedItem as ComboBoxItem)?.Tag?.ToString(),out var n) ? n : 20;
         var recent = DateRanges.Recent(points,count);
-        ScoreTitle.Text = character == null ? "角色分数" : $"{character.Character} · {recent.Count} 条分数记录";
-        CharacterStats.Text = character == null ? "仅显示本地战绩中使用过的角色" : $"共 {character.Count} 场 · 胜率 {character.WinRate} · 最新记录 {character.LpText} LP";
+        var showMr = ScoreMetric.SelectedIndex == 1;
+        var last = recent.LastOrDefault();
+        CurrentScore.Text = showMr ? last?.MrText ?? "—" : last?.Lp?.ToString("N0") ?? "—";
+        ScoreUnit.Text = showMr ? "MR" : "LP";
+        ScoreTitle.Text = "记录分数";
+        var difference = DateRanges.ScoreDifference(recent,showMr);
+        ScoreChange.Text = difference?.ToString("+0;-0;0") ?? "—";
+        ScoreChange.Foreground = (Brush)new BrushConverter().ConvertFromString(difference < 0 ? "#92616B" : "#6060BC")!;
+        var selectedIds = recent.Select(p=>p.ReplayId).ToHashSet();
+        var selected = _all.Where(b=>selectedIds.Contains(b.ReplayId)).ToList();
+        var decided = selected.Count(b=>b.Outcome is "胜" or "负" or "平");
+        ScoreWinRate.Text = decided == 0 ? "—" : $"{100d * selected.Count(b=>b.Outcome=="胜")/decided:F1}%";
         ScoreGrid.ItemsSource = recent.Reverse().ToList();
         Chart.Points = recent; Chart.ShowMr = ScoreMetric.SelectedIndex == 1; Chart.InvalidateVisual();
     }
@@ -304,16 +384,6 @@ public partial class MainWindow : Window
             ProxyTestResult.Text = ex is TaskCanceledException ? "连接超时" : "连接失败，请检查代理设置";
         }
         finally { TestProxyButton.IsEnabled = true; }
-    }
-    private void OpenData_Click(object sender, RoutedEventArgs e) =>
-        Process.Start(new ProcessStartInfo("explorer.exe") { UseShellExecute = true, ArgumentList = { App.DataDirectory } });
-    private void Match_DoubleClick(object sender, MouseButtonEventArgs e)
-    {
-        if (MatchesGrid.SelectedItem is not MatchListRow row) return;
-        var b = row.Battle;
-        var text = $"{b.Time} · {b.Mode}\n\n{b.PlayerName}（{b.Character}）  {b.Score}  {b.Opponent}（{b.OpponentCharacter}）\n\n结果：{b.Outcome}\n自己的 LP：{b.LpText}    MR：{b.MrText}\n对手 LP：{b.OpponentLp?.ToString("N0") ?? "—"}    MR：{(b.OpponentMr > 0 ? b.OpponentMr.Value.ToString("N0") : "—")}\n回放 ID：{b.ReplayId}";
-        var box = new TextBox { Text = text, IsReadOnly = true, TextWrapping = TextWrapping.Wrap, BorderThickness = new Thickness(0), Margin = new Thickness(22), Background = Brushes.White };
-        new Window { Owner = this, Title = "战绩详情", Width = 650, Height = 350, Content = box, WindowStartupLocation = WindowStartupLocation.CenterOwner }.ShowDialog();
     }
     private void SetStatus(string stage, string message)
     {

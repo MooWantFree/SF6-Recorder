@@ -8,29 +8,78 @@ using System.Windows.Media;
 
 namespace Sf6Prototype;
 
+public sealed class ScorePointInvokedEventArgs(ScorePoint record, Point position) : EventArgs
+{
+    public ScorePoint Record { get; } = record;
+    public Point Position { get; } = position;
+}
+
 public sealed class ScoreChart : FrameworkElement
 {
-    public IReadOnlyList<ScorePoint> Points { get; set; } = [];
-    public bool ShowMr { get; set; }
+    public event EventHandler<ScorePointInvokedEventArgs>? PointInvoked;
+    private string? _selectedReplay;
+    public string? SelectedReplay { get => _selectedReplay; set { _selectedReplay=value; _tip.IsOpen=false; InvalidateVisual(); } }
+    private IReadOnlyList<ScorePoint> _points = [];
+    private bool _showMr;
+    public IReadOnlyList<ScorePoint> Points { get => _points; set { _points=value; ResetHover(); } }
+    public bool ShowMr { get => _showMr; set { _showMr=value; ResetHover(); } }
     private readonly List<(Point Location, ScorePoint Record, double Value)> _markers = [];
     private readonly ToolTip _tip = new() { Placement = PlacementMode.MousePoint, StaysOpen = true, Padding = new(12,9,12,9), Background = Brushes.White, Foreground = Brushes.Black };
     private int _hover = -1;
     public ScoreChart()
     {
-        MouseLeave += (_,_) => { _tip.IsOpen = false; _hover = -1; InvalidateVisual(); };
+        Focusable = true;
+        MouseLeave += (_,_) => { _tip.IsOpen = false; _hover = -1; Cursor=Cursors.Arrow; InvalidateVisual(); };
         _tip.Opened += (_,_) => UiCapture.SaveLater(_tip,"ui-score-tooltip.png");
+        IsVisibleChanged += (_,_) => { if(!IsVisible) ResetHover(); };
     }
+    private void ResetHover() { _hover=-1; _selectedReplay=null; _markers.Clear(); _tip.IsOpen=false; Cursor=Cursors.Arrow; InvalidateVisual(); }
     protected override AutomationPeer OnCreateAutomationPeer() => new FrameworkElementAutomationPeer(this);
+    private int HitPoint(Point cursor)
+    {
+        var found = -1; var distance = 18d*18;
+        for(var i=0;i<_markers.Count;i++) { var d=(_markers[i].Location-cursor).LengthSquared; if(d<distance){distance=d;found=i;} }
+        return found;
+    }
+    private void InvokePoint(int index)
+    {
+        if(index<0 || index>=_markers.Count) return;
+        var marker=_markers[index]; SelectedReplay=marker.Record.ReplayId;
+        PointInvoked?.Invoke(this,new(marker.Record,marker.Location));
+    }
+    protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
+    {
+        base.OnMouseLeftButtonDown(e);
+        var index=HitPoint(e.GetPosition(this));
+        if(index<0) return;
+        Focus(); InvokePoint(index); e.Handled=true;
+    }
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        base.OnKeyDown(e);
+        if(_markers.Count==0) return;
+        var index=_markers.FindIndex(p=>p.Record.ReplayId==SelectedReplay);
+        if(e.Key is Key.Left or Key.Right)
+        {
+            index=index<0 ? (e.Key==Key.Right ? 0 : _markers.Count-1) : Math.Clamp(index+(e.Key==Key.Right ? 1 : -1),0,_markers.Count-1);
+            InvokePoint(index); e.Handled=true;
+        }
+        else if(e.Key is Key.Enter or Key.Space) { InvokePoint(index<0 ? _markers.Count-1 : index); e.Handled=true; }
+    }
     protected override void OnMouseMove(MouseEventArgs e)
     {
-        base.OnMouseMove(e); var cursor = e.GetPosition(this);
-        var found = _markers.FindIndex(p => (p.Location-cursor).Length <= 18);
+        base.OnMouseMove(e); var found = HitPoint(e.GetPosition(this));
+        Cursor=found>=0 ? Cursors.Hand : Cursors.Arrow;
         if (found == _hover) return;
         _hover = found; _tip.IsOpen = false;
-        if (found >= 0)
+        if (found >= 0 && SelectedReplay==null)
         {
             var p = _markers[found]; var delta = ShowMr ? p.Record.MrChange : p.Record.LpChange;
-            _tip.Content = $"{p.Record.Time}\n{(ShowMr ? "MR" : "LP")}  {p.Value:N0}    差值 {delta}\n回放 {p.Record.ReplayId}";
+            var content = new StackPanel();
+            content.Children.Add(new TextBlock { Text=p.Record.Time,FontSize=11,Foreground=Brushes.Gray });
+            content.Children.Add(new TextBlock { Text=$"{p.Value:N0}  {(ShowMr ? "MR" : "LP")}",FontSize=17,FontWeight=FontWeights.SemiBold,Margin=new(0,6,0,5) });
+            content.Children.Add(new TextBlock { Text=$"记录变化  {delta}",FontSize=12,Foreground=new SolidColorBrush(Color.FromRgb(105,105,125)) });
+            _tip.Content = content;
             _tip.PlacementTarget = this; _tip.IsOpen = true;
         }
         InvalidateVisual();
@@ -64,8 +113,9 @@ public sealed class ScoreChart : FrameworkElement
         for (var i=0; i<_markers.Count; i++)
         {
             var point = _markers[i].Location;
-            if (i==_hover) dc.DrawEllipse(new SolidColorBrush(Color.FromArgb(35,91,91,214)),null,point,10,10);
-            dc.DrawEllipse(Brushes.White,pen,point,i==_hover ? 5 : 3.5,i==_hover ? 5 : 3.5);
+            var selected=_markers[i].Record.ReplayId==SelectedReplay;
+            if (i==_hover || selected) dc.DrawEllipse(new SolidColorBrush(Color.FromArgb(35,91,91,214)),null,point,10,10);
+            dc.DrawEllipse(selected ? line : Brushes.White,pen,point,i==_hover || selected ? 5 : 3.5,i==_hover || selected ? 5 : 3.5);
         }
         var stride = Math.Max(1,(int)Math.Ceiling(values.Count/8d));
         for (var i=0; i<values.Count; i++) if (i%stride==0 || i==values.Count-1) Text((i+1).ToString(),_markers[i].Location.X-4,bottom+11);

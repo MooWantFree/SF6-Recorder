@@ -37,5 +37,7 @@ var scored = data.Replace("\"pageProps\":{", "\"pageProps\":{\"current_page\":1,
 var parsedPage = MatchParser.Parse(scored, "3396336472", "rank");
 Check(parsedPage.Battles.Single().Lp == 12500 && parsedPage.Battles.Single().Mr == 1500, "Scores must be taken from the user's side");
 Check(parsedPage.Battles.Single().CharacterId == 7 && parsedPage.Battles.Single().Outcome == "胜", "Decimal user IDs and character identity must parse correctly");
+var badgePage=MatchParser.Parse(scored.Replace("\"master_rating\":1500","\"master_rating\":1500,\"master_league\":40"),"3396336472","rank");
+Check(badgePage.Battles.Single().Season==null && badgePage.Battles.Single().MasterLeague==40,"Replay Master badge must not become a season ID");
 assertions += await IntegrationChecks.Run();
 Console.WriteLine($"Passed {assertions} checks.");

@@ -1,32 +1,37 @@
 <Window x:Class="Sf6Prototype.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:Sf6Prototype"
         Title="街霸 6 战绩" Width="1380" Height="880" MinWidth="1120" MinHeight="720"
-        FontFamily="Microsoft YaHei UI" FontSize="12.5" Foreground="#28282D" Background="#F5F5F7" WindowStartupLocation="CenterScreen">
-  <Window.Resources>
-    <Style x:Key="MatchItem" TargetType="ListBoxItem">
-      <Setter Property="HorizontalContentAlignment" Value="Stretch"/><Setter Property="Padding" Value="0"/><Setter Property="Margin" Value="0"/>
-      <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ListBoxItem"><Border x:Name="Row" Background="White" BorderBrush="#E8E8ED" BorderThickness="0,0,0,1"><ContentPresenter/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Row" Property="Background" Value="#F9F9FC"/></Trigger><Trigger Property="IsSelected" Value="True"><Setter TargetName="Row" Property="Background" Value="#F0F0F9"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter>
-    </Style>
-    <Style x:Key="CharacterItem" TargetType="ListBoxItem">
-      <Setter Property="Margin" Value="0,0,8,0"/><Setter Property="Padding" Value="8,6"/>
-      <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ListBoxItem"><Border x:Name="Tile" Padding="{TemplateBinding Padding}" Background="Transparent" BorderBrush="Transparent" BorderThickness="1" CornerRadius="5"><ContentPresenter/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Tile" Property="Background" Value="#EDEDF3"/></Trigger><Trigger Property="IsSelected" Value="True"><Setter TargetName="Tile" Property="Background" Value="White"/><Setter TargetName="Tile" Property="BorderBrush" Value="#7878D4"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter>
-    </Style>
-  </Window.Resources>
-  <Grid Background="#F5F5F7">
+        FontFamily="Microsoft YaHei UI" FontSize="13" Foreground="#292930" Background="#FCFCFD" TextOptions.TextFormattingMode="Display" WindowStartupLocation="CenterScreen">
+  <Window.Resources><ResourceDictionary><ResourceDictionary.MergedDictionaries><ResourceDictionary Source="Themes/Utility.xaml"/></ResourceDictionary.MergedDictionaries>
+    <DataTemplate x:Key="MatchDetailsTemplate">
+      <Border Background="#FAFAFD" BorderBrush="#EAEAF0" BorderThickness="0,1,0,0" Padding="20,15">
+        <Grid><Grid.RowDefinitions><RowDefinition/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="90"/><ColumnDefinition/></Grid.ColumnDefinitions>
+          <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="56"/><ColumnDefinition/></Grid.ColumnDefinitions><Image Source="{Binding OwnImage}" Width="56" Height="56"/><StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="12,0,0,0"><TextBlock Text="{Binding Battle.PlayerName}" FontWeight="Medium" TextTrimming="CharacterEllipsis" ToolTip="{Binding Battle.PlayerName}"/><TextBlock Text="{Binding OwnPoints}" FontSize="11" Foreground="#787884" Margin="0,5,0,0" TextWrapping="Wrap"/></StackPanel></Grid>
+          <TextBlock Grid.Column="1" Text="{Binding Battle.Score}" FontSize="25" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Center" Style="{StaticResource Number}"/>
+          <Grid Grid.Column="2"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="56"/></Grid.ColumnDefinitions><StackPanel VerticalAlignment="Center" Margin="0,0,12,0"><TextBlock Text="{Binding Battle.Opponent}" FontWeight="Medium" TextAlignment="Right" TextTrimming="CharacterEllipsis" ToolTip="{Binding Battle.Opponent}"/><TextBlock Text="{Binding OpponentPoints}" FontSize="11" Foreground="#787884" Margin="0,5,0,0" TextAlignment="Right" TextWrapping="Wrap"/></StackPanel><Image Grid.Column="1" Source="{Binding OpponentImage}" Width="56" Height="56"/></Grid>
+          <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding Meta}" FontSize="11" Foreground="#858590" VerticalAlignment="Center" Margin="0,13,0,0"/>
+          <Button Grid.Row="1" Grid.Column="2" HorizontalAlignment="Right" Tag="{Binding Battle.ReplayId}" Click="CopyReplay_Click" ToolTip="复制回放 ID" AutomationProperties.Name="复制回放 ID" Margin="0,10,0,0" Padding="8,4" Background="Transparent" BorderThickness="0"><StackPanel Orientation="Horizontal"><TextBlock Text="{Binding Battle.ReplayId}" FontFamily="Segoe UI" FontSize="11" Foreground="#747480"/><TextBlock Text="&#xE8C8;" FontFamily="Segoe Fluent Icons" FontSize="11" Margin="8,0,0,0" VerticalAlignment="Center"/></StackPanel></Button>
+          <StackPanel Grid.Row="2" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+            <Button Tag="{Binding Battle.OpponentId}" Click="CopyReplay_Click" ToolTip="复制对手 UID" AutomationProperties.Name="复制对手 UID" Background="Transparent" BorderThickness="0" Padding="8,5" Margin="0,0,8,0"><StackPanel Orientation="Horizontal"><TextBlock Text="UID" FontSize="10" Foreground="#8A8A95" Margin="0,0,5,0" VerticalAlignment="Center"/><TextBlock Text="{Binding Battle.OpponentId}" FontFamily="Segoe UI" FontSize="12"/><TextBlock Text="&#xE8C8;" FontFamily="Segoe Fluent Icons" FontSize="11" Margin="8,0,0,0" VerticalAlignment="Center"/></StackPanel></Button>
+            <Button Content="角色段位" Click="OpponentRanks_Click" AutomationProperties.Name="查询对手角色段位" ToolTip="实时查询对手各角色的段位" Margin="0" Padding="12,5"/>
+          </StackPanel>
+        </Grid>
+      </Border>
+    </DataTemplate>
+  </ResourceDictionary></Window.Resources>
+  <Grid Background="#FCFCFD">
     <Grid.ColumnDefinitions><ColumnDefinition Width="176"/><ColumnDefinition/></Grid.ColumnDefinitions>
-    <Border Background="#F0F0F3" BorderBrush="#DFDFE4" BorderThickness="0,0,1,0">
+    <Border Background="#F4F4F7" BorderBrush="#E4E4E9" BorderThickness="0,0,1,0">
       <DockPanel Margin="10,18,10,10">
         <StackPanel DockPanel.Dock="Top">
           <StackPanel Orientation="Horizontal" Margin="10,0,0,23"><TextBlock Text="SF6" FontSize="18" FontWeight="SemiBold"/><TextBlock Text="战绩档案" FontSize="12" Foreground="#777780" VerticalAlignment="Center" Margin="8,2,0,0"/></StackPanel>
           <ListBox x:Name="Navigation" SelectionChanged="Navigation_Changed" SelectedIndex="0" Style="{StaticResource NavList}">
-            <ListBoxItem AutomationProperties.Name="战绩总览"><StackPanel Orientation="Horizontal"><TextBlock Text="&#xE8A5;" Style="{StaticResource NavIcon}"/><TextBlock Text="战绩总览"/></StackPanel></ListBoxItem>
+            <ListBoxItem AutomationProperties.Name="战绩"><StackPanel Orientation="Horizontal"><TextBlock Text="&#xE8A5;" Style="{StaticResource NavIcon}"/><TextBlock Text="战绩"/></StackPanel></ListBoxItem>
             <ListBoxItem AutomationProperties.Name="角色分数"><StackPanel Orientation="Horizontal"><TextBlock Text="&#xE9D9;" Style="{StaticResource NavIcon}"/><TextBlock Text="角色分数"/></StackPanel></ListBoxItem>
             <ListBoxItem AutomationProperties.Name="连接设置"><StackPanel Orientation="Horizontal"><TextBlock Text="&#xE713;" Style="{StaticResource NavIcon}"/><TextBlock Text="连接设置"/></StackPanel></ListBoxItem>
           </ListBox>
         </StackPanel>
         <StackPanel VerticalAlignment="Bottom">
-          <TextBlock x:Name="ArchiveCount" Text="0 条战绩" Foreground="#777780" FontSize="11" Margin="10,0,0,8"/>
-          <Button Content="打开数据目录" Click="OpenData_Click" Margin="0,0,0,12" Padding="8,6" Background="Transparent" BorderThickness="0" Foreground="#66666F"/>
           <Border BorderBrush="#DCDCE3" BorderThickness="0,1,0,0" Padding="0,9,0,0">
             <Button x:Name="LoginButton" Click="Account_Click" Background="Transparent" BorderThickness="0" Padding="5,5" Margin="0" AutomationProperties.Name="账号菜单">
               <Grid Width="140"><Grid.ColumnDefinitions><ColumnDefinition Width="34"/><ColumnDefinition/><ColumnDefinition Width="12"/></Grid.ColumnDefinitions>
@@ -66,64 +71,117 @@
         </StackPanel>
       </DockPanel>
     </Border>
-    <Grid Grid.Column="1" Margin="20,18,20,12">
+    <Grid Grid.Column="1" Margin="24,20,24,12">
       <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
       <DockPanel Margin="0,0,0,16">
         <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center"><TextBlock x:Name="UpdatedLabel" Foreground="#777780" FontSize="11" Margin="0,0,12,0" VerticalAlignment="Center"/><Button x:Name="SyncButton" Content="刷新" Click="Sync_Click" Background="#5B5BD6" Foreground="White" Margin="0"/><Button x:Name="CancelButton" Content="取消" Click="Cancel_Click" Visibility="Collapsed" Margin="8,0,0,0"/></StackPanel>
-        <StackPanel><TextBlock x:Name="PageTitle" Text="战绩总览" FontSize="20" FontWeight="SemiBold"/><TextBlock x:Name="AccountLabel" Visibility="Collapsed"/></StackPanel>
+        <StackPanel><TextBlock x:Name="PageTitle" Text="战绩" FontSize="20" FontWeight="SemiBold"/><TextBlock x:Name="AccountLabel" Visibility="Collapsed"/></StackPanel>
       </DockPanel>
       <Grid Grid.Row="1">
         <Grid x:Name="HistoryView">
-          <Grid.RowDefinitions><RowDefinition Height="66"/><RowDefinition Height="Auto"/><RowDefinition/><RowDefinition Height="36"/></Grid.RowDefinitions>
-          <Border BorderBrush="#E1E1E6" BorderThickness="0,1,0,1" Background="#FAFAFB" Padding="14,10" Margin="0,0,0,14">
-            <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="140"/><ColumnDefinition Width="140"/><ColumnDefinition Width="180"/><ColumnDefinition/></Grid.ColumnDefinitions>
-              <StackPanel Orientation="Horizontal" VerticalAlignment="Center"><TextBlock Text="场次" Foreground="#777780" VerticalAlignment="Center"/><TextBlock x:Name="TotalMetric" Text="0" FontSize="19" FontWeight="SemiBold" Margin="12,0,0,0"/></StackPanel>
-              <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center"><TextBlock Text="胜率" Foreground="#777780" VerticalAlignment="Center"/><TextBlock x:Name="WinRateMetric" Text="—" FontSize="19" FontWeight="SemiBold" Margin="12,0,0,0"/></StackPanel>
-              <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center"><TextBlock Text="胜 / 负 / 平" Foreground="#777780" VerticalAlignment="Center"/><TextBlock x:Name="ResultsMetric" Text="0 / 0 / 0" FontSize="15" FontWeight="Medium" Margin="12,0,0,0" VerticalAlignment="Center"/></StackPanel>
-              <TextBlock x:Name="RangeMetric" Grid.Column="3" Text="尚无记录" Foreground="#777780" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-            </Grid>
+          <Grid.RowDefinitions><RowDefinition Height="40"/><RowDefinition Height="54"/><RowDefinition Height="42"/><RowDefinition/><RowDefinition Height="34"/></Grid.RowDefinitions>
+          <Border BorderBrush="#E8E8ED" BorderThickness="0,0,0,1">
+            <ListBox x:Name="CategoryFilter" SelectionChanged="Filter_Changed" AutomationProperties.Name="战绩分类" BorderThickness="0" Background="Transparent" ItemContainerStyle="{StaticResource CategoryTab}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled">
+              <ListBox.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal"/></ItemsPanelTemplate></ListBox.ItemsPanel>
+              <ListBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding ShortName}"/></DataTemplate></ListBox.ItemTemplate>
+            </ListBox>
           </Border>
-          <WrapPanel Grid.Row="1" Margin="0,0,0,4">
-            <StackPanel Margin="0,0,10,10"><TextBlock Text="分类" Style="{StaticResource FilterLabel}"/><ComboBox x:Name="CategoryFilter" Width="130" SelectionChanged="Filter_Changed" AutomationProperties.Name="分类筛选"/></StackPanel>
-            <StackPanel Margin="0,0,10,10"><TextBlock Text="角色" Style="{StaticResource FilterLabel}"/><ComboBox x:Name="CharacterFilter" Width="110" SelectionChanged="Filter_Changed" AutomationProperties.Name="角色筛选"/></StackPanel>
-            <StackPanel Margin="0,0,10,10"><TextBlock Text="结果" Style="{StaticResource FilterLabel}"/><ComboBox x:Name="OutcomeFilter" Width="90" SelectionChanged="Filter_Changed" AutomationProperties.Name="结果筛选"/></StackPanel>
-            <StackPanel Margin="0,0,10,10"><TextBlock Text="日期" Style="{StaticResource FilterLabel}"/><local:DateRangePicker x:Name="DateRange" Width="190" RangeChanged="Date_Changed"/></StackPanel>
-            <StackPanel Margin="0,0,10,10"><TextBlock Text="对手 / 回放 ID" Style="{StaticResource FilterLabel}"/><TextBox x:Name="SearchBox" Width="166" ToolTip="Ctrl+F" TextChanged="Search_Changed" AutomationProperties.Name="搜索战绩"/></StackPanel>
-            <Button Content="重置" Click="Reset_Click" VerticalAlignment="Bottom" Margin="0,0,0,10"/>
-          </WrapPanel>
-          <Border Grid.Row="2" Style="{StaticResource Card}">
-            <Grid>
-              <ListBox x:Name="MatchesGrid" BorderThickness="0" Background="White" HorizontalContentAlignment="Stretch" ItemContainerStyle="{StaticResource MatchItem}" MouseDoubleClick="Match_DoubleClick" ScrollViewer.HorizontalScrollBarVisibility="Disabled" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling" AutomationProperties.Name="战绩列表">
-                <ListBox.ItemTemplate><DataTemplate>
-                  <Grid Height="94" Margin="14,0,14,0"><Grid.ColumnDefinitions><ColumnDefinition Width="4"/><ColumnDefinition Width="76"/><ColumnDefinition/><ColumnDefinition Width="100"/><ColumnDefinition/><ColumnDefinition Width="76"/></Grid.ColumnDefinitions>
-                    <Border Grid.Column="0" Width="3" Height="52" Background="{Binding ResultColor}" CornerRadius="1"/>
-                    <Image Grid.Column="1" Source="{Binding OwnImage}" Width="65" Height="65" Stretch="UniformToFill"/>
-                    <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="7,0,8,0"><TextBlock Text="{Binding Battle.PlayerName}" FontWeight="SemiBold" FontSize="14" TextTrimming="CharacterEllipsis"/><TextBlock Text="{Binding OwnPoints}" Foreground="#7B7B86" FontSize="11" Margin="0,5,0,0" TextTrimming="CharacterEllipsis"/></StackPanel>
-                    <StackPanel Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center"><TextBlock Text="{Binding Result}" Foreground="{Binding ResultColor}" FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Center"/><TextBlock Text="{Binding Battle.Score}" FontSize="20" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,2,0,0"/></StackPanel>
-                    <StackPanel Grid.Column="4" VerticalAlignment="Center" Margin="8,0,7,0"><TextBlock Text="{Binding Battle.Opponent}" FontWeight="SemiBold" FontSize="14" TextAlignment="Right" TextTrimming="CharacterEllipsis"/><TextBlock Text="{Binding OpponentPoints}" Foreground="#7B7B86" FontSize="11" Margin="0,5,0,0" TextAlignment="Right" TextTrimming="CharacterEllipsis"/></StackPanel>
-                    <Image Grid.Column="5" Source="{Binding OpponentImage}" Width="65" Height="65" Stretch="UniformToFill" RenderTransformOrigin="0.5,0.5"><Image.RenderTransform><ScaleTransform ScaleX="-1"/></Image.RenderTransform></Image>
-                    <TextBlock Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding Meta}" FontSize="10" Foreground="#92929D" VerticalAlignment="Bottom" Margin="7,0,0,5"/>
-                    <TextBlock Grid.Column="4" Grid.ColumnSpan="2" Text="{Binding Battle.ReplayId}" FontSize="10" Foreground="#92929D" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,0,7,5"/>
-                  </Grid>
-                </DataTemplate></ListBox.ItemTemplate>
-              </ListBox>
-              <TextBlock x:Name="EmptyHint" Text="暂无战绩，点击「刷新」开始保存。" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#777780" IsHitTestVisible="False"/>
+          <Grid Grid.Row="1" VerticalAlignment="Center">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition/><ColumnDefinition Width="220"/></Grid.ColumnDefinitions>
+            <StackPanel Orientation="Horizontal">
+              <ComboBox x:Name="CharacterFilter" Width="112" SelectionChanged="Filter_Changed" AutomationProperties.Name="角色筛选" Margin="0,0,8,0"/>
+              <local:DateRangePicker x:Name="DateRange" Width="176" RangeChanged="Date_Changed" Margin="0,0,8,0"/>
+              <Button x:Name="MoreFiltersButton" Click="MoreFilters_Click" AutomationProperties.Name="更多筛选" Margin="0"><StackPanel Orientation="Horizontal"><TextBlock Text="&#xE71C;" FontFamily="Segoe Fluent Icons" FontSize="12" Margin="0,0,7,0" VerticalAlignment="Center"/><TextBlock x:Name="FilterCaption" Text="筛选"/></StackPanel></Button>
+              <Button x:Name="ResetButton" Click="Reset_Click" Style="{StaticResource IconButton}" Content="&#xE711;" ToolTip="清除筛选" AutomationProperties.Name="清除筛选" Margin="6,0,0,0" Visibility="Collapsed"/>
+            </StackPanel>
+            <Grid Grid.Column="2">
+              <TextBox x:Name="SearchBox" Padding="30,5,9,5" ToolTip="搜索对手或回放 ID · Ctrl+F" TextChanged="Search_Changed" AutomationProperties.Name="搜索战绩"/>
+              <TextBlock Text="&#xE721;" FontFamily="Segoe Fluent Icons" FontSize="12" Margin="10,0,0,0" Foreground="#8A8A95" VerticalAlignment="Center" IsHitTestVisible="False"/>
+              <TextBlock Text="搜索对手或回放 ID" Margin="30,0,0,0" Foreground="#94949E" FontSize="12" VerticalAlignment="Center" IsHitTestVisible="False"><TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding Text,ElementName=SearchBox}" Value=""><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock>
             </Grid>
-          </Border>
-          <DockPanel Grid.Row="3" Margin="0,10,0,0" LastChildFill="False"><StackPanel Orientation="Horizontal" DockPanel.Dock="Right"><Button x:Name="PreviousButton" Content="上一页" Click="Previous_Click" Padding="10,4"/><TextBlock x:Name="PageLabel" VerticalAlignment="Center" Margin="10,0,16,0"/><Button x:Name="NextButton" Content="下一页" Click="Next_Click" Padding="10,4" Margin="0"/></StackPanel></DockPanel>
+            <Popup x:Name="FilterPopup" PlacementTarget="{Binding ElementName=MoreFiltersButton}" Placement="Bottom" VerticalOffset="5" AllowsTransparency="True" StaysOpen="False">
+              <Border Background="White" BorderBrush="#DCDCE4" BorderThickness="1" CornerRadius="6" Padding="14" Width="246"><StackPanel>
+                <TextBlock Text="筛选" FontWeight="Medium" Margin="0,0,0,12"/>
+                <Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="135"/></Grid.ColumnDefinitions><TextBlock Text="对局结果" VerticalAlignment="Center" Foreground="#777780"/><ComboBox x:Name="OutcomeFilter" Grid.Column="1" SelectionChanged="Filter_Changed" AutomationProperties.Name="结果筛选"/></Grid>
+                <Button Content="清除筛选" Click="Reset_Click" Margin="0,14,0,0" BorderThickness="0" Background="#F4F4F7"/>
+              </StackPanel></Border>
+            </Popup>
+          </Grid>
+          <Grid Grid.Row="2" VerticalAlignment="Center" Margin="0,0,0,8">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition/></Grid.ColumnDefinitions>
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+              <TextBlock x:Name="TotalMetric" Text="0" FontSize="15" FontWeight="SemiBold" Style="{StaticResource Number}"/><TextBlock Text=" 场对局" Foreground="#777780" FontSize="12" VerticalAlignment="Center" Margin="0,0,22,0"/>
+              <TextBlock x:Name="WinRateMetric" Text="—" FontSize="15" FontWeight="SemiBold" Style="{StaticResource Number}"/><TextBlock Text=" 胜率" Foreground="#777780" FontSize="12" VerticalAlignment="Center" Margin="0,0,22,0"/>
+              <TextBlock x:Name="ResultsMetric" Text="0 胜 · 0 负" Foreground="#777780" FontSize="12" VerticalAlignment="Center"/>
+            </StackPanel>
+            <TextBlock x:Name="RangeMetric" Grid.Column="1" Foreground="#90909A" FontSize="11" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+          </Grid>
+          <Grid Grid.Row="3">
+            <Grid.RowDefinitions><RowDefinition Height="28"/><RowDefinition/></Grid.RowDefinitions>
+            <Grid Margin="15,0,49,0">
+              <Grid.ColumnDefinitions><ColumnDefinition Width="152"/><ColumnDefinition/><ColumnDefinition Width="108"/><ColumnDefinition Width="110"/><ColumnDefinition Width="74"/><ColumnDefinition Width="66"/></Grid.ColumnDefinitions>
+              <TextBlock Text="角色" Style="{StaticResource ColumnLabel}"/><TextBlock Grid.Column="1" Text="对手" Style="{StaticResource ColumnLabel}"/><TextBlock Grid.Column="2" Text="结果" Style="{StaticResource ColumnLabel}"/>
+              <TextBlock Grid.Column="3" Text="记录分数" Style="{StaticResource ColumnLabel}" HorizontalAlignment="Right" Margin="0,0,14,0"/><TextBlock Grid.Column="4" Text="记录变化" Style="{StaticResource ColumnLabel}" HorizontalAlignment="Right" Margin="0,0,14,0" ToolTip="与上一条已保存的同角色记录相比，并非本场结算增减"/><TextBlock Grid.Column="5" Text="时间" Style="{StaticResource ColumnLabel}" HorizontalAlignment="Right" Margin="0,0,8,0"/>
+            </Grid>
+            <Border Grid.Row="1" BorderBrush="#E6E6EC" BorderThickness="1" CornerRadius="5" Background="White">
+              <Grid>
+                <ListBox x:Name="MatchesGrid" BorderThickness="0" Background="Transparent" HorizontalContentAlignment="Stretch" ItemContainerStyle="{StaticResource MatchItem}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.CanContentScroll="True" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.IsVirtualizingWhenGrouping="True" VirtualizingPanel.ScrollUnit="Pixel" AutomationProperties.Name="战绩列表">
+                  <ListBox.GroupStyle><GroupStyle><GroupStyle.ContainerStyle><Style TargetType="GroupItem"><Setter Property="Template"><Setter.Value><ControlTemplate TargetType="GroupItem"><StackPanel><ContentPresenter/><ItemsPresenter/></StackPanel></ControlTemplate></Setter.Value></Setter></Style></GroupStyle.ContainerStyle><GroupStyle.HeaderTemplate><DataTemplate><Border Background="#F7F7FA" Padding="14,8" BorderBrush="#EDEDF1" BorderThickness="0,0,0,1"><TextBlock Text="{Binding Name}" FontSize="11" Foreground="#767681"/></Border></DataTemplate></GroupStyle.HeaderTemplate></GroupStyle></ListBox.GroupStyle>
+                  <ListBox.ItemTemplate><DataTemplate>
+                    <Expander Style="{StaticResource Disclosure}" AutomationProperties.Name="{Binding AccessibleName}" Expanded="Match_Expanded">
+                      <Expander.Header>
+                        <Grid Height="62" Margin="14,0,0,0">
+                          <Grid.ColumnDefinitions><ColumnDefinition Width="152"/><ColumnDefinition/><ColumnDefinition Width="108"/><ColumnDefinition Width="110"/><ColumnDefinition Width="74"/><ColumnDefinition Width="66"/></Grid.ColumnDefinitions>
+                          <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Border Width="40" Height="40" Background="#F3F3F6" CornerRadius="4"><Image Source="{Binding OwnImage}" Stretch="Uniform"/></Border>
+                            <StackPanel VerticalAlignment="Center" Margin="10,0,4,0"><TextBlock Text="{Binding Battle.Character}" FontSize="12"/><TextBlock Text="{Binding Category}" FontSize="11" Foreground="#92929D" Margin="0,3,0,0"/></StackPanel>
+                          </StackPanel>
+                          <Grid Grid.Column="1" VerticalAlignment="Center" Margin="0,0,12,0"><Grid.ColumnDefinitions><ColumnDefinition Width="36"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                            <Border Width="32" Height="32" Background="#F5F5F8" CornerRadius="3"><Image Source="{Binding OpponentImage}" Stretch="Uniform"/></Border>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="9,0,0,0"><TextBlock Text="{Binding Battle.Opponent}" FontSize="13" TextTrimming="CharacterEllipsis"/><TextBlock Text="{Binding Battle.OpponentCharacter}" FontSize="11" Foreground="#92929D" Margin="0,3,0,0" TextTrimming="CharacterEllipsis"/></StackPanel>
+                          </Grid>
+                          <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center"><Border Background="{Binding ResultBackground}" CornerRadius="3" Padding="7,3"><TextBlock Text="{Binding Result}" Foreground="{Binding ResultColor}" FontSize="11"/></Border><TextBlock Text="{Binding Battle.Score}" Margin="10,0,0,0" VerticalAlignment="Center" Style="{StaticResource Number}" FontSize="13"/></StackPanel>
+                          <StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,14,0"><TextBlock Text="{Binding Rating}" Style="{StaticResource Number}"/><TextBlock Text="{Binding RatingUnit}" FontSize="10" Foreground="#9B9BA4" Margin="5,2,0,0"/></StackPanel>
+                          <TextBlock Grid.Column="4" Text="{Binding Change}" Foreground="{Binding ChangeColor}" Style="{StaticResource Number}" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,14,0"/>
+                          <TextBlock Grid.Column="5" Text="{Binding Clock}" Foreground="#8B8B96" Style="{StaticResource Number}" FontSize="11" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        </Grid>
+                      </Expander.Header>
+                      <ContentControl Content="{Binding}" ContentTemplate="{StaticResource MatchDetailsTemplate}"/>
+                    </Expander>
+                  </DataTemplate></ListBox.ItemTemplate>
+                </ListBox>
+                <TextBlock x:Name="EmptyHint" Text="暂无战绩" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#777780" IsHitTestVisible="False"/>
+              </Grid>
+            </Border>
+          </Grid>
+          <DockPanel Grid.Row="4" Margin="0,8,0,0" LastChildFill="False"><StackPanel Orientation="Horizontal" DockPanel.Dock="Right"><Button x:Name="PreviousButton" Content="&#xE76B;" Click="Previous_Click" Style="{StaticResource IconButton}" ToolTip="上一页" AutomationProperties.Name="上一页"/><TextBlock x:Name="PageLabel" FontSize="11" Foreground="#80808B" VerticalAlignment="Center" Margin="12,0"/><Button x:Name="NextButton" Content="&#xE76C;" Click="Next_Click" Style="{StaticResource IconButton}" ToolTip="下一页" AutomationProperties.Name="下一页"/></StackPanel></DockPanel>
         </Grid>
         <Grid x:Name="ScoresView" Visibility="Collapsed">
-          <Grid.RowDefinitions><RowDefinition Height="108"/><RowDefinition Height="Auto"/><RowDefinition Height="250"/><RowDefinition Height="Auto"/><RowDefinition/></Grid.RowDefinitions>
-          <ListBox x:Name="CharacterGrid" SelectionChanged="ScoreCharacter_Changed" BorderThickness="0" Background="Transparent" ItemContainerStyle="{StaticResource CharacterItem}" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Disabled" AutomationProperties.Name="角色选择">
+          <Grid.RowDefinitions><RowDefinition Height="82"/><RowDefinition Height="104"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+          <ListBox x:Name="CharacterGrid" SelectionChanged="ScoreCharacter_Changed" BorderThickness="0" Background="Transparent" ItemContainerStyle="{StaticResource CharacterTile}" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Disabled" VerticalContentAlignment="Top" AutomationProperties.Name="角色选择">
             <ListBox.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal"/></ItemsPanelTemplate></ListBox.ItemsPanel>
-            <ListBox.ItemTemplate><DataTemplate><StackPanel Width="70"><Image Source="{Binding Image}" Height="56" Width="56" Stretch="UniformToFill"/><TextBlock Text="{Binding Name}" HorizontalAlignment="Center" Margin="0,6,0,0" FontSize="11"/></StackPanel></DataTemplate></ListBox.ItemTemplate>
+            <ListBox.ItemTemplate><DataTemplate><StackPanel Width="58"><Image Source="{Binding Image}" Height="40" Width="40" Stretch="Uniform"/><TextBlock Text="{Binding Name}" HorizontalAlignment="Center" Margin="0,5,0,0" FontSize="11"/></StackPanel></DataTemplate></ListBox.ItemTemplate>
           </ListBox>
-          <DockPanel Grid.Row="1" Margin="0,10,0,12">
-            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal"><ComboBox x:Name="ScoreCount" Width="110" SelectedIndex="0" SelectionChanged="Metric_Changed" Margin="0,0,8,0" AutomationProperties.Name="分数记录数量"><ComboBoxItem Content="最近 20 条" Tag="20"/><ComboBoxItem Content="最近 50 条" Tag="50"/><ComboBoxItem Content="最近 100 条" Tag="100"/><ComboBoxItem Content="全部记录" Tag="0"/></ComboBox><ComboBox x:Name="ScoreMetric" Width="76" SelectedIndex="0" SelectionChanged="Metric_Changed"><ComboBoxItem Content="LP"/><ComboBoxItem Content="MR"/></ComboBox></StackPanel>
-            <StackPanel><TextBlock x:Name="ScoreTitle" Text="角色分数" FontSize="14" FontWeight="SemiBold"/><TextBlock x:Name="CharacterStats" Foreground="#777780" FontSize="11" Margin="0,4,0,0"/></StackPanel>
-          </DockPanel>
-          <Border Grid.Row="2" Style="{StaticResource Card}" Padding="8"><local:ScoreChart x:Name="Chart" AutomationProperties.Name="角色分数点线图"/></Border>
-          <Border Grid.Row="4" Style="{StaticResource Card}" Margin="0,14,0,0"><DataGrid x:Name="ScoreGrid"><DataGrid.Columns><DataGridTextColumn Header="时间 (UTC+8)" Binding="{Binding Time}" Width="*"/><DataGridTextColumn Header="LP" Binding="{Binding Lp}" Width="110"/><DataGridTextColumn Header="LP 差值" Binding="{Binding LpChange}" Width="110"/><DataGridTextColumn Header="MR" Binding="{Binding MrText}" Width="110"/><DataGridTextColumn Header="MR 差值" Binding="{Binding MrChange}" Width="110"/><DataGridTextColumn Header="回放 ID" Binding="{Binding ReplayId}" Width="140"/></DataGrid.Columns></DataGrid></Border>
+          <Grid Grid.Row="1" Margin="0,12,0,18">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="190"/><ColumnDefinition Width="170"/><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+            <StackPanel><TextBlock x:Name="ScoreTitle" Text="记录分数" Foreground="#82828D" FontSize="11"/><StackPanel Orientation="Horizontal" Margin="0,7,0,0"><TextBlock x:Name="CurrentScore" Text="—" FontSize="28" FontWeight="SemiBold" Style="{StaticResource Number}"/><TextBlock x:Name="ScoreUnit" Text="LP" Foreground="#91919C" FontSize="12" VerticalAlignment="Bottom" Margin="7,0,0,5"/></StackPanel></StackPanel>
+            <StackPanel Grid.Column="1"><TextBlock Text="区间变化" Foreground="#82828D" FontSize="11" ToolTip="所选记录的最后分数减去最早分数；MR 赛季不明或跨赛季时不计算"/><TextBlock x:Name="ScoreChange" Text="—" Foreground="#6060BC" FontSize="25" Style="{StaticResource Number}" Margin="0,8,0,0"/></StackPanel>
+            <StackPanel Grid.Column="2"><TextBlock Text="区间胜率" Foreground="#82828D" FontSize="11"/><TextBlock x:Name="ScoreWinRate" Text="—" FontSize="25" Style="{StaticResource Number}" Margin="0,8,0,0"/></StackPanel>
+            <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center"><ComboBox x:Name="ScoreCount" Width="110" SelectedIndex="0" SelectionChanged="Metric_Changed" Margin="0,0,8,0" AutomationProperties.Name="分数记录数量"><ComboBoxItem Content="最近 20 场" Tag="20"/><ComboBoxItem Content="最近 50 场" Tag="50"/><ComboBoxItem Content="最近 100 场" Tag="100"/><ComboBoxItem Content="全部对局" Tag="0"/></ComboBox><ComboBox x:Name="ScoreMetric" Width="76" SelectedIndex="0" SelectionChanged="Metric_Changed" AutomationProperties.Name="分数类型"><ComboBoxItem Content="LP"/><ComboBoxItem Content="MR"/></ComboBox></StackPanel>
+          </Grid>
+          <Border Grid.Row="2" BorderBrush="#E6E6EC" BorderThickness="1" Background="White" CornerRadius="5" Padding="12,16,12,8" MinHeight="170"><local:ScoreChart x:Name="Chart" PointInvoked="Chart_PointInvoked" AutomationProperties.Name="角色分数点线图" AutomationProperties.HelpText="点击分数点查看对局详情；也可使用方向键和 Enter。"/></Border>
+          <Expander x:Name="ScoreDetails" Grid.Row="3" Style="{StaticResource Disclosure}" Margin="0,14,0,0" AutomationProperties.Name="逐场明细" Expanded="ScoreDetails_Expanded" Collapsed="ScoreDetails_Expanded">
+            <Expander.Header><Grid Height="38"><TextBlock Text="逐场明细" Foreground="#73737F" FontSize="12" VerticalAlignment="Center"/></Grid></Expander.Header>
+            <DataGrid x:Name="ScoreGrid" MaxHeight="190" BorderThickness="1,0,1,1" BorderBrush="#E8E8ED"><DataGrid.Columns><DataGridTextColumn Header="时间" Binding="{Binding Time}" Width="*"/><DataGridTextColumn Header="LP" Binding="{Binding Lp}" Width="100"/><DataGridTextColumn Header="变化" Binding="{Binding LpChange}" Width="100"/><DataGridTextColumn Header="MR" Binding="{Binding MrText}" Width="100"/><DataGridTextColumn Header="变化" Binding="{Binding MrChange}" Width="100"/><DataGridTextColumn Header="回放 ID" Binding="{Binding ReplayId}" Width="130"/></DataGrid.Columns></DataGrid>
+          </Expander>
+          <Canvas x:Name="ScoreMatchLayer" Grid.RowSpan="4" Panel.ZIndex="10" Visibility="Collapsed" ClipToBounds="True">
+            <Border x:Name="ScoreMatchFlyout" Width="760" Background="White" BorderBrush="#D2D2DF" BorderThickness="1" CornerRadius="5">
+              <StackPanel>
+                <DockPanel Margin="16,5,6,5"><Button x:Name="CloseScoreMatchButton" DockPanel.Dock="Right" Style="{StaticResource IconButton}" Width="26" Height="26" Content="&#xE711;" Click="CloseScoreMatch_Click" ToolTip="关闭 · Esc" AutomationProperties.Name="关闭对局详情" BorderThickness="0" Background="Transparent"/><TextBlock Text="对局详情" Foreground="#747480" FontSize="12" VerticalAlignment="Center"/></DockPanel>
+                <ContentControl x:Name="ScoreMatchContent" ContentTemplate="{StaticResource MatchDetailsTemplate}"/>
+              </StackPanel>
+            </Border>
+          </Canvas>
         </Grid>
         <ScrollViewer x:Name="SettingsView" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
           <StackPanel x:Name="SettingsPanel" MaxWidth="850" HorizontalAlignment="Left" MinWidth="680">

@@ -52,6 +52,26 @@ public static class IntegrationChecks
         Assert(points[1].LpDelta==50 && points[0].LpDelta==null, "Score differences compare saved same-character records");
         var other=BattleStore.Scores([Row("A","rank",1000),Row("B","rank",1050,1)]);
         Assert(other[1].LpDelta==null,"Never compute changes across characters");
+        var mrA=Row("MA","rank",25000) with {Mr=1500,Season=13,MasterLeague=36};
+        var mrB=Row("MB","rank",25010) with {Mr=1510,Season=13,MasterLeague=40};
+        Assert(BattleStore.Scores([mrA,mrB])[1].MrDelta==10,"A Master badge change must not be mistaken for a season boundary");
+        Assert(BattleStore.Scores([mrA,mrB with {Season=14}])[1].MrDelta==null,"MR differences must not cross actual seasons");
+        Assert(BattleStore.Scores([mrA with {Season=null},mrB with {Season=null}])[1].MrDelta==null,"Unknown seasons cannot establish continuous MR");
+        var migrationPath=Path.Combine(dir,"migration.sqlite"); var legacy=new BattleStore(migrationPath); legacy.SavePage([mrA with {Season=36}]);
+        using(var db=new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={migrationPath}"))
+        {
+            db.Open(); using var cmd=db.CreateCommand();
+            cmd.CommandText="UPDATE battles SET data_json=json_remove(data_json,'$.MasterLeague'); PRAGMA user_version=1;"; cmd.ExecuteNonQuery();
+        }
+        var migrated=new BattleStore(migrationPath); var migratedRow=migrated.Query(new(owner)).Single();
+        Assert(migratedRow.MasterLeague==36 && migratedRow.Season==null && migratedRow.Mr==1500 && migratedRow.Lp==25000,"Migration preserves scores and corrects only the mislabeled season field");
+        migrated.SavePage([mrB]); var reopened=new BattleStore(migrationPath);
+        Assert(reopened.Query(new(owner)).Single(b=>b.ReplayId=="MB").Season==13,"Migration runs once and never clears newly saved valid seasons");
+        using(var db=new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={migrationPath}"))
+        {
+            db.Open(); using var cmd=db.CreateCommand(); cmd.CommandText="SELECT season FROM score_snapshots WHERE replay_id='MA'";
+            Assert(cmd.ExecuteScalar() is DBNull,"Migration also clears the invalid season in score snapshots");
+        }
 
         var vault=new CookieVault(dir);
         var session=new SavedSession(owner,"Test","test-agent","build","direct",[new("buckler_id","secret-canary-415","www.streetfighter.com","/",DateTime.UtcNow.AddHours(1),true,true)]);
@@ -81,9 +101,25 @@ public static class IntegrationChecks
         var scoreSeries=Enumerable.Range(0,30).Select(i=>new ScorePoint(1000+i/2,"time",1000+i,null,null,null,i.ToString("D2")));
         var recentScores=DateRanges.Recent(scoreSeries,20);
         Assert(recentScores.Count==20 && recentScores[0].Lp==1010 && recentScores[^1].Lp==1029,"Default score window selects the latest 20 records, including equal timestamps");
+        Assert(DateRanges.ScoreDifference(recentScores,false)==19,"Displayed LP interval change compares endpoints of the selected window");
+        var mrWindow=new[] { recentScores[0] with {Mr=1500,MrDelta=null},recentScores[1] with {Mr=1510,MrDelta=10} };
+        Assert(DateRanges.ScoreDifference(mrWindow,true)==10,"MR interval uses a continuous season");
+        Assert(DateRanges.ScoreDifference([mrWindow[0],mrWindow[1] with {MrDelta=null}],true)==null,"MR interval must not show a misleading change across seasons");
         const string rosterJson="""{"pageProps":{"play":{"character_league_infos":[{"character_id":16,"character_name":"韩蛛俐","character_tool_name":"juri"},{"character_id":35,"character_name":"New fighter","character_tool_name":"new_fighter"},{"character_id":36,"character_name":"Bad path","character_tool_name":"../bad"}]}}}""";
         var roster=ProfileCache.ParseCharacters(rosterJson);
         Assert(roster.Count==2 && roster[1].Id==35,"Profile roster discovers new fighters and rejects unsafe asset names");
+        const string rankRows="""[{"character_id":16,"character_name":"韩蛛俐","league_info":{"league_point":23862,"league_rank":35,"master_rating":0,"master_league":0}},{"character_id":1,"character_name":"隆","league_info":{"league_point":25000,"league_rank":36,"master_rating":1800,"master_league":40}},{"character_id":7,"character_name":"春丽","league_info":{"league_point":0,"league_rank":0,"master_rating":0,"master_league":0}}]""";
+        var profileJson="{\"pageProps\":{\"fighter_banner_info\":{\"personal_info\":{\"short_id\":4293037925,\"fighter_id\":\"Test opponent\"}},\"play\":{\"current_season_id\":14,\"season_ids\":[14,13,13,0,-1],\"character_league_infos\":"+rankRows+"}}}";
+        var opponent=RankProfiles.ParseProfile(profileJson,"4293037925");
+        Assert(opponent.OwnerId=="4293037925" && opponent.Characters.Count==3,"One profile response supplies every opponent character");
+        Assert(opponent.Seasons.SequenceEqual([14,13,0]) && opponent.CurrentSeason==14,"Season choices come from the server, not guessed IDs or Master badge values");
+        Assert(opponent.Characters[0].RankName=="Diamond 5" && opponent.Characters[0].MrText=="—","Diamond rank and absent MR are distinct");
+        Assert(opponent.Characters[1].RankName=="Master" && opponent.Characters[1].MasterLeague==40,"Master badge is preserved independently of the season");
+        Assert(!opponent.Characters[2].Ranked && opponent.Characters[2].RankName=="未定级","Zero-filled historical entries are not ranked fighters");
+        Assert(!(opponent.Characters[0] with {LeagueRank=39,Lp=0}).Ranked,"Placement records are not completed ranks");
+        Assert(RankProfiles.ParseSeason("{\"response\":{\"character_league_infos\":"+rankRows+"}}").Count==3,"Season and peak-MR responses include all characters");
+        try { RankProfiles.ParseProfile(profileJson,"1111111111"); throw new Exception("Expected identity mismatch"); } catch(InvalidDataException) { count++; }
+        try { RankProfiles.ParseSeason("{\"response\":{\"error\":\"failed\"}}"); throw new Exception("Expected invalid payload"); } catch(InvalidDataException) { count++; }
         var config=new ConnectionSettings {UseProxy=true,ProxyAddress="http://127.0.0.1:7890"};
         Assert(config.BrowserArguments.Contains("--proxy-server=http://127.0.0.1:7890"),"Browser uses the selected proxy");
         using(var h=config.CreateHandler()) Assert(h.UseProxy && h.Proxy!.GetProxy(new Uri("https://www.streetfighter.com"))!.Port==7890,"HTTP uses the same proxy");

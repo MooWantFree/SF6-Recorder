@@ -33,9 +33,22 @@ public sealed class BattleStore
           id INTEGER PRIMARY KEY AUTOINCREMENT, owner_id TEXT NOT NULL, started_at TEXT NOT NULL,
           finished_at TEXT, status TEXT NOT NULL, requests INTEGER NOT NULL DEFAULT 0,
           inserted INTEGER NOT NULL DEFAULT 0, detail TEXT);
-        PRAGMA user_version=1;
         """;
         cmd.ExecuteNonQuery();
+        cmd.CommandText="PRAGMA user_version";
+        if(Convert.ToInt32(cmd.ExecuteScalar())<2)
+        {
+            // Version 1 mistook the master_league badge for a season. Preserve it as a badge,
+            // invalidate only the erroneous season metadata, and keep every battle/score.
+            using var tx=db.BeginTransaction(); cmd.Transaction=tx;
+            cmd.CommandText="""
+            UPDATE battles SET data_json=json_set(data_json,'$.MasterLeague',json_extract(data_json,'$.Season'),'$.Season',NULL)
+              WHERE json_type(data_json,'$.MasterLeague') IS NULL;
+            UPDATE score_snapshots SET season=NULL;
+            PRAGMA user_version=2;
+            """;
+            cmd.ExecuteNonQuery(); tx.Commit();
+        }
     }
     private SqliteConnection Open() { var db = new SqliteConnection(_connection); db.Open(); return db; }
     public int SavePage(IEnumerable<Battle> rows)
@@ -106,7 +119,7 @@ public sealed class BattleStore
         {
             var same = previous?.CharacterId == b.CharacterId;
             result.Add(new(b.PlayedAt, b.Time, b.Lp, b.Mr, same ? b.Lp - previous!.Lp : null,
-                same && b.Mr > 0 && previous!.Mr > 0 && b.Season == previous.Season ? b.Mr - previous.Mr : null, b.ReplayId)); previous = b;
+                same && b.Mr > 0 && previous!.Mr > 0 && b.Season != null && b.Season == previous.Season ? b.Mr - previous.Mr : null, b.ReplayId)); previous = b;
         }
         return result;
     }

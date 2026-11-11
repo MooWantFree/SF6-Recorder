@@ -16,6 +16,7 @@
     <Compile Include="../../src/Sf6Prototype/SyncService.cs" Link="SyncService.cs"/>
     <Compile Include="../../src/Sf6Prototype/ProfileCache.cs" Link="ProfileCache.cs"/>
     <Compile Include="../../src/Sf6Prototype/DateRanges.cs" Link="DateRanges.cs"/>
+    <Compile Include="../../src/Sf6Prototype/RankProfiles.cs" Link="RankProfiles.cs"/>
     <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.15"/>
     <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.0"/>
   </ItemGroup>
