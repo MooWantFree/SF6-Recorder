@@ -6,3 +6,4 @@ artifacts/
 **/obj/
 **/Data/
 *.user
+__pycache__/

@@ -3,6 +3,14 @@ using System.IO;
 
 namespace Sf6Prototype;
 
+public static class ScoreDisplay
+{
+    public const string NewChallenger = "New Challenger";
+    public const string EstimateExplanation = "推算：尚无下一场同角色排位记录，使用刷新时保存的官网当前分数与本局赛前分数计算差值，可能包含未收录对局的变化。";
+    public static string Value(int? score) => score<0 ? NewChallenger : score?.ToString("N0") ?? "—";
+    public static string WithUnit(int? score,string unit) => score<0 ? NewChallenger : $"{Value(score)} {unit}";
+}
+
 public record BattleCategory(string Key, string Name)
 {
     public string ShortName => Key switch { "rank" => "排位", "casual" => "休闲", "custom" => "比赛间", "hub" => "格斗中心", _ => "全部" };
@@ -22,11 +30,16 @@ public record Battle
     public string OpponentId { get; init; } = "";
     public string Opponent { get; init; } = "";
     public string OpponentCharacter { get; init; } = "";
+    public int? OpponentCharacterId { get; init; }
     public int? Lp { get; init; }
     public int? Mr { get; init; }
     public int? LeagueRank { get; init; }
     public int? OpponentLp { get; init; }
     public int? OpponentMr { get; init; }
+    public int? OpponentLeagueRank { get; init; }
+    public int? OpponentMasterLeague { get; init; }
+    public int? MasterRatingRanking { get; init; }
+    public int? OpponentMasterRatingRanking { get; init; }
     public int? MyRounds { get; init; }
     public int? OpponentRounds { get; init; }
     public int? InputType { get; init; }
@@ -36,25 +49,30 @@ public record Battle
     public string Score => MyRounds is null || OpponentRounds is null ? "—" : $"{MyRounds} : {OpponentRounds}";
     public string Mode => BattleCategory.All.FirstOrDefault(c => c.Key == Category)?.Name ?? Category;
     public string Time => TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTimeOffset.FromUnixTimeSeconds(PlayedAt), "Taipei Standard Time").ToString("yyyy-MM-dd HH:mm:ss");
-    public string LpText => Lp?.ToString("N0") ?? "—";
+    public string LpText => ScoreDisplay.Value(Lp);
     public string MrText => Mr > 0 ? Mr.Value.ToString("N0") : "—";
 }
 
 public record BattlePage(int CurrentPage, int TotalPages, IReadOnlyList<Battle> Battles);
 public record BattleFilter(string OwnerId, string? Category = null, string? Character = null, string? Outcome = null,
-    string Search = "", long? From = null, long? Until = null);
+    string Search = "", long? From = null, long? Until = null, string? OpponentCharacter=null,
+    bool FavoritesOnly=false,IReadOnlyList<string>? Tags=null,bool MatchAllTags=false);
 public record CharacterSummary(string Character, int CharacterId, int Count, int Wins, int Losses, int Draws, int? Lp, int? Mr)
 {
     public string WinRate => Wins + Losses + Draws == 0 ? "—" : $"{100d * Wins / (Wins + Losses + Draws):F1}%";
-    public string LpText => Lp?.ToString("N0") ?? "—";
+    public string LpText => ScoreDisplay.Value(Lp);
     public string MrText => Mr > 0 ? Mr.Value.ToString("N0") : "—";
 }
-public record ScorePoint(long PlayedAt, string Time, int? Lp, int? Mr, int? LpDelta, int? MrDelta, string ReplayId)
+// Lp/Mr are the official pre-match values; deltas are this match's settlement.
+public record ScorePoint(long PlayedAt, string Time, int? Lp, int? Mr, int? LpDelta, int? MrDelta, string ReplayId, bool Estimated = false)
 {
-    public string LpChange => LpDelta?.ToString("+0;-0;0") ?? "—";
-    public string MrChange => MrDelta?.ToString("+0;-0;0") ?? "—";
+    public int? LpAfter => Lp + LpDelta;
+    public int? MrAfter => Mr > 0 ? Mr + MrDelta : null;
+    public string LpChange => LpDelta?.ToString("+0;−0;0") ?? "—";
+    public string MrChange => MrDelta?.ToString("+0;−0;0") ?? "—";
     public string MrText => Mr > 0 ? Mr.Value.ToString("N0") : "—";
 }
+public record CurrentScores(DateTimeOffset FetchedAt, int Season, IReadOnlyList<CharacterRank> Characters);
 
 public static class MatchParser
 {
@@ -82,8 +100,11 @@ public static class MatchParser
                 CharacterId = Int(mine, "character_id") ?? throw new InvalidDataException("角色 ID 缺失。"),
                 Character = Text(mine, "character_name"), OpponentId = Id(other.GetProperty("player"), "short_id"),
                 Opponent = Text(other.GetProperty("player"), "fighter_id"), OpponentCharacter = Text(other, "character_name"),
+                OpponentCharacterId=Int(other,"character_id"),
                 Lp = Int(mine, "league_point"), Mr = Int(mine, "master_rating"), LeagueRank = Int(mine, "league_rank"),
                 OpponentLp = Int(other, "league_point"), OpponentMr = Int(other, "master_rating"),
+                OpponentLeagueRank = Int(other,"league_rank"), OpponentMasterLeague = Int(other,"master_league"),
+                MasterRatingRanking = Int(mine,"master_rating_ranking"), OpponentMasterRatingRanking = Int(other,"master_rating_ranking"),
                 InputType = Int(mine, "battle_input_type"), MasterLeague = Int(mine, "master_league"),
                 // master_league is a rank badge, not a season ID. Most replay responses omit season_id.
                 Season = Int(r, "season_id"),

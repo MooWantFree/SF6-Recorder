@@ -24,6 +24,7 @@ public sealed class LoginWindow : Window
     private LoginWindow(Window owner, ConnectionSettings settings, CookieVault vault)
     {
         Owner = owner; _settings = settings; _vault = vault;
+        Icon = (System.Windows.Media.ImageSource)FindResource("AppIcon");
         Title = "登录 CAPCOM ID"; Width = 1100; Height = 820; MinWidth = 800; MinHeight = 650;
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
         var grid = new Grid(); grid.RowDefinitions.Add(new() { Height = GridLength.Auto }); grid.RowDefinitions.Add(new());
@@ -72,7 +73,7 @@ public sealed class LoginWindow : Window
             using var deferral = e.GetDeferral(); e.Handled = true;
             if (_closed || !Uri.TryCreate(e.Uri, UriKind.Absolute, out var uri) || uri.Scheme != "https") return;
             var view = new WebView2();
-            var popup = new Window { Owner = this, Title = "CAPCOM 官方登录", Width = 1000, Height = 800, Content = view, WindowStartupLocation = WindowStartupLocation.CenterOwner };
+            var popup = new Window { Owner = this, Icon = this.Icon, Title = "CAPCOM 官方登录", Width = 1000, Height = 800, Content = view, WindowStartupLocation = WindowStartupLocation.CenterOwner };
             _popups.Add(popup);
             popup.Closed += (_, _) => { view.Dispose(); _popups.Remove(popup); if (!_closed && !_finishing) _browser.CoreWebView2.Reload(); };
             popup.Show();

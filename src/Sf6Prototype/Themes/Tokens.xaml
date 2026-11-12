@@ -1,0 +1,65 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+  <sys:Double x:Key="ScrollBarWidth">8</sys:Double>
+  <Color x:Key="ShadowColor">#000000</Color>
+  <SolidColorBrush x:Key="Overlay" Color="#000000"/>
+  <SolidColorBrush x:Key="OnAccent" Color="#FFFFFF"/>
+  <SolidColorBrush x:Key="SegmentTrack" Color="#E9E9EF"/>
+  <SolidColorBrush x:Key="SearchSurface" Color="#E6E6EC"/>
+  <SolidColorBrush x:Key="AvatarPlaceholder" Color="#E9E9F0"/>
+  <SolidColorBrush x:Key="ScrollThumb" Color="#BDBDC9"/>
+  <SolidColorBrush x:Key="ScrollThumbHover" Color="#9696A7"/>
+  <SolidColorBrush x:Key="SwitchTrack" Color="#C8C8D0"/>
+  <SolidColorBrush x:Key="ChartHalo" Color="#245B5BD6"/>
+  <LinearGradientBrush x:Key="ChartFill" StartPoint="0,0" EndPoint="0,1"><GradientStop Color="#145B5BD6" Offset="0"/><GradientStop Color="#005B5BD6" Offset="1"/></LinearGradientBrush>
+  <SolidColorBrush x:Key="Ink" Color="#24242B"/>
+  <SolidColorBrush x:Key="Ink2" Color="#5C5C68"/>
+  <SolidColorBrush x:Key="Ink3" Color="#74747F"/>
+  <SolidColorBrush x:Key="Canvas" Color="#F7F7F9"/>
+  <SolidColorBrush x:Key="Surface" Color="#FFFFFF"/>
+  <SolidColorBrush x:Key="SurfaceMuted" Color="#F3F3F6"/>
+  <SolidColorBrush x:Key="SurfaceHover" Color="#F7F7FA"/>
+  <SolidColorBrush x:Key="SurfaceSelected" Color="#EEEEFB"/>
+  <SolidColorBrush x:Key="Line" Color="#E3E3E9"/>
+  <SolidColorBrush x:Key="LineSubtle" Color="#EEEEF2"/>
+  <SolidColorBrush x:Key="Accent" Color="#5B5BD6"/>
+  <SolidColorBrush x:Key="AccentText" Color="#4545B5"/>
+  <SolidColorBrush x:Key="Win" Color="#23784A"/>
+  <SolidColorBrush x:Key="WinSoft" Color="#E5F3EA"/>
+  <SolidColorBrush x:Key="Loss" Color="#C0392B"/>
+  <SolidColorBrush x:Key="LossSoft" Color="#FBE9E7"/>
+  <SolidColorBrush x:Key="Neutral" Color="#74747F"/>
+  <SolidColorBrush x:Key="NeutralSoft" Color="#EFEFF3"/>
+  <!-- Official badge hues, darkened for readable text on the light surfaces. -->
+  <SolidColorBrush x:Key="RankRookie" Color="#50505B"/>
+  <SolidColorBrush x:Key="RankIron" Color="#6D6C68"/>
+  <SolidColorBrush x:Key="RankBronze" Color="#8C633D"/>
+  <SolidColorBrush x:Key="RankSilver" Color="#606C73"/>
+  <SolidColorBrush x:Key="RankGold" Color="#896207"/>
+  <SolidColorBrush x:Key="RankPlatinum" Color="#00738F"/>
+  <SolidColorBrush x:Key="RankDiamond" Color="#B6288C"/>
+  <SolidColorBrush x:Key="RankMaster" Color="#007A5A"/>
+  <SolidColorBrush x:Key="RankHighMaster" Color="#24738D"/>
+  <SolidColorBrush x:Key="RankGrandMaster" Color="#886200"/>
+  <SolidColorBrush x:Key="RankUltimateMaster" Color="#BF306B"/>
+  <SolidColorBrush x:Key="RankLegend" Color="#B14912"/>
+  <SolidColorBrush x:Key="InfoSoft" Color="#EEF0FD"/>
+  <SolidColorBrush x:Key="DangerSoft" Color="#FCEDEB"/>
+  <SolidColorBrush x:Key="Tag0Text" Color="#896019"/><SolidColorBrush x:Key="Tag0Fill" Color="#F5E6C5"/>
+  <SolidColorBrush x:Key="Tag1Text" Color="#216484"/><SolidColorBrush x:Key="Tag1Fill" Color="#E4F1F7"/>
+  <SolidColorBrush x:Key="Tag2Text" Color="#27734E"/><SolidColorBrush x:Key="Tag2Fill" Color="#E5F3EA"/>
+  <SolidColorBrush x:Key="Tag3Text" Color="#97611B"/><SolidColorBrush x:Key="Tag3Fill" Color="#FCF1DC"/>
+  <SolidColorBrush x:Key="Tag4Text" Color="#A0435E"/><SolidColorBrush x:Key="Tag4Fill" Color="#F9E7ED"/>
+  <SolidColorBrush x:Key="Tag5Text" Color="#346AA6"/><SolidColorBrush x:Key="Tag5Fill" Color="#E7EFFB"/>
+  <SolidColorBrush x:Key="Tag6Text" Color="#536B2B"/><SolidColorBrush x:Key="Tag6Fill" Color="#E5EDD0"/>
+  <SolidColorBrush x:Key="Tag7Text" Color="#227775"/><SolidColorBrush x:Key="Tag7Fill" Color="#E0F3F0"/>
+  <SolidColorBrush x:Key="Tag8Text" Color="#A2522B"/><SolidColorBrush x:Key="Tag8Fill" Color="#FCEBDF"/>
+  <SolidColorBrush x:Key="Tag9Text" Color="#68752C"/><SolidColorBrush x:Key="Tag9Fill" Color="#F0F3DF"/>
+  <SolidColorBrush x:Key="Tag10Text" Color="#914D30"/><SolidColorBrush x:Key="Tag10Fill" Color="#F3DFD2"/>
+  <SolidColorBrush x:Key="Tag11Text" Color="#536579"/><SolidColorBrush x:Key="Tag11Fill" Color="#E9EEF3"/>
+  <sys:Double x:Key="TagHueStep">137.508</sys:Double>
+  <sys:Double x:Key="TagSaturation">0.48</sys:Double>
+  <sys:Double x:Key="TagTextLightness">0.32</sys:Double>
+  <sys:Double x:Key="TagFillLightness">0.89</sys:Double>
+  <sys:Double x:Key="TagHueStart">15</sys:Double>
+  <sys:Double x:Key="TagHueSpan">190</sys:Double>
+</ResourceDictionary>

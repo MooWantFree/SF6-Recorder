@@ -12,15 +12,15 @@ public interface IBattleSource
     int Requests { get; }
     Task<BattlePage> FetchPageAsync(string owner, string category, int page, CancellationToken token);
 }
-public sealed class BucklerClient : IBattleSource, IDisposable
+public sealed class BucklerClient : IBattleSource, IProfileSource, IRankSource, IDisposable
 {
     public const string Origin = "https://www.streetfighter.com";
     private readonly HttpClient _http;
     private readonly CookieContainer _cookies;
     private readonly CookieVault _vault;
     private SavedSession _session;
-    private DateTimeOffset _lastRequest = DateTimeOffset.MinValue;
     public int Requests { get; private set; }
+    public event Action<RequestActivity>? Activity;
     public string AccountName => _session.AccountName;
     public string AccountId => _session.AccountId;
     public BucklerClient(ConnectionSettings settings, SavedSession session, CookieVault vault)
@@ -71,30 +71,15 @@ public sealed class BucklerClient : IBattleSource, IDisposable
     }
     public async Task<string> FetchSeasonRanksAsync(string owner, int season, bool peakMr, CancellationToken token)
     {
-        if (!Regex.IsMatch(owner,@"^\d{10}$") || season < 0) throw new ArgumentException("无效的玩家或赛季。");
+        if (!Regex.IsMatch(owner,@"^\d{10}$")) throw new ArgumentException("无效的玩家。");
+        var query = new RankQuery(season,peakMr); query.Validate();
         var endpoint = peakMr ? "highest/master_rating_info" : "leagueinfo";
-        var payload = JsonSerializer.Serialize(new { targetShortId=long.Parse(owner),targetSeasonId=season,locale="zh-hans",peak=false });
+        var payload = JsonSerializer.Serialize(new { targetShortId=long.Parse(owner),targetSeasonId=season,locale="zh-hans",peak=query.HighestLp });
         var (code,body) = await GetAsync($"/6/buckler/api/profile/play/act/{endpoint}",token,payload); EnsureSuccess(code); return body;
     }
     public async Task<string> FetchCardAsync(string owner, CancellationToken token)
     {
         var (code, body) = await GetAsync($"/6/buckler/api/zh-hans/card/{owner}", token); EnsureSuccess(code); return body;
-    }
-    public async Task DownloadImageAsync(string path, string destination, bool refresh, CancellationToken token)
-    {
-        if (!path.StartsWith("/6/buckler/assets/images/material/", StringComparison.Ordinal) || path.Contains("..")) throw new ArgumentException("无效的官网图片地址。");
-        var delay = TimeSpan.FromSeconds(2) - (DateTimeOffset.UtcNow - _lastRequest);
-        if (delay > TimeSpan.Zero) await Task.Delay(delay, token);
-        _lastRequest = DateTimeOffset.UtcNow; Requests++;
-        using var request = new HttpRequestMessage(HttpMethod.Get, Origin + path);
-        if (refresh) request.Headers.CacheControl = new() { NoCache = true };
-        using var response = await _http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token); Persist();
-        EnsureSuccess((int)response.StatusCode);
-        if (response.Content.Headers.ContentType?.MediaType?.StartsWith("image/", StringComparison.Ordinal) != true) throw new InvalidDataException("官网头像格式无效。");
-        if (response.Content.Headers.ContentLength > 5_000_000) throw new InvalidDataException("头像文件过大。");
-        var bytes = await response.Content.ReadAsByteArrayAsync(token);
-        if (bytes.Length > 5_000_000) throw new InvalidDataException("头像文件过大。");
-        await File.WriteAllBytesAsync(destination + ".tmp", bytes, token); File.Move(destination + ".tmp", destination, true);
     }
     private async Task RefreshBuildAsync(string owner, CancellationToken token)
     {
@@ -108,34 +93,39 @@ public sealed class BucklerClient : IBattleSource, IDisposable
     {
         for (var attempt = 0; ; attempt++)
         {
-            var delay = TimeSpan.FromSeconds(2) - (DateTimeOffset.UtcNow - _lastRequest);
-            if (delay > TimeSpan.Zero) await Task.Delay(delay, token);
-            _lastRequest = DateTimeOffset.UtcNow; Requests++;
             try
             {
                 using var request = new HttpRequestMessage(payload==null ? HttpMethod.Get : HttpMethod.Post,Origin+path);
                 request.Headers.CacheControl = new() { NoCache=true,NoStore=true };
                 if(payload!=null) request.Content = new StringContent(payload,System.Text.Encoding.UTF8,"application/json");
-                using var response = await _http.SendAsync(request, token);
+                Activity?.Invoke(new(RequestPhase.Waiting));
+                var sent=0L;
+                using var response = await RequestGate.Shared.RunAsync(() =>
+                {
+                    Requests++;
+                    sent=System.Diagnostics.Stopwatch.GetTimestamp();Activity?.Invoke(new(RequestPhase.Sending));
+                    return _http.SendAsync(request, token);
+                }, token);
                 Persist();
                 var code = (int)response.StatusCode;
+                Activity?.Invoke(new(RequestPhase.Completed,System.Diagnostics.Stopwatch.GetElapsedTime(sent).TotalSeconds,code==200));
                 if (code == 429)
                 {
                     var after = response.Headers.RetryAfter?.Delta;
                     throw new HttpRequestException(after != null ? $"官网限流，请至少 {Math.Ceiling(after.Value.TotalSeconds)} 秒后再同步。" : "官网限流，本次同步已暂停，请稍后再试。");
                 }
-                if (code >= 500 && attempt < 1) { await Task.Delay(TimeSpan.FromSeconds(5), token); continue; }
+                if (code >= 500 && attempt < 1) {Activity?.Invoke(new(RequestPhase.Retrying)); await Task.Delay(TimeSpan.FromSeconds(5), token); continue; }
                 var body = await response.Content.ReadAsStringAsync(token);
                 return (code, body);
             }
             catch (TaskCanceledException) when (!token.IsCancellationRequested && attempt < 1)
-            { await Task.Delay(TimeSpan.FromSeconds(5), token); }
+            {Activity?.Invoke(new(RequestPhase.Retrying)); await Task.Delay(TimeSpan.FromSeconds(5), token); }
         }
     }
     private static void EnsureSuccess(int code)
     {
         if (code is 401 or 403 || code is >= 300 and < 400) throw new LoginRequiredException($"官网要求重新验证（HTTP {code}），请重新登录。");
-        if (code != 200) throw new HttpRequestException($"官网返回 HTTP {code}，已停止同步。");
+        if (code != 200) throw new HttpRequestException($"官网返回 HTTP {code}，已停止同步。",null,(HttpStatusCode)code);
     }
     private static JsonDocument ParseJson(string text)
     {

@@ -10,13 +10,29 @@
     <Compile Include="../../src/Sf6Prototype/SessionEvidence.cs" Link="SessionEvidence.cs"/>
     <Compile Include="../../src/Sf6Prototype/Models.cs" Link="Models.cs"/>
     <Compile Include="../../src/Sf6Prototype/Storage.cs" Link="Storage.cs"/>
+    <Compile Include="../../src/Sf6Prototype/MatchTags.cs" Link="MatchTags.cs"/>
+    <Compile Include="../../src/Sf6Prototype/Favorites.cs" Link="Favorites.cs"/>
     <Compile Include="../../src/Sf6Prototype/ConnectionSettings.cs" Link="ConnectionSettings.cs"/>
+    <Compile Include="../../src/Sf6Prototype/DatabaseTransfer.cs" Link="DatabaseTransfer.cs"/>
+    <Compile Include="../../src/Sf6Prototype/PlayerSearch.cs" Link="PlayerSearch.cs"/>
+    <Compile Include="../../src/Sf6Prototype/AutoRefreshSchedule.cs" Link="AutoRefreshSchedule.cs"/>
+    <Compile Include="../../src/Sf6Prototype/AccountRefresh.cs" Link="AccountRefresh.cs"/>
     <Compile Include="../../src/Sf6Prototype/CookieVault.cs" Link="CookieVault.cs"/>
     <Compile Include="../../src/Sf6Prototype/BucklerClient.cs" Link="BucklerClient.cs"/>
     <Compile Include="../../src/Sf6Prototype/SyncService.cs" Link="SyncService.cs"/>
     <Compile Include="../../src/Sf6Prototype/ProfileCache.cs" Link="ProfileCache.cs"/>
     <Compile Include="../../src/Sf6Prototype/DateRanges.cs" Link="DateRanges.cs"/>
     <Compile Include="../../src/Sf6Prototype/RankProfiles.cs" Link="RankProfiles.cs"/>
+    <Compile Include="../../src/Sf6Prototype/RankQuerySession.cs" Link="RankQuerySession.cs"/>
+    <Compile Include="../../src/Sf6Prototype/ViewportMath.cs" Link="ViewportMath.cs"/>
+    <Compile Include="../../src/Sf6Prototype/OpponentHistory.cs" Link="OpponentHistory.cs"/>
+    <Compile Include="../../src/Sf6Prototype/PlayerNavigation.cs" Link="PlayerNavigation.cs"/>
+    <Compile Include="../../src/Sf6Prototype/DataPaths.cs" Link="DataPaths.cs"/>
+    <Compile Include="../../src/Sf6Prototype/RequestGate.cs" Link="RequestGate.cs"/>
+    <Compile Include="../../src/Sf6Prototype/RefreshProgress.cs" Link="RefreshProgress.cs"/>
+    <Compile Include="../../src/Sf6Prototype/ImageDownloads.cs" Link="ImageDownloads.cs"/>
+    <Compile Include="../../src/Sf6Prototype/BattlePager.cs" Link="BattlePager.cs"/>
+    <Compile Include="../../src/Sf6Prototype/IncrementalList.cs" Link="IncrementalList.cs"/>
     <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.15"/>
     <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.0"/>
   </ItemGroup>

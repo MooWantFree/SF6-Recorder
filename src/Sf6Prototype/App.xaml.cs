@@ -10,6 +10,8 @@ public partial class App : Application
     public static string DataDirectory { get; private set; } = "";
     public static bool AutoSync { get; private set; }
     public static bool Capture { get; private set; }
+    public static bool IsShuttingDown { get; private set; }
+    public static Size? StartSize { get; private set; }
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
@@ -24,9 +26,10 @@ public partial class App : Application
             try { using var p = Process.GetProcessById(id); if (!p.WaitForExit(20_000)) throw new IOException("上一次浏览器进程尚未退出，请稍后重试。"); }
             catch (ArgumentException) { }
         }
-        DataDirectory = Path.GetFullPath(Arg("--data-dir") ?? Path.Combine(AppContext.BaseDirectory, "Data"));
+        DataDirectory = DataPaths.Resolve(AppContext.BaseDirectory, Arg("--data-dir"));
         AutoSync = e.Args.Contains("--sync-on-start");
         Capture = e.Args.Contains("--capture");
+        if (Arg("--size")?.Split('x') is [var w, var h] && int.TryParse(w, out var width) && int.TryParse(h, out var height)) StartSize = new(width, height);
         Directory.CreateDirectory(DataDirectory);
         try { _instanceLock = new FileStream(Path.Combine(DataDirectory, "instance.lock"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None); }
         catch (IOException)
@@ -40,8 +43,10 @@ public partial class App : Application
             File.WriteAllText(Path.Combine(DataDirectory, "fatal-error.txt"), args.Exception.GetType().Name + " / " + args.Exception.HResult);
             MessageBox.Show("应用遇到错误，请查看数据目录中的诊断记录。", "街霸 6 战绩");
             args.Handled = true;
+            IsShuttingDown=true;
             Shutdown(1);
         };
+        SessionEnding+=(_,_)=>IsShuttingDown=true;
         MainWindow = new MainWindow();
         MainWindow.Show();
     }

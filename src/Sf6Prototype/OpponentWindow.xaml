@@ -1,24 +1,37 @@
 <Window x:Class="Sf6Prototype.OpponentWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="对手资料" Width="700" Height="560" MinWidth="620" MinHeight="360" WindowStartupLocation="CenterOwner" Background="#FCFCFD" Foreground="#292930" FontFamily="Microsoft YaHei UI" FontSize="13" TextOptions.TextFormattingMode="Display">
+        Title="角色段位" Icon="{StaticResource AppIcon}" Width="740" Height="580" MinWidth="660" MinHeight="380" WindowStartupLocation="CenterOwner"
+        Background="{StaticResource Canvas}" Foreground="{StaticResource Ink}" FontFamily="Microsoft YaHei UI" FontSize="13" TextOptions.TextFormattingMode="Display">
   <Grid Margin="24,20"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-    <DockPanel Margin="0,0,0,18">
-      <Button x:Name="RefreshButton" Content="刷新" DockPanel.Dock="Right" Click="Refresh_Click" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0"/>
-      <StackPanel><TextBlock x:Name="PlayerName" FontSize="20" FontWeight="SemiBold"/><Button x:Name="UidButton" Click="CopyUid_Click" HorizontalAlignment="Left" BorderThickness="0" Background="Transparent" Foreground="#81818C" Padding="0,5" Margin="0" ToolTip="复制对手 UID" AutomationProperties.Name="复制对手 UID"/></StackPanel>
+    <DockPanel Margin="0,0,0,16">
+      <Button x:Name="RefreshButton" DockPanel.Dock="Right" Click="Refresh_Click" VerticalAlignment="Center" AutomationProperties.Name="刷新">
+        <StackPanel Orientation="Horizontal"><TextBlock Text="&#xE72C;" FontFamily="Segoe Fluent Icons" FontSize="12" VerticalAlignment="Center" Margin="0,0,7,0"/><TextBlock x:Name="RefreshLabel" Text="刷新"/></StackPanel>
+      </Button>
+      <StackPanel>
+        <TextBlock x:Name="PlayerName" FontSize="20" FontWeight="SemiBold"/>
+        <Button x:Name="UidButton" Click="CopyUid_Click" HorizontalAlignment="Left" Style="{StaticResource GhostButton}" Padding="6,3" MinHeight="24" Margin="-6,4,0,0" ToolTip="复制" AutomationProperties.Name="复制玩家 UID">
+          <StackPanel Orientation="Horizontal"><TextBlock x:Name="UidText" Style="{StaticResource Number}" Foreground="{StaticResource Ink2}"/><TextBlock Text="&#xE8C8;" FontFamily="Segoe Fluent Icons" FontSize="12" Foreground="{StaticResource Ink3}" Margin="8,0,0,0" VerticalAlignment="Center"/></StackPanel>
+        </Button>
+      </StackPanel>
     </DockPanel>
-    <Grid Grid.Row="1" Margin="0,0,0,14"><Grid.ColumnDefinitions><ColumnDefinition Width="145"/><ColumnDefinition Width="160"/><ColumnDefinition/></Grid.ColumnDefinitions>
-      <ComboBox x:Name="SeasonPicker" SelectionChanged="Selection_Changed" Margin="0,0,8,0" AutomationProperties.Name="对手赛季"/>
-      <ComboBox x:Name="ModePicker" Grid.Column="1" SelectedIndex="0" SelectionChanged="Mode_Changed" AutomationProperties.Name="段位查询类型"><ComboBoxItem Content="赛季记录"/><ComboBoxItem Content="最高 MR"/></ComboBox>
-      <CheckBox x:Name="ShowUnranked" Grid.Column="2" Content="包含未定级" HorizontalAlignment="Right" VerticalAlignment="Center" Checked="Unranked_Changed" Unchecked="Unranked_Changed"/>
+    <Grid Grid.Row="1" Margin="0,0,0,12"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/><ColumnDefinition/></Grid.ColumnDefinitions>
+      <ComboBox x:Name="SeasonPicker" Width="140" SelectionChanged="Selection_Changed" DropDownOpened="Season_DropDownOpened" Margin="0,0,8,0" AutomationProperties.Name="赛季"/>
+      <ComboBox x:Name="ModePicker" Grid.Column="1" Width="130" SelectedIndex="0" SelectionChanged="Mode_Changed" AutomationProperties.Name="查询类型"><ComboBoxItem Content="段位积分"/><ComboBoxItem Content="最高 MR"/></ComboBox>
+      <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center"><TextBlock Text="包含未定级" Margin="0,0,8,0" VerticalAlignment="Center"/><CheckBox x:Name="ShowUnranked" Style="{StaticResource Switch}" AutomationProperties.Name="包含未定级" Checked="Unranked_Changed" Unchecked="Unranked_Changed"/></StackPanel>
     </Grid>
-    <Border Grid.Row="2" Background="White" BorderBrush="#E4E4EB" BorderThickness="1" CornerRadius="5"><Grid>
-      <DataGrid x:Name="RankGrid" RowHeight="46" SelectionMode="Single" AutomationProperties.Name="对手角色段位">
+    <Border Grid.Row="2" Style="{StaticResource Card}" Padding="0,2"><Grid>
+      <DataGrid x:Name="RankGrid" RowHeight="46" SelectionMode="Single" AutomationProperties.Name="玩家角色段位">
         <DataGrid.Columns>
-          <DataGridTemplateColumn Header="角色" Width="*"><DataGridTemplateColumn.CellTemplate><DataTemplate><StackPanel Orientation="Horizontal"><Image Source="{Binding Image}" Width="32" Height="32" Stretch="Uniform"/><TextBlock Text="{Binding Rank.Name}" VerticalAlignment="Center" Margin="10,0,0,0"/></StackPanel></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
-          <DataGridTextColumn Header="段位" Binding="{Binding Rank.RankName}" Width="135"/><DataGridTextColumn Header="LP" Binding="{Binding LpText}" Width="95"/><DataGridTextColumn Header="MR" Binding="{Binding Rank.MrText}" Width="90"/>
+          <DataGridTemplateColumn Header="角色" Width="*"><DataGridTemplateColumn.CellTemplate><DataTemplate><StackPanel Orientation="Horizontal"><ContentControl Content="{Binding Image}" Style="{StaticResource Portrait}" Width="32" Height="32"/><TextBlock Text="{Binding Rank.Name}" VerticalAlignment="Center" Margin="10,0,0,0"/></StackPanel></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+          <DataGridTemplateColumn Header="段位 / LP" Width="260"><DataGridTemplateColumn.CellTemplate><DataTemplate><TextBlock Style="{StaticResource Number}" FontSize="12" VerticalAlignment="Center" Foreground="{StaticResource Ink}"><Run Text="{Binding Rank.RankName,Mode=OneWay}" Foreground="{Binding Rank,Converter={StaticResource RankColor}}"/><Run Text="{Binding LpSuffix,Mode=OneWay}"/></TextBlock></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+          <DataGridTextColumn x:Name="MrColumn" Header="MR" Binding="{Binding Rank.MrText}" Width="90"/>
         </DataGrid.Columns>
       </DataGrid>
-      <TextBlock x:Name="EmptyText" Text="该赛季暂无段位记录" Foreground="#858590" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
+      <TextBlock x:Name="EmptyText" Foreground="{StaticResource Ink3}" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
+      <StackPanel x:Name="LoadingState" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed" AutomationProperties.Name="正在加载角色段位">
+        <ContentControl Style="{StaticResource LoadingSpinner}" Margin="0,0,8,0"/>
+        <TextBlock Text="加载中" Foreground="{StaticResource Ink3}" VerticalAlignment="Center"/>
+      </StackPanel>
     </Grid></Border>
-    <TextBlock x:Name="Status" Grid.Row="3" Foreground="#858590" FontSize="11" Margin="0,12,0,0" TextWrapping="Wrap"/>
+    <TextBlock x:Name="Status" Grid.Row="3" Style="{StaticResource Caption}" Margin="0,10,0,0" TextWrapping="Wrap"/>
   </Grid>
 </Window>

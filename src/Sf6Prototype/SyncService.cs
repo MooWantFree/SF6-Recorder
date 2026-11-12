@@ -6,7 +6,7 @@ public record SyncProgress(string Category, int Page, int TotalPages, int Insert
 public record SyncResult(int Inserted, int Pages, int Requests);
 public sealed class SyncService(BattleStore store, IBattleSource source)
 {
-    public async Task<SyncResult> RunAsync(string owner, IProgress<SyncProgress>? progress, CancellationToken token, bool full = false)
+    public async Task<SyncResult> RunAsync(string owner, IProgress<SyncProgress>? progress, CancellationToken token, bool full = false, Func<int, Task>? pageSaved = null)
     {
         var run = store.BeginRun(owner); var inserted = 0; var pages = 0;
         try
@@ -16,6 +16,7 @@ public sealed class SyncService(BattleStore store, IBattleSource source)
                 var frontier = full ? null : store.Frontier(owner, category.Key);
                 string? head = null;
                 var signatures = new HashSet<string>();
+                var newer = new Dictionary<int,string>();
                 for (var page = 1; ; page++)
                 {
                     token.ThrowIfCancellationRequested();
@@ -25,7 +26,10 @@ public sealed class SyncService(BattleStore store, IBattleSource source)
                     var signature = string.Join('|', data.Battles.Select(b => b.ReplayId));
                     if (data.Battles.Count > 0 && !signatures.Add(signature)) throw new InvalidDataException("官网分页内容重复，已停止同步。");
                     // Commit the entire boundary page. Advance the checkpoint only when this category finishes.
-                    inserted += store.SavePage(data.Battles);
+                    var added = store.SavePage(data.Battles); inserted += added;
+                    if (category.Key == "rank") store.SaveRankLinks(owner, data.Battles, newer);
+                    // Await the page notification so the first page can be rendered before fetching more.
+                    if (pageSaved != null && added > 0) await pageSaved(added);
                     var reached = frontier != null && data.Battles.Any(b => b.ReplayId == frontier);
                     progress?.Report(new(category.Name, page, data.TotalPages, inserted, reached ? "已到上次同步边界" : "正在保存战绩"));
                     if (reached || data.Battles.Count == 0 || page >= data.TotalPages) break;

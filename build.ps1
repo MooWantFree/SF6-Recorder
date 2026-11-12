@@ -12,6 +12,8 @@ $dotnetPath = Join-Path $PSScriptRoot '.tools\dotnet\dotnet.exe'
 if (-not (Test-Path -LiteralPath $dotnetPath)) { $dotnetPath = 'dotnet' }
 & $dotnetPath run --project 'tests\Sf6Prototype.Checks' --configuration Release
 if ($LASTEXITCODE -ne 0) { throw 'Checks failed.' }
+& $dotnetPath run --project 'tests\Sf6Prototype.DesktopChecks' --configuration Release
+if ($LASTEXITCODE -ne 0) { throw 'Headless desktop checks failed.' }
 & $dotnetPath publish 'src\Sf6Prototype\Sf6Prototype.csproj' -c Release -r win-x64 --self-contained false -o 'artifacts\app'
 if ($LASTEXITCODE -ne 0) { throw 'Build failed.' }
 if ($Launch) { Start-Process -FilePath (Join-Path $PSScriptRoot 'artifacts\app\Sf6Prototype.exe') }

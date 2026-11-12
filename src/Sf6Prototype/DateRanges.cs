@@ -2,6 +2,16 @@ namespace Sf6Prototype;
 
 public static class DateRanges
 {
+    public static long? Epoch(DateTime? date) => date==null ? null : new DateTimeOffset(DateTime.SpecifyKind(date.Value.Date,DateTimeKind.Unspecified),TimeSpan.FromHours(8)).ToUnixTimeSeconds();
+    public static IReadOnlyList<int> Extrema(IReadOnlyList<double> values)
+    {
+        if(values.Count==0) return [];
+        var low=0;var high=0;
+        for(var i=1;i<values.Count;i++) {if(values[i]<=values[low]) low=i;if(values[i]>=values[high]) high=i;}
+        return low==high ? [high] : [high,low];
+    }
+    public static bool IsRefreshOverdue(DateTimeOffset? lastUpdated,DateTimeOffset now,int seconds=ConnectionSettings.DefaultRefreshReminderSeconds) =>
+        seconds>0 && lastUpdated!=null && now-lastUpdated.Value>TimeSpan.FromSeconds(seconds);
     public static (DateTime? Start, DateTime? End) Preset(string key, DateTime today)
     {
         today = today.Date;
@@ -19,10 +29,9 @@ public static class DateRanges
     public static IReadOnlyList<ScorePoint> Recent(IEnumerable<ScorePoint> points, int count) => points.OrderBy(p => p.PlayedAt).ThenBy(p => p.ReplayId).TakeLast(count <= 0 ? int.MaxValue : count).ToList();
     public static int? ScoreDifference(IReadOnlyList<ScorePoint> points, bool mr)
     {
-        if (points.Count < 2) return null;
-        if (!mr) return points[^1].Lp - points[0].Lp;
+        if (points.Count == 0) return null;
         // A missing MR delta identifies invalid MR, unknown seasons, or a season boundary.
-        if (points.Any(p=>p.Mr is null or <=0) || points.Skip(1).Any(p=>p.MrDelta==null)) return null;
-        return points[^1].Mr - points[0].Mr;
+        if (mr) return points.Any(p=>p.MrDelta==null) ? null : points.Sum(p=>p.MrDelta);
+        return points.All(p=>p.LpDelta==null) ? null : points.Sum(p=>p.LpDelta ?? 0);
     }
 }
