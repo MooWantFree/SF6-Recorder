@@ -231,6 +231,39 @@
     <Setter Property="Width" Value="32"/><Setter Property="Height" Value="32"/><Setter Property="Padding" Value="0"/><Setter Property="FontFamily" Value="Segoe Fluent Icons"/><Setter Property="FontSize" Value="14"/><Setter Property="Foreground" Value="{StaticResource Ink2}"/>
   </Style>
 
+  <Style x:Key="CaptionButton" TargetType="Button">
+    <Setter Property="Width" Value="46"/><Setter Property="Height" Value="44"/><Setter Property="MinHeight" Value="0"/>
+    <Setter Property="Padding" Value="0"/><Setter Property="Cursor" Value="Arrow"/>
+    <Setter Property="FontFamily" Value="Segoe Fluent Icons"/><Setter Property="FontSize" Value="10"/>
+    <Setter Property="Foreground" Value="{StaticResource Ink2}"/><Setter Property="Background" Value="Transparent"/>
+    <Setter Property="FocusVisualStyle" Value="{StaticResource FocusRing}"/>
+    <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
+      <Border Background="{TemplateBinding Background}" CornerRadius="4"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
+    </ControlTemplate></Setter.Value></Setter>
+    <Style.Triggers>
+      <Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="{StaticResource CaptionHover}"/></Trigger>
+      <Trigger Property="IsPressed" Value="True"><Setter Property="Background" Value="{StaticResource CaptionPressed}"/></Trigger>
+      <DataTrigger Binding="{Binding IsActive,RelativeSource={RelativeSource AncestorType=Window}}" Value="False"><Setter Property="Foreground" Value="{StaticResource Ink3}"/></DataTrigger>
+      <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.45"/></Trigger>
+    </Style.Triggers>
+  </Style>
+  <Style x:Key="MaximizeCaptionButton" TargetType="Button" BasedOn="{StaticResource CaptionButton}">
+    <Setter Property="Content" Value="&#xE922;"/><Setter Property="ToolTip" Value="最大化"/><Setter Property="AutomationProperties.Name" Value="最大化"/>
+    <Style.Triggers>
+      <DataTrigger Binding="{Binding WindowState,RelativeSource={RelativeSource AncestorType=Window}}" Value="Maximized">
+        <Setter Property="Content" Value="&#xE923;"/><Setter Property="ToolTip" Value="还原"/><Setter Property="AutomationProperties.Name" Value="还原"/>
+      </DataTrigger>
+      <DataTrigger Binding="{Binding IsMaximizeHot,RelativeSource={RelativeSource AncestorType=Window}}" Value="True"><Setter Property="Background" Value="{StaticResource CaptionHover}"/></DataTrigger>
+      <DataTrigger Binding="{Binding IsMaximizePressed,RelativeSource={RelativeSource AncestorType=Window}}" Value="True"><Setter Property="Background" Value="{StaticResource CaptionPressed}"/></DataTrigger>
+    </Style.Triggers>
+  </Style>
+  <Style x:Key="CloseCaptionButton" TargetType="Button" BasedOn="{StaticResource CaptionButton}">
+    <Style.Triggers>
+      <Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="{StaticResource CaptionCloseHover}"/><Setter Property="Foreground" Value="{StaticResource OnAccent}"/></Trigger>
+      <Trigger Property="IsPressed" Value="True"><Setter Property="Background" Value="{StaticResource CaptionClosePressed}"/><Setter Property="Foreground" Value="{StaticResource OnAccent}"/></Trigger>
+    </Style.Triggers>
+  </Style>
+
   <Style TargetType="TextBox">
     <Setter Property="Padding" Value="8,5"/><Setter Property="MinHeight" Value="30"/><Setter Property="Background" Value="{StaticResource Surface}"/><Setter Property="Foreground" Value="{StaticResource Ink}"/><Setter Property="BorderBrush" Value="{StaticResource Line}"/><Setter Property="BorderThickness" Value="1"/><Setter Property="VerticalContentAlignment" Value="Center"/>
     <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="TextBox">

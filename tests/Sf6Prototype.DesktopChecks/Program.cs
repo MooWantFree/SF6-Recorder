@@ -134,6 +134,7 @@ internal static class Program
         count+=RefreshReminderChecks.Run();
         count+=PresentationLayoutChecks.Run();
         count+=HistoryAlignmentChecks.Run();
+        count+=TitleBarChecks.Run();
         Console.WriteLine($"Passed {count} headless desktop checks.");
     }
 }

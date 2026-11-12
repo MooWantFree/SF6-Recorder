@@ -57,6 +57,7 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        InitializeWindowChrome();
         InitializeRefreshProgress();
         SourceInitialized+=(_,_)=> { if(!App.Capture) _tray=new TrayIcon(this,ShowMainPanel,()=>_=ExitApplicationAsync()); };
         StateChanged+=(_,_)=> { if(WindowState!=WindowState.Minimized) _restoreState=WindowState; };
