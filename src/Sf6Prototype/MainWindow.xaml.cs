@@ -15,6 +15,8 @@ public partial class MainWindow : Window
 {
     public static readonly DependencyProperty IsRefreshOverdueProperty=DependencyProperty.Register(nameof(IsRefreshOverdue),typeof(bool),typeof(MainWindow),new PropertyMetadata(false));
     public bool IsRefreshOverdue { get=>(bool)GetValue(IsRefreshOverdueProperty); private set=>SetValue(IsRefreshOverdueProperty,value); }
+    public static readonly DependencyProperty IsRefreshReminderAnimatedProperty=DependencyProperty.Register(nameof(IsRefreshReminderAnimated),typeof(bool),typeof(MainWindow),new PropertyMetadata(false));
+    public bool IsRefreshReminderAnimated { get=>(bool)GetValue(IsRefreshReminderAnimatedProperty); private set=>SetValue(IsRefreshReminderAnimatedProperty,value); }
     public static readonly DependencyProperty IsPlayerSearchActiveProperty=DependencyProperty.Register(nameof(IsPlayerSearchActive),typeof(bool),typeof(MainWindow),new PropertyMetadata(false));
     public bool IsPlayerSearchActive { get=>(bool)GetValue(IsPlayerSearchActiveProperty); private set=>SetValue(IsPlayerSearchActiveProperty,value); }
     private BattleStore _store = null!;
@@ -41,6 +43,7 @@ public partial class MainWindow : Window
     private readonly DispatcherTimer _autoRefreshTimer = new();
     private readonly AutoRefreshSchedule _autoRefresh = new();
     private DateTimeOffset? _lastViewedUpdate;
+    private bool _viewingActiveAccount;
     private readonly Dictionary<string, OpponentWindow> _opponents = [];
     private readonly PlayerNavigation _navigation = new();
     private PlayerSearchHistory _playerSearch=null!;
@@ -139,7 +142,11 @@ public partial class MainWindow : Window
         UpdateRefreshReminder();
         if(_settings.RefreshReminderSeconds>0) _refreshReminderTimer.Start();
     }
-    private void UpdateRefreshReminder() => IsRefreshOverdue=_ready && !_busy && !_progressVisible && SystemParameters.ClientAreaAnimation && DateRanges.IsRefreshOverdue(_lastViewedUpdate,DateTimeOffset.UtcNow,_settings.RefreshReminderSeconds);
+    private void UpdateRefreshReminder()
+    {
+        IsRefreshOverdue=_ready && _viewingActiveAccount && !_busy && !_progressVisible && DateRanges.IsRefreshOverdue(_lastViewedUpdate,DateTimeOffset.UtcNow,_settings.RefreshReminderSeconds);
+        IsRefreshReminderAnimated=IsRefreshOverdue && SystemParameters.ClientAreaAnimation;
+    }
 
     private void ConfigureAutoRefresh()
     {
@@ -683,12 +690,14 @@ public partial class MainWindow : Window
     {
         _navigation.UpdateName(_profiles.Profile(_navigation.Current.Id)?.Name ?? _archive.All.FirstOrDefault()?.PlayerName);
         var viewed=PageTabs.SelectedIndex==0 && History.FavoritesOnly ? History.FavoritePlayer ?? _navigation.Current : _navigation.Current;
-        ViewedPlayerName.Text = viewed.DisplayNameFor(_vault.Load()?.AccountId);
+        var signedInId=_vault.Load()?.AccountId;
+        ViewedPlayerName.Text = viewed.DisplayNameFor(signedInId);
         ViewedPlayerName.ToolTip = $"{viewed.DisplayName}\nUID {viewed.Id}";
         BackButton.IsEnabled=_navigation.CanGoBack;
         ForwardButton.IsEnabled=_navigation.CanGoForward;
         HomeButton.IsEnabled=!_navigation.IsHome || History.FavoritesOnly;
         var lastUpdated = _store.LastSuccessfulLoad(viewed.Id);
+        _viewingActiveAccount=viewed.Id==signedInId;
         _lastViewedUpdate=lastUpdated; UpdateRefreshReminder();
         UpdatedLabel.Text = lastUpdated == null ? "" : "更新于 " + lastUpdated.Value.ToOffset(TimeSpan.FromHours(8)).ToString("MM-dd HH:mm");
     }

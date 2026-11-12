@@ -16,7 +16,7 @@
               <Button.ContextMenu><ContextMenu Style="{StaticResource NavigationMenu}"/></Button.ContextMenu>
             </Button>
             <Button x:Name="SyncButton" Style="{StaticResource NavigationRefreshButton}" Click="Sync_Click" ToolTip="刷新 · Ctrl+R" AutomationProperties.Name="刷新">
-              <Grid><TextBlock x:Name="SyncIcon" Text="&#xE72C;" FontFamily="Segoe Fluent Icons" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Center"/><local:RefreshProgressGlyph x:Name="SyncRing" Visibility="Collapsed"/></Grid>
+              <Grid><TextBlock x:Name="SyncIcon" Style="{StaticResource RefreshReminderIcon}" Text="&#xE72C;" FontFamily="Segoe Fluent Icons" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Center"/><local:RefreshProgressGlyph x:Name="SyncRing" Visibility="Collapsed"/></Grid>
             </Button>
             <Button x:Name="HomeButton" Style="{StaticResource IconButton}" Content="&#xE80F;" Click="Home_Click" IsEnabled="False" ToolTip="主页 · 我的战绩" AutomationProperties.Name="主页"/>
             <Button x:Name="CancelButton" Style="{StaticResource IconButton}" Content="&#xE711;" Click="Cancel_Click" Visibility="Collapsed" ToolTip="取消刷新" AutomationProperties.Name="取消刷新"/>

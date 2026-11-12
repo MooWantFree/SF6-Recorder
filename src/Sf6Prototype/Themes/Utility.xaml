@@ -156,25 +156,33 @@
     </ControlTemplate></Setter.Value></Setter>
   </Style>
   <Style x:Key="AccentButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}"><Setter Property="Background" Value="{StaticResource Accent}"/><Setter Property="BorderBrush" Value="{StaticResource Accent}"/><Setter Property="Foreground" Value="{StaticResource OnAccent}"/></Style>
-  <Style x:Key="RefreshReminderButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
-    <Setter Property="RenderTransform"><Setter.Value><TranslateTransform/></Setter.Value></Setter>
+  <Style x:Key="NavigationRefreshButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+    <Setter Property="Width" Value="32"/><Setter Property="Height" Value="32"/><Setter Property="Padding" Value="0"/>
+    <Setter Property="Background" Value="Transparent"/><Setter Property="BorderThickness" Value="0"/><Setter Property="Foreground" Value="{StaticResource Ink2}"/>
     <Style.Triggers><DataTrigger Binding="{Binding IsRefreshOverdue,RelativeSource={RelativeSource AncestorType={x:Type Window}}}" Value="True">
+      <Setter Property="Background" Value="{StaticResource SurfaceSelected}"/><Setter Property="Foreground" Value="{StaticResource AccentText}"/>
+    </DataTrigger></Style.Triggers>
+  </Style>
+  <Style x:Key="RefreshReminderIcon" TargetType="TextBlock">
+    <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+    <Setter Property="RenderTransform"><Setter.Value><RotateTransform/></Setter.Value></Setter>
+    <!-- Keep storyboard actions on the applied style, not an inherited base style. -->
+    <Style.Triggers><DataTrigger Binding="{Binding IsRefreshReminderAnimated,RelativeSource={RelativeSource AncestorType={x:Type Window}}}" Value="True">
       <DataTrigger.EnterActions><BeginStoryboard x:Name="RefreshReminderMotion"><Storyboard>
-        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)" Duration="0:0:2" RepeatBehavior="Forever">
-          <LinearDoubleKeyFrame KeyTime="0:0:0" Value="0"/><LinearDoubleKeyFrame KeyTime="0:0:0.08" Value="-2.5"/>
-          <LinearDoubleKeyFrame KeyTime="0:0:0.16" Value="2.5"/><LinearDoubleKeyFrame KeyTime="0:0:0.24" Value="-2"/>
-          <LinearDoubleKeyFrame KeyTime="0:0:0.32" Value="2"/><LinearDoubleKeyFrame KeyTime="0:0:0.4" Value="0"/>
-          <LinearDoubleKeyFrame KeyTime="0:0:2" Value="0"/>
+        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)" Duration="0:0:3" RepeatBehavior="Forever">
+          <LinearDoubleKeyFrame KeyTime="0:0:0" Value="0"/>
+          <SplineDoubleKeyFrame KeyTime="0:0:0.1" Value="-25" KeySpline="0.4,0,0.6,1"/>
+          <SplineDoubleKeyFrame KeyTime="0:0:0.2" Value="25" KeySpline="0.4,0,0.6,1"/>
+          <SplineDoubleKeyFrame KeyTime="0:0:0.3" Value="-25" KeySpline="0.4,0,0.6,1"/>
+          <SplineDoubleKeyFrame KeyTime="0:0:0.4" Value="25" KeySpline="0.4,0,0.6,1"/>
+          <SplineDoubleKeyFrame KeyTime="0:0:0.5" Value="0" KeySpline="0.4,0,0.6,1"/>
+          <LinearDoubleKeyFrame KeyTime="0:0:3" Value="0"/>
         </DoubleAnimationUsingKeyFrames>
       </Storyboard></BeginStoryboard></DataTrigger.EnterActions>
       <DataTrigger.ExitActions><RemoveStoryboard BeginStoryboardName="RefreshReminderMotion"/></DataTrigger.ExitActions>
     </DataTrigger></Style.Triggers>
   </Style>
   <Style x:Key="GhostButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}"><Setter Property="Background" Value="Transparent"/><Setter Property="BorderThickness" Value="0"/></Style>
-  <Style x:Key="NavigationRefreshButton" TargetType="Button" BasedOn="{StaticResource RefreshReminderButton}">
-    <Setter Property="Width" Value="32"/><Setter Property="Height" Value="32"/><Setter Property="Padding" Value="0"/>
-    <Setter Property="Background" Value="Transparent"/><Setter Property="BorderThickness" Value="0"/><Setter Property="Foreground" Value="{StaticResource Ink2}"/>
-  </Style>
   <Style x:Key="HistoryMatchButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
     <Setter Property="Height" Value="32"/>
     <Setter Property="HorizontalContentAlignment" Value="Stretch"/><Setter Property="Padding" Value="6,5"/><Setter Property="Margin" Value="0,2"/>

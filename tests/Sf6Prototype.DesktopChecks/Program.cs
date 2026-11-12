@@ -131,6 +131,7 @@ internal static class Program
         }
         Check(App.DataDirectory=="" && !main.IsVisible && !settings.IsVisible && !choice.IsVisible && new System.Windows.Interop.WindowInteropHelper(main).Handle==IntPtr.Zero && new System.Windows.Interop.WindowInteropHelper(settings).Handle==IntPtr.Zero && new System.Windows.Interop.WindowInteropHelper(choice).Handle==IntPtr.Zero,"Desktop checks never start the application, create native windows or use user data");
         count+=CancellationChecks.Run();
+        count+=RefreshReminderChecks.Run();
         Console.WriteLine($"Passed {count} headless desktop checks.");
     }
 }
