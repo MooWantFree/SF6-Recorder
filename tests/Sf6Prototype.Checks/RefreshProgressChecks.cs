@@ -48,6 +48,9 @@ public static class RefreshProgressChecks
         state.Observe(new(RequestPhase.Retrying));Check(!Tip().Contains("预计还需约"),"A retry suspends unreliable completion-time estimates");
         state.Metadata();state.Observe(new(RequestPhase.Completed,1,true));Check(state.Fraction is >.92 and <1 && state.RemainingRequests==1,"Metadata requests update progress while reserving completion for successful saving");
         state.Observe(new(RequestPhase.Completed,1,true));Check(state.Fraction<1 && state.RemainingRequests==0,"Transport completion alone does not display 100 percent");
+        state.AddMetadataRequests(3);Check(state.RemainingRequests==3,"First-run character catalogs extend the metadata request estimate");
+        for(var i=0;i<3;i++) state.Observe(new(RequestPhase.Completed,1,true));
+        Check(state.RemainingRequests==0 && state.Fraction<1,"All localized roster responses complete before final progress reaches 100 percent");
         state.Finish(false,true);Check(state.Fraction<1 && state.Stage=="刷新已取消","Cancellation does not turn partial work into a success");
         state.Begin();state.Finish(true);Check(state.Fraction==1 && Tip().Contains("100%"),"Successful completion exposes 100 percent explicitly in hover text");
         return count;

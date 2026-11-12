@@ -29,6 +29,11 @@ public partial class MatchDetailPanel : UserControl
     private static readonly DependencyProperty AnimatedOffsetProperty=DependencyProperty.RegisterAttached(
         "AnimatedOffset",typeof(double),typeof(MatchDetailPanel),new PropertyMetadata(0d,(d,e)=>((ScrollViewer)d).ScrollToVerticalOffset((double)e.NewValue)));
     public void Bind(Archive archive) => _archive=archive;
+    public void RefreshLanguage(MatchListRow? row)
+    {
+        _historyRows.Clear(); DataContext=null;
+        Show(row==null ? null : _archive?.Row(row.Battle));
+    }
     public MatchDetailPanel() { InitializeComponent(); RecentMatches.ItemsSource=_historyRows; Unloaded+=(_,_)=>CancelHistoryMotion(); }
     public void Show(MatchListRow? row, bool animateHistory = false)
     {
@@ -49,13 +54,13 @@ public partial class MatchDetailPanel : UserControl
         var history=OpponentHistory.From(_archive?.All ?? [],row.Battle.OwnerId,row.Battle.OpponentId);
         HistorySection.Visibility=history.Total>0 ? Visibility.Visible : Visibility.Collapsed;
         var countChanged=_historyRows.Count!=history.Matches.Count;
-        var rows=history.Matches.Select(b=>new HistoryMatchRow(b,b.ReplayId==row.Battle.ReplayId)).ToList();
+        var rows=history.Matches.Select(b=>new HistoryMatchRow(b,b.ReplayId==row.Battle.ReplayId,_archive?.Profiles.Names)).ToList();
         IncrementalList.Apply(_historyRows,rows,r=>(r.Battle.OwnerId,r.Battle.ReplayId),(old,next)=>old.Update(next));
         if(history.Total>0)
         {
             HistorySection.Visibility=Visibility.Visible;
             HistorySummary.Text=history.Summary;
-            HistoryWinRate.Text=history.WinRate=="—" ? "" : $"胜率 {history.WinRate}";
+            HistoryWinRate.Text=history.WinRate=="—" ? "" : Localization.Format(Strings.WinRateValue, history.WinRate);
             if(!sameMatch || !samePair || countChanged) QueueHistoryCenter(animateHistory && samePair);
         }
     }
@@ -115,8 +120,8 @@ public partial class MatchDetailPanel : UserControl
     private void CopyName_Click(object sender, RoutedEventArgs e)
     {
         if(sender is not Button {Tag:string name}) return;
-        try { Clipboard.SetText(name); Notice?.Invoke("已复制昵称"); }
-        catch(System.Runtime.InteropServices.ExternalException) { Notice?.Invoke("剪贴板暂时不可用，请重试。"); }
+        try { Clipboard.SetText(name); Notice?.Invoke(Strings.NicknameCopied); }
+        catch(System.Runtime.InteropServices.ExternalException) { Notice?.Invoke(Strings.ClipboardUnavailable); }
     }
     private async void Copy_Click(object sender, RoutedEventArgs e)
     {
@@ -124,10 +129,10 @@ public partial class MatchDetailPanel : UserControl
         try
         {
             Clipboard.SetText(id);
-            var original = button.Content; button.Content = new TextBlock { Text = "已复制", Foreground = Brush("Ink3") };
+            var original = button.Content; button.Content = new TextBlock { Text = Strings.Copied, Foreground = Brush("Ink3") };
             await Task.Delay(1200); button.Content = original;
         }
-        catch (System.Runtime.InteropServices.ExternalException) { Notice?.Invoke("剪贴板暂时不可用，请重试。"); }
+        catch (System.Runtime.InteropServices.ExternalException) { Notice?.Invoke(Strings.ClipboardUnavailable); }
     }
     private void Ranks_Click(object sender, RoutedEventArgs e)
     {

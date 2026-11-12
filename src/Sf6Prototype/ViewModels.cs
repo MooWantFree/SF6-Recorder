@@ -72,7 +72,8 @@ public sealed class Archive(BattleStore store, ProfileCache profiles)
                 settledRank=new(b.CharacterId,b.Character,next.Lp,next.Mr,next.LeagueRank,next.MasterLeague,next.MasterRatingRanking);
             else if(point.Estimated) settledRank=Current?.Characters.FirstOrDefault(c=>c.CharacterId==b.CharacterId);
         }
-        return new(b,Image(b.CharacterId,b.Character),Image(-1,b.OpponentCharacter),point,SignedInId,settledRank) {Tags=Tags.GetValueOrDefault(b.ReplayId) ?? []};
+        return new(b,Image(b.CharacterId,b.Character),Image(b.OpponentCharacterId ?? -1,b.OpponentCharacter),point,SignedInId,settledRank,
+            profiles.Names.Display(b.CharacterId,b.Character),profiles.Names.Display(b.OpponentCharacterId,b.OpponentCharacter)) {Tags=Tags.GetValueOrDefault(b.ReplayId) ?? []};
     }
 }
 
@@ -85,8 +86,10 @@ public sealed class DayGroup(string date) : INotifyPropertyChanged
 }
 
 public sealed class MatchListRow(Battle battle, ImageSource? ownImage, ImageSource? opponentImage, ScorePoint? point,
-    string? signedInId=null,CharacterRank? settledRank=null) : INotifyPropertyChanged
+    string? signedInId=null,CharacterRank? settledRank=null,string? characterName=null,string? opponentCharacterName=null) : INotifyPropertyChanged
 {
+    public string Character { get; private set; }=characterName ?? battle.Character;
+    public string OpponentCharacter { get; private set; }=opponentCharacterName ?? battle.OpponentCharacter;
     public Battle Battle { get; private set; } = battle;
     public ImageSource? OwnImage { get; private set; } = ownImage;
     public ImageSource? OpponentImage { get; private set; } = opponentImage;
@@ -96,14 +99,15 @@ public sealed class MatchListRow(Battle battle, ImageSource? ownImage, ImageSour
     public IReadOnlyList<MatchTag> Tags { get; internal set; }=[];
     public MatchTag? FirstTag => Tags.FirstOrDefault();
     public string MoreTags => Tags.Count>1 ? $"+{Tags.Count-1}" : "";
-    public string TagsTip => Tags.Count==0 ? "添加标签" : string.Join("、",Tags.Select(t=>t.Name));
+    public string TagsTip => Tags.Count==0 ? Strings.AddTags : string.Join("、",Tags.Select(t=>t.Name));
     public event PropertyChangedEventHandler? PropertyChanged;
     public void Update(MatchListRow row)
     {
-        if(Battle==row.Battle && ReferenceEquals(OwnImage,row.OwnImage) && ReferenceEquals(OpponentImage,row.OpponentImage) && Point==row.Point && SignedInId==row.SignedInId && SettledRank==row.SettledRank && Tags.SequenceEqual(row.Tags)) return;
+        if(Battle==row.Battle && Character==row.Character && OpponentCharacter==row.OpponentCharacter && ReferenceEquals(OwnImage,row.OwnImage) && ReferenceEquals(OpponentImage,row.OpponentImage) && Point==row.Point && SignedInId==row.SignedInId && SettledRank==row.SettledRank && Tags.SequenceEqual(row.Tags)) return;
         Battle=row.Battle; OwnImage=row.OwnImage; OpponentImage=row.OpponentImage; Point=row.Point;
         SignedInId=row.SignedInId; SettledRank=row.SettledRank;
         Tags=row.Tags;
+        Character=row.Character;OpponentCharacter=row.OpponentCharacter;
         PropertyChanged?.Invoke(this,new(null));
     }
     public PlayerIdentity Player => new(Battle.OwnerId, Battle.PlayerName);
@@ -112,7 +116,7 @@ public sealed class MatchListRow(Battle battle, ImageSource? ownImage, ImageSour
     public string OpponentName => OpponentPlayer.DisplayNameFor(SignedInId);
     public DayGroup? Group { get; init; }
     public string Kind => Kinds.Of(Battle.Outcome);
-    public string Result => Battle.Outcome;
+    public string Result => Localization.Outcome(Battle.Outcome);
     public string Clock => Battle.Time.Substring(11, 5);
     public string FullTime => Battle.Time[..16];
     public string DetailTime => BattleDateDisplay.Timestamp(Battle.Time);
@@ -138,9 +142,9 @@ public sealed class MatchListRow(Battle battle, ImageSource? ownImage, ImageSour
     public string MrChange => UsesMr ? ChangeLine : "";
     public string MasterScore => Battle.Mr>0 ? ScoreDisplay.WithUnit(Point?.MrAfter ?? Battle.Mr,"MR") : "";
     public string RankScoreTip => string.Join("\n",new[]{RankScore,MasterScore,
-        Point!=null && Point.LpDelta==null ? "LP 为赛前分数，本场结算未知" : null,
-        Point!=null && Battle.Mr>0 && Point.MrDelta==null ? "MR 为赛前分数，本场结算未知" : null,ChangeTip}.Where(s=>!string.IsNullOrEmpty(s)));
-    public string? RatingTip => Point != null && Delta == null ? "赛前分数，本场结算未知" : null;
+        Point!=null && Point.LpDelta==null ? Strings.PreMatchLpUnknown : null,
+        Point!=null && Battle.Mr>0 && Point.MrDelta==null ? Strings.PreMatchMrUnknown : null,ChangeTip}.Where(s=>!string.IsNullOrEmpty(s)));
+    public string? RatingTip => Point != null && Delta == null ? Strings.PreMatchScoreUnknown : null;
     public string Change => Point == null ? "" : Delta?.ToString("+0;−0;0") ?? "—";
     public string ChangeKind => Kinds.Change(Delta);
     public string? ChangeTip => Point?.Estimated == true ? ScoreDisplay.EstimateExplanation : null;
@@ -150,15 +154,15 @@ public sealed class MatchListRow(Battle battle, ImageSource? ownImage, ImageSour
     public string OpponentScores => ScoreDisplay.WithUnit(Battle.OpponentLp,"LP") + (Battle.OpponentMr > 0 ? $"  ·  {Battle.OpponentMr:N0} MR" : "");
     public string ChangeLine => Delta == null ? "" : $"{Delta:+0;−0;0} {RatingUnit}";
     public string OwnScoreTip => string.Join("\n",new[] {
-        $"赛前：{ScoreDisplay.WithUnit(Battle.Lp,"LP")}"+(Battle.Mr>0 ? $" · {ScoreDisplay.WithUnit(Battle.Mr,"MR")}" : ""),
-        Point?.LpAfter is { } lp ? $"赛后：{ScoreDisplay.WithUnit(lp,"LP")}" : Point!=null ? "本场 LP 结算未知" : null,
-        Point?.MrAfter is { } mr ? $"赛后：{ScoreDisplay.WithUnit(mr,"MR")}" : Point!=null && Battle.Mr>0 ? "本场 MR 结算未知" : null,
+        Localization.Format(Strings.BeforeMatch, ScoreDisplay.WithUnit(Battle.Lp,"LP"))+(Battle.Mr>0 ? $" · {ScoreDisplay.WithUnit(Battle.Mr,"MR")}" : ""),
+        Point?.LpAfter is { } lp ? Localization.Format(Strings.AfterMatch, ScoreDisplay.WithUnit(lp,"LP")) : Point!=null ? Strings.LpSettlementUnknown : null,
+        Point?.MrAfter is { } mr ? Localization.Format(Strings.AfterMatch, ScoreDisplay.WithUnit(mr,"MR")) : Point!=null && Battle.Mr>0 ? Strings.MrSettlementUnknown : null,
         ChangeTip
     }.Where(s=>!string.IsNullOrEmpty(s)));
-    public PlayerDetail OwnSide => new(Player,PlayerName,OwnImage,Battle.Character,RatingRank,OwnLp,OwnMr,ChangeLine,ChangeKind,OwnScoreTip);
-    public PlayerDetail OtherSide => new(OpponentPlayer,OpponentName,OpponentImage,Battle.OpponentCharacter,OtherRank,
-        ScoreDisplay.WithUnit(Battle.OpponentLp,"LP"),Battle.OpponentMr>0 ? $"{Battle.OpponentMr:N0} MR" : "","","flat","官网记录的对局时分数");
-    public string AccessibleName => $"{Battle.Opponent}，{Battle.OpponentCharacter}，{Battle.Outcome} {Battle.Score}，{Battle.Time}";
+    public PlayerDetail OwnSide => new(Player,PlayerName,OwnImage,Character,RatingRank,OwnLp,OwnMr,ChangeLine,ChangeKind,OwnScoreTip);
+    public PlayerDetail OtherSide => new(OpponentPlayer,OpponentName,OpponentImage,OpponentCharacter,OtherRank,
+        ScoreDisplay.WithUnit(Battle.OpponentLp,"LP"),Battle.OpponentMr>0 ? $"{Battle.OpponentMr:N0} MR" : "","","flat",Strings.OfficialMatchScore);
+    public string AccessibleName => $"{Battle.Opponent}, {OpponentCharacter}, {Localization.Outcome(Battle.Outcome)} {Battle.Score}, {Battle.Time}";
 }
 
 public sealed record PlayerDetail(PlayerIdentity Player,string Name,ImageSource? Image,string Character,CharacterRank Rank,
@@ -177,29 +181,30 @@ public static class Kinds
 
 public record CharacterCard(int Id, string Name, ImageSource? Image, string Rating, string Detail, CharacterRank? Rank)
 {
-    public string RankLabel => Rank?.RankName is null or "未定级" or "—" or ScoreDisplay.NewChallenger ? "" : Rank.RankName;
+    public string RankLabel => Rank?.RankName is null or "Unranked" or "—" or ScoreDisplay.NewChallenger ? "" : Rank.RankName;
     public string Summary => (RankLabel.Length>0 ? " · " : "")+Detail;
 }
 public record AccountChoice(string Id, string Name, ImageSource? Image, bool Active);
 public record CategoryChoice(string Key, string Name, int Count);
 public record OutcomeDot(string Kind, string Tip);
 
-public sealed class HistoryMatchRow(Battle battle, bool isCurrent) : INotifyPropertyChanged
+public sealed class HistoryMatchRow(Battle battle, bool isCurrent,CharacterNames? names=null) : INotifyPropertyChanged
 {
     public Battle Battle { get; private set; } = battle;
     public bool IsCurrent { get; private set; } = isCurrent;
-    public string SelectionStatus => IsCurrent ? "当前对局" : "";
+    public string SelectionStatus => IsCurrent ? Strings.CurrentMatch : "";
     public string Date => BattleDateDisplay.Timestamp(Battle.Time);
-    public string Character => Battle.Character;
-    public string OpponentCharacter => Battle.OpponentCharacter;
+    public string Character {get;private set;} = names?.Display(battle.CharacterId,battle.Character) ?? battle.Character;
+    public string OpponentCharacter {get;private set;} = names?.Display(battle.OpponentCharacterId,battle.OpponentCharacter) ?? battle.OpponentCharacter;
     public string Score => Battle.Score;
     public string Kind => Kinds.Of(Battle.Outcome);
-    public string Description => $"{Battle.Time} · {Battle.Mode} · {Character} 对 {OpponentCharacter} · {Battle.Outcome} {Score}";
+    public string Description => Localization.Format(Strings.MatchDescription, Battle.Time, Battle.Mode, Character, OpponentCharacter, Localization.Outcome(Battle.Outcome), Score);
     public event PropertyChangedEventHandler? PropertyChanged;
     public void Update(HistoryMatchRow row)
     {
-        if(Battle==row.Battle && IsCurrent==row.IsCurrent) return;
+        if(Battle==row.Battle && IsCurrent==row.IsCurrent && Character==row.Character && OpponentCharacter==row.OpponentCharacter) return;
         Battle=row.Battle; IsCurrent=row.IsCurrent;
+        Character=row.Character;OpponentCharacter=row.OpponentCharacter;
         PropertyChanged?.Invoke(this,new(null));
     }
 }

@@ -28,6 +28,7 @@ public partial class SettingsWindow : Window
         AutoRefreshSecondsBox.Text=current.AutoRefreshSeconds.ToString(CultureInfo.InvariantCulture);
         ApiIntervalBox.Text=current.ApiIntervalSeconds.ToString(CultureInfo.InvariantCulture);
         CloseActionBox.SelectedIndex=(int)current.WindowCloseAction;
+        LanguageBox.SelectedValue=Localization.Normalize(current.Language);
         ContentRendered += (_, _) => UiCapture.SaveLater((FrameworkElement)Content, "ui-settings.png");
         Closed += (_, _) => { _closing.Cancel(); _closing.Dispose(); };
     }
@@ -35,6 +36,7 @@ public partial class SettingsWindow : Window
     {
         var settings = _current with { UseProxy = ProxyEnabled.IsChecked == true, ProxyAddress = ProxyAddressBox.Text.Trim(),
             WindowCloseAction=(CloseAction)CloseActionBox.SelectedIndex,
+            Language=LanguageBox.SelectedValue as string ?? Localization.SystemLanguage,
             RefreshReminderSeconds=includeIntervals ? ConnectionSettings.ParseReminderSeconds(ReminderSecondsBox.Text) : _current.RefreshReminderSeconds,
             ApiIntervalSeconds=includeIntervals ? ConnectionSettings.ParseApiIntervalSeconds(ApiIntervalBox.Text) : _current.ApiIntervalSeconds,
             AutoRefreshSeconds=includeIntervals ? ConnectionSettings.ParseAutoRefreshSeconds(AutoRefreshSecondsBox.Text) : _current.AutoRefreshSeconds };
@@ -79,19 +81,19 @@ public partial class SettingsWindow : Window
     private async void Backup_Click(object sender,RoutedEventArgs e)
     {
         var stamp=DateTimeOffset.UtcNow.ToOffset(TimeSpan.FromHours(8)).ToString("yyyyMMdd-HHmmss");
-        var dialog=new SaveFileDialog {Title="备份数据库",FileName=$"SF6-{stamp}.sqlite",DefaultExt=".sqlite",Filter="SQLite 数据库|*.sqlite;*.db",AddExtension=true,OverwritePrompt=true};
+        var dialog=new SaveFileDialog {Title=Strings.BackupDatabase,FileName=$"SF6-{stamp}.sqlite",DefaultExt=".sqlite",Filter=Strings.DatabaseFileFilter,AddExtension=true,OverwritePrompt=true};
         if(dialog.ShowDialog(this)!=true) return;
         await (_transfer=TransferAsync(dialog.FileName,false));
     }
     private async void Import_Click(object sender,RoutedEventArgs e)
     {
-        var dialog=new OpenFileDialog {Title="导入数据库",Filter="SQLite 数据库|*.sqlite;*.db",CheckFileExists=true,Multiselect=false};
+        var dialog=new OpenFileDialog {Title=Strings.ImportDatabase,Filter=Strings.DatabaseFileFilter,CheckFileExists=true,Multiselect=false};
         if(dialog.ShowDialog(this)!=true) return;
         await (_transfer=TransferAsync(dialog.FileName,true));
     }
     private async Task TransferAsync(string path,bool import)
     {
-        SetTransferBusy(true); ShowError(null); DatabaseStatus.Text=import ? "导入中…" : "备份中…";
+        SetTransferBusy(true); ShowError(null); DatabaseStatus.Text=import ? Strings.Importing : Strings.BackingUp;
         try
         {
             var database=Path.Combine(App.DataDirectory,"battles.sqlite");
@@ -99,14 +101,14 @@ public partial class SettingsWindow : Window
             {
                 if(BeforeImport!=null) await BeforeImport();
                 var result=await DatabaseTransfer.ImportAsync(path,database,Path.Combine(App.DataDirectory,"Backups"),_closing.Token);
-                DatabaseStatus.Text=$"新增 {result.Added:N0} 场";
-                DatabaseStatus.ToolTip=$"已跳过 {result.Existing:N0} 场重复战绩\n导入前备份：{result.BackupPath}";
+                DatabaseStatus.Text=Localization.Format(Strings.MatchesAdded, result.Added);
+                DatabaseStatus.ToolTip=Localization.Format(Strings.ImportDetails, result.Existing, result.BackupPath);
                 DatabaseImported?.Invoke();
             }
             else
             {
                 await DatabaseTransfer.BackupAsync(database,path,_closing.Token);
-                DatabaseStatus.Text="已备份"; DatabaseStatus.ToolTip=path;
+                DatabaseStatus.Text=Strings.BackedUp; DatabaseStatus.ToolTip=path;
             }
         }
         catch(OperationCanceledException) when(_closing.IsCancellationRequested) { }
@@ -114,7 +116,7 @@ public partial class SettingsWindow : Window
         {
             DatabaseStatus.Text="";
             if(!_closing.IsCancellationRequested) ShowError(ex is ArgumentException or InvalidDataException ? ex.Message :
-                import ? "导入失败，请检查数据库文件和目录权限。现有战绩未被替换。" : "备份失败，请检查保存位置和目录权限。");
+                import ? Strings.ImportFailed : Strings.BackupFailed);
         }
         finally { SetTransferBusy(false); }
     }
@@ -137,7 +139,7 @@ public partial class SettingsWindow : Window
     {
         ConnectionSettings settings;
         try { settings = Draft(includeIntervals:false); ShowError(null); } catch (ArgumentException ex) { ShowError(ex.Message); return; }
-        TestButton.IsEnabled = false; TestResult.Text = "测试中…";
+        TestButton.IsEnabled = false; TestResult.Text = Strings.Testing;
         try
         {
             var ms = await settings.TestGoogleAsync(_closing.Token);
@@ -145,7 +147,7 @@ public partial class SettingsWindow : Window
             File.WriteAllText(Path.Combine(App.DataDirectory, "proxy-test.json"), JsonSerializer.Serialize(new { success = true, milliseconds = ms, proxy = settings.UseProxy, endpoint = "https://www.google.com/generate_204", at = DateTimeOffset.UtcNow }));
         }
         catch (OperationCanceledException) when (_closing.IsCancellationRequested) { return; }
-        catch (Exception ex) { TestResult.Text = ex is TaskCanceledException ? "连接超时" : "连接失败，请检查代理设置"; }
+        catch (Exception ex) { TestResult.Text = ex is TaskCanceledException ? Strings.ConnectionTimedOut : Strings.ConnectionFailed; }
         TestButton.IsEnabled = true;
     }
 }

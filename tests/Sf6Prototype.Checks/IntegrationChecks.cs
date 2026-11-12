@@ -214,7 +214,7 @@ public static class IntegrationChecks
         Assert(opponent.Seasons.SequenceEqual([14,13,0]) && opponent.CurrentSeason==14,"Season choices come from the server, not guessed IDs or Master badge values");
         Assert(opponent.Characters[0].RankName=="Diamond V" && opponent.Characters[0].MrText=="—","Roman rank stars and absent MR are distinct");
         Assert(opponent.Characters[1].RankName=="Ultimate Master" && opponent.Characters[1].MasterLeague==40,"MR uses the supplied thresholds while preserving the original badge metadata");
-        Assert(!opponent.Characters[2].Ranked && opponent.Characters[2].RankName=="未定级","Zero-filled historical entries are not ranked fighters");
+        Assert(!opponent.Characters[2].Ranked && opponent.Characters[2].RankName=="Unranked","Zero-filled historical entries are not ranked fighters");
         Assert(!(opponent.Characters[0] with {LeagueRank=39,Lp=0}).Ranked,"Placement records are not completed ranks");
         Assert(RankProfiles.ParseSeason("{\"response\":{\"character_league_infos\":"+rankRows+"}}").Count==3,"Season and peak-MR responses include all characters");
         try { RankProfiles.ParseProfile(profileJson,"1111111111"); throw new Exception("Expected identity mismatch"); } catch(InvalidDataException) { count++; }

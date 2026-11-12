@@ -9,7 +9,7 @@ namespace Sf6Prototype;
 
 public sealed class FavoritePlayerPicker : Popup
 {
-    private readonly TextBox _search=new() {ToolTip="昵称 / UID",Margin=new Thickness(0,0,0,8)};
+    private readonly TextBox _search=new() {ToolTip=Strings.NicknameOrUid,Margin=new Thickness(0,0,0,8)};
     private readonly StackPanel _choices=new();
     private IReadOnlyList<FavoriteRecord> _records=[];
     private PlayerIdentity _signedIn=new("","");
@@ -20,10 +20,10 @@ public sealed class FavoritePlayerPicker : Popup
         AllowsTransparency=true;StaysOpen=false;Placement=PlacementMode.Bottom;VerticalOffset=4;
         var panel=new StackPanel();
         var input=new Grid();input.Children.Add(_search);
-        var placeholder=new TextBlock {Text="昵称 / UID",Margin=new Thickness(10,0,0,8),VerticalAlignment=VerticalAlignment.Center,IsHitTestVisible=false};placeholder.SetResourceReference(TextBlock.ForegroundProperty,"Ink3");input.Children.Add(placeholder);
+        var placeholder=new TextBlock {Text=Strings.NicknameOrUid,Margin=new Thickness(10,0,0,8),VerticalAlignment=VerticalAlignment.Center,IsHitTestVisible=false};placeholder.SetResourceReference(TextBlock.ForegroundProperty,"Ink3");input.Children.Add(placeholder);
         panel.Children.Add(input);panel.Children.Add(new ScrollViewer {Content=_choices,MaxHeight=300,VerticalScrollBarVisibility=ScrollBarVisibility.Auto,HorizontalScrollBarVisibility=ScrollBarVisibility.Disabled});
         Child=new ContentControl {Style=(Style)Application.Current.FindResource("PopupSurface"),Margin=new Thickness(0),Padding=new Thickness(8),Width=288,Content=panel};
-        AutomationProperties.SetName(_search,"搜索收藏中的用户昵称或 UID");
+        AutomationProperties.SetName(_search,Strings.SearchFavoritePlayers);
         _search.TextChanged+=(_,_)=>{placeholder.Visibility=_search.Text.Length==0 ? Visibility.Visible : Visibility.Collapsed;Render();};
         _search.KeyDown+=(_,e)=>
         {
@@ -53,6 +53,6 @@ public sealed class FavoritePlayerPicker : Popup
             if(player.Id==_selected) button.SetResourceReference(Control.BackgroundProperty,"SurfaceSelected");
             button.Click+=(_,_)=>Select(player);_choices.Children.Add(button);hadSelf=player.Id==_signedIn.Id;
         }
-        if(players.Count==0) _choices.Children.Add(new TextBlock {Text="没有匹配的用户",Style=(Style)Application.Current.FindResource("Caption"),Margin=new Thickness(8)});
+        if(players.Count==0) _choices.Children.Add(new TextBlock {Text=Strings.NoMatchingPlayers,Style=(Style)Application.Current.FindResource("Caption"),Margin=new Thickness(8)});
     }
 }

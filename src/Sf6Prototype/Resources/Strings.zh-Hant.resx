@@ -1,0 +1,1197 @@
+<?xml version='1.0' encoding='utf-8'?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms</value>
+  </resheader>
+  <data name="Account" xml:space="preserve">
+    <value>帳號</value>
+  </data>
+  <data name="AccountChanged" xml:space="preserve">
+    <value>登入帳號已變更，請重新登入。</value>
+  </data>
+  <data name="AccountSignedOut" xml:space="preserve">
+    <value>此帳號已登出，請重新登入。</value>
+  </data>
+  <data name="AccountSwitched" xml:space="preserve">
+    <value>已切換帳號。</value>
+  </data>
+  <data name="ActivatePlayerSearch" xml:space="preserve">
+    <value>激活玩家搜索</value>
+  </data>
+  <data name="Add" xml:space="preserve">
+    <value>添加</value>
+  </data>
+  <data name="AddOrSignInAccount" xml:space="preserve">
+    <value>添加或重新登入帳號</value>
+  </data>
+  <data name="AddTags" xml:space="preserve">
+    <value>添加標簽</value>
+  </data>
+  <data name="AfterMatch" xml:space="preserve">
+    <value>賽后：{0}</value>
+  </data>
+  <data name="All" xml:space="preserve">
+    <value>全部</value>
+  </data>
+  <data name="AllDates" xml:space="preserve">
+    <value>全部日期</value>
+  </data>
+  <data name="AllTagsDropdown" xml:space="preserve">
+    <value>全部標簽 ▾</value>
+  </data>
+  <data name="AllTagsMatch" xml:space="preserve">
+    <value>同時包含</value>
+  </data>
+  <data name="AnyTag" xml:space="preserve">
+    <value>任一標簽</value>
+  </data>
+  <data name="ApiInterval" xml:space="preserve">
+    <value>CAPCOM 請求間隔</value>
+  </data>
+  <data name="ApiIntervalAccessible" xml:space="preserve">
+    <value>CAPCOM 請求間隔，單位秒</value>
+  </data>
+  <data name="ApiIntervalHelp" xml:space="preserve">
+    <value>兩次官網請求開始之間的最短間隔；資料和頭像請求共用，登入網頁與 Google 測試不受影響。</value>
+  </data>
+  <data name="ApiIntervalPresets" xml:space="preserve">
+    <value>CAPCOM 請求間隔預設</value>
+  </data>
+  <data name="AppTitle" xml:space="preserve">
+    <value>街霸 6 戰績</value>
+  </data>
+  <data name="AskEveryTime" xml:space="preserve">
+    <value>每次詢問</value>
+  </data>
+  <data name="AutoRefresh" xml:space="preserve">
+    <value>自動更新</value>
+  </data>
+  <data name="AutoRefreshAccessible" xml:space="preserve">
+    <value>自動刷新間隔，單位秒，0 關閉</value>
+  </data>
+  <data name="AutoRefreshHelp" xml:space="preserve">
+    <value>0 表示關閉；僅刷新當前登入帳號</value>
+  </data>
+  <data name="AutoRefreshPresets" xml:space="preserve">
+    <value>自動更新快速間隔</value>
+  </data>
+  <data name="AvailableRangeReached" xml:space="preserve">
+    <value> · 已到可查范圍</value>
+  </data>
+  <data name="Back" xml:space="preserve">
+    <value>后退</value>
+  </data>
+  <data name="BackShortcut" xml:space="preserve">
+    <value>后退 · Alt+←
+右鍵查看歷史</value>
+  </data>
+  <data name="BackedUp" xml:space="preserve">
+    <value>已備份</value>
+  </data>
+  <data name="BackingUp" xml:space="preserve">
+    <value>備份中…</value>
+  </data>
+  <data name="BackupDatabase" xml:space="preserve">
+    <value>備份資料庫</value>
+  </data>
+  <data name="BackupFailed" xml:space="preserve">
+    <value>備份失敗，請檢查儲存位置和資料夾權限。</value>
+  </data>
+  <data name="BackupHelp" xml:space="preserve">
+    <value>包含戰績與分數，不包含登入信息、設定和頭像</value>
+  </data>
+  <data name="BackupInconsistentMatches" xml:space="preserve">
+    <value>備份中的戰績信息不一致。</value>
+  </data>
+  <data name="BackupJournalExists" xml:space="preserve">
+    <value>目標檔案仍有資料庫日志，請選擇新的備份檔案名。</value>
+  </data>
+  <data name="BackupLinksIncomplete" xml:space="preserve">
+    <value>備份中的關聯記錄不完整。</value>
+  </data>
+  <data name="BackupScoreLinksIncomplete" xml:space="preserve">
+    <value>備份中的分數關聯記錄不完整。</value>
+  </data>
+  <data name="BackupScoresInconsistent" xml:space="preserve">
+    <value>備份中的分數記錄與戰績不一致。</value>
+  </data>
+  <data name="BackupSyncIncomplete" xml:space="preserve">
+    <value>備份中的同步記錄不完整。</value>
+  </data>
+  <data name="BackupTagLinksIncomplete" xml:space="preserve">
+    <value>備份中的標簽關聯不完整。</value>
+  </data>
+  <data name="BackupTagsInvalid" xml:space="preserve">
+    <value>備份中的標簽無效。</value>
+  </data>
+  <data name="BackupUnreadableMatches" xml:space="preserve">
+    <value>備份中有無法讀取的戰績。</value>
+  </data>
+  <data name="BattleHub" xml:space="preserve">
+    <value>格斗中心對戰</value>
+  </data>
+  <data name="BeforeMatch" xml:space="preserve">
+    <value>賽前：{0}</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="CancelRefresh" xml:space="preserve">
+    <value>取消刷新</value>
+  </data>
+  <data name="CancelledFetchedSaved" xml:space="preserve">
+    <value>已取消，已獲取的戰績已儲存。</value>
+  </data>
+  <data name="CancelledLoadedSaved" xml:space="preserve">
+    <value>已取消，已載入的戰績已儲存。</value>
+  </data>
+  <data name="CapcomSessionExpired" xml:space="preserve">
+    <value>登入已失效，請重新登入 CAPCOM ID。</value>
+  </data>
+  <data name="CasualMatch" xml:space="preserve">
+    <value>休閑賽</value>
+  </data>
+  <data name="CasualShort" xml:space="preserve">
+    <value>休閑</value>
+  </data>
+  <data name="CategoriesRead" xml:space="preserve">
+    <value>已讀取 {0} 頁 · {1} / {2} 類完成</value>
+  </data>
+  <data name="Character" xml:space="preserve">
+    <value>角色</value>
+  </data>
+  <data name="ChartHelp" xml:space="preserve">
+    <value>點選分數點查看對局；也可使用左右方向鍵。</value>
+  </data>
+  <data name="CheckingSession" xml:space="preserve">
+    <value>檢查登入狀態</value>
+  </data>
+  <data name="CheckingSessionProgress" xml:space="preserve">
+    <value>正在檢查登入狀態…</value>
+  </data>
+  <data name="ChooseAppBackup" xml:space="preserve">
+    <value>請選擇街霸 6 戰績的資料庫備份。</value>
+  </data>
+  <data name="ChooseDifferentDatabase" xml:space="preserve">
+    <value>請選擇當前資料庫之外的檔案。</value>
+  </data>
+  <data name="Clear" xml:space="preserve">
+    <value>清空</value>
+  </data>
+  <data name="ClearFilters" xml:space="preserve">
+    <value>清除篩選</value>
+  </data>
+  <data name="ClearPlayerUid" xml:space="preserve">
+    <value>清空玩家 UID</value>
+  </data>
+  <data name="ClickAgainToStop" xml:space="preserve">
+    <value>
+再次點選停止 · Ctrl+R</value>
+  </data>
+  <data name="ClipboardUnavailable" xml:space="preserve">
+    <value>剪貼簿暫時不可用，請重試。</value>
+  </data>
+  <data name="Close" xml:space="preserve">
+    <value>關閉</value>
+  </data>
+  <data name="CloseActionSaveFailed" xml:space="preserve">
+    <value>無法儲存關閉方式，下次仍會詢問。</value>
+  </data>
+  <data name="CloseWindow" xml:space="preserve">
+    <value>關閉視窗</value>
+  </data>
+  <data name="CloseWindowQuestion" xml:space="preserve">
+    <value>退出，還是最小化到托盤？</value>
+  </data>
+  <data name="CompleteCapcomSignIn" xml:space="preserve">
+    <value>請完成 CAPCOM 登入。</value>
+  </data>
+  <data name="ConnectionFailed" xml:space="preserve">
+    <value>連線失敗，請檢查代理設定</value>
+  </data>
+  <data name="ConnectionTimedOut" xml:space="preserve">
+    <value>連線超時</value>
+  </data>
+  <data name="Copied" xml:space="preserve">
+    <value>已復制</value>
+  </data>
+  <data name="Copy" xml:space="preserve">
+    <value>復制</value>
+  </data>
+  <data name="CopyNickname" xml:space="preserve">
+    <value>複製暱稱</value>
+  </data>
+  <data name="CopyPlayerUid" xml:space="preserve">
+    <value>復制玩家 UID</value>
+  </data>
+  <data name="CopyReplayId" xml:space="preserve">
+    <value>復制回放 ID</value>
+  </data>
+  <data name="CopyUid" xml:space="preserve">
+    <value>復制 UID</value>
+  </data>
+  <data name="CurrentMatch" xml:space="preserve">
+    <value>當前對局</value>
+  </data>
+  <data name="CurrentSeason" xml:space="preserve">
+    <value>賽季 {0} · 當前</value>
+  </data>
+  <data name="CustomRoom" xml:space="preserve">
+    <value>比賽間對戰</value>
+  </data>
+  <data name="CustomShort" xml:space="preserve">
+    <value>比賽間</value>
+  </data>
+  <data name="DataDirectoryInUse" xml:space="preserve">
+    <value>這個資料夾已有運行中的戰績視窗。</value>
+  </data>
+  <data name="Database" xml:space="preserve">
+    <value>資料庫</value>
+  </data>
+  <data name="DatabaseCorrupt" xml:space="preserve">
+    <value>資料庫檔案損壞，無法使用。</value>
+  </data>
+  <data name="DatabaseFileFilter" xml:space="preserve">
+    <value>SQLite 資料庫|*.sqlite;*.db</value>
+  </data>
+  <data name="DatabaseLinksIncomplete" xml:space="preserve">
+    <value>資料庫中的關聯記錄不完整。</value>
+  </data>
+  <data name="DatabaseSchemaUnsupported" xml:space="preserve">
+    <value>資料庫結構不兼容。</value>
+  </data>
+  <data name="DatabaseVersionUnsupported" xml:space="preserve">
+    <value>此資料庫版本不兼容，請選擇當前應用生成的備份。</value>
+  </data>
+  <data name="DateRange" xml:space="preserve">
+    <value>日期范圍</value>
+  </data>
+  <data name="DayGroupDate" xml:space="preserve">
+    <value>M月d日  dddd</value>
+  </data>
+  <data name="DayGroupDateYear" xml:space="preserve">
+    <value>yyyy年M月d日  dddd</value>
+  </data>
+  <data name="DismissNotice" xml:space="preserve">
+    <value>關閉提示</value>
+  </data>
+  <data name="DrawCountSuffix" xml:space="preserve">
+    <value>  {0} 平</value>
+  </data>
+  <data name="DrawSummarySuffix" xml:space="preserve">
+    <value> {0} 平</value>
+  </data>
+  <data name="DuplicateContent" xml:space="preserve">
+    <value>官網返回了重復內容。</value>
+  </data>
+  <data name="DuplicateContentStopped" xml:space="preserve">
+    <value>官網分頁內容重復，已停止同步。</value>
+  </data>
+  <data name="DuplicatePage" xml:space="preserve">
+    <value>官網返回了重復頁碼。</value>
+  </data>
+  <data name="DuplicatePageStopped" xml:space="preserve">
+    <value>官網返回了重復頁碼，已停止以避免重復請求。</value>
+  </data>
+  <data name="DurationMinutesSeconds" xml:space="preserve">
+    <value>{0} 分 {1} 秒</value>
+  </data>
+  <data name="DurationSeconds" xml:space="preserve">
+    <value>{0} 秒</value>
+  </data>
+  <data name="EditMatchTags" xml:space="preserve">
+    <value>編輯此局標簽</value>
+  </data>
+  <data name="ElapsedDuration" xml:space="preserve">
+    <value>已用 {0}</value>
+  </data>
+  <data name="EndOfRecords" xml:space="preserve">
+    <value>已經到最底了</value>
+  </data>
+  <data name="EnterPlayerUid" xml:space="preserve">
+    <value>輸入玩家 UID</value>
+  </data>
+  <data name="EnterTagName" xml:space="preserve">
+    <value>輸入標簽名稱</value>
+  </data>
+  <data name="EnterTenDigitUid" xml:space="preserve">
+    <value>請輸入 10 位數字 UID。</value>
+  </data>
+  <data name="EnterToCreateTag" xml:space="preserve">
+    <value>Enter 創建標簽</value>
+  </data>
+  <data name="EstimateTimingHelp" xml:space="preserve">
+    <value>預計時間按當前間隔和已用響應時間估算</value>
+  </data>
+  <data name="Exit" xml:space="preserve">
+    <value>退出</value>
+  </data>
+  <data name="FavoritePlayers" xml:space="preserve">
+    <value>收藏用戶</value>
+  </data>
+  <data name="FavoriteRemoved" xml:space="preserve">
+    <value>這條收藏已被移除。</value>
+  </data>
+  <data name="Favorites" xml:space="preserve">
+    <value>收藏</value>
+  </data>
+  <data name="FavoritesNavigationTitle" xml:space="preserve">
+    <value>{0} - 戰績 - 收藏</value>
+  </data>
+  <data name="FilterOpponentReplay" xml:space="preserve">
+    <value>篩選對手 / UID / 回放</value>
+  </data>
+  <data name="FindPlayerShortcut" xml:space="preserve">
+    <value>查找玩家 · Ctrl+K</value>
+  </data>
+  <data name="FiveMinutes" xml:space="preserve">
+    <value>5分鐘</value>
+  </data>
+  <data name="FiveSeconds" xml:space="preserve">
+    <value>5秒</value>
+  </data>
+  <data name="Forward" xml:space="preserve">
+    <value>前進</value>
+  </data>
+  <data name="ForwardShortcut" xml:space="preserve">
+    <value>前進 · Alt+→
+右鍵查看歷史</value>
+  </data>
+  <data name="GoogleHttpError" xml:space="preserve">
+    <value>Google 返回 HTTP {0}</value>
+  </data>
+  <data name="GoogleLatency" xml:space="preserve">
+    <value>Google 延遲</value>
+  </data>
+  <data name="HeadToHead" xml:space="preserve">
+    <value>歷史交手</value>
+  </data>
+  <data name="HighestReached" xml:space="preserve">
+    <value>達到最高</value>
+  </data>
+  <data name="HistoryNavigationTitle" xml:space="preserve">
+    <value>{0} - 戰績 - {1}</value>
+  </data>
+  <data name="Home" xml:space="preserve">
+    <value>主頁</value>
+  </data>
+  <data name="HomeTooltip" xml:space="preserve">
+    <value>主頁 · 我的戰績</value>
+  </data>
+  <data name="HttpSyncStopped" xml:space="preserve">
+    <value>官網返回 HTTP {0}，已停止同步。</value>
+  </data>
+  <data name="HttpVerificationRequired" xml:space="preserve">
+    <value>官網要求重新驗證（HTTP {0}），請重新登入。</value>
+  </data>
+  <data name="HubShort" xml:space="preserve">
+    <value>格斗中心</value>
+  </data>
+  <data name="ImageRetryPending" xml:space="preserve">
+    <value>頭像下載待重試：{0}</value>
+  </data>
+  <data name="ImageTooLarge" xml:space="preserve">
+    <value>頭像檔案過大。</value>
+  </data>
+  <data name="ImagesPendingSuffix" xml:space="preserve">
+    <value> · 頭像更新未完成，下次刷新重試</value>
+  </data>
+  <data name="Import" xml:space="preserve">
+    <value>匯入</value>
+  </data>
+  <data name="ImportDatabase" xml:space="preserve">
+    <value>匯入資料庫</value>
+  </data>
+  <data name="ImportDetails" xml:space="preserve">
+    <value>已跳過 {0:N0} 場重復戰績
+匯入前備份：{1}</value>
+  </data>
+  <data name="ImportFailed" xml:space="preserve">
+    <value>匯入失敗，請檢查資料庫檔案和資料夾權限。現有戰績未被替換。</value>
+  </data>
+  <data name="ImportHelp" xml:space="preserve">
+    <value>合并戰績，保留現有記錄</value>
+  </data>
+  <data name="Importing" xml:space="preserve">
+    <value>匯入中…</value>
+  </data>
+  <data name="IncludeUnranked" xml:space="preserve">
+    <value>包含 Unranked</value>
+  </data>
+  <data name="InvalidAccountId" xml:space="preserve">
+    <value>無效的帳號 ID。</value>
+  </data>
+  <data name="InvalidApiInterval" xml:space="preserve">
+    <value>CAPCOM 請求間隔請輸入 0.1–3600 秒，可用小數。</value>
+  </data>
+  <data name="InvalidAutoRefresh" xml:space="preserve">
+    <value>自動刷新請輸入非負整數秒數，0 表示關閉。</value>
+  </data>
+  <data name="InvalidCloseAction" xml:space="preserve">
+    <value>請選擇關閉視窗時的操作。</value>
+  </data>
+  <data name="InvalidImageFormat" xml:space="preserve">
+    <value>官網頭像格式無效。</value>
+  </data>
+  <data name="InvalidImageUrl" xml:space="preserve">
+    <value>無效的官網圖片地址。</value>
+  </data>
+  <data name="InvalidInterval" xml:space="preserve">
+    <value>{0}請輸入非負整數秒數，0 表示關閉。</value>
+  </data>
+  <data name="InvalidLanguage" xml:space="preserve">
+    <value>請選擇支持的語言。</value>
+  </data>
+  <data name="InvalidPlayer" xml:space="preserve">
+    <value>無效的玩家。</value>
+  </data>
+  <data name="InvalidPlayerUid" xml:space="preserve">
+    <value>無效的玩家 UID。</value>
+  </data>
+  <data name="InvalidProxy" xml:space="preserve">
+    <value>請輸入 http://主機:端口 或 socks5://主機:端口；此版本支持無認證代理。</value>
+  </data>
+  <data name="InvalidReminder" xml:space="preserve">
+    <value>更新提醒請輸入非負整數秒數，0 表示關閉。</value>
+  </data>
+  <data name="InvalidReplayJson" xml:space="preserve">
+    <value>官網返回的戰績 JSON 無法解析，已停止同步。</value>
+  </data>
+  <data name="InvalidSeasonFilter" xml:space="preserve">
+    <value>無效的賽季篩選。</value>
+  </data>
+  <data name="InvalidTagName" xml:space="preserve">
+    <value>標簽名稱須為 1–32 個字符。</value>
+  </data>
+  <data name="InvalidUserCode" xml:space="preserve">
+    <value>無效的用戶代碼。</value>
+  </data>
+  <data name="LanguageLabel" xml:space="preserve">
+    <value>語言 (Language)</value>
+  </data>
+  <data name="LastFifty" xml:space="preserve">
+    <value>最近 50 場</value>
+  </data>
+  <data name="LastHundred" xml:space="preserve">
+    <value>最近 100 場</value>
+  </data>
+  <data name="LastMonth" xml:space="preserve">
+    <value>上個月</value>
+  </data>
+  <data name="LastTwenty" xml:space="preserve">
+    <value>最近 20 場</value>
+  </data>
+  <data name="LatestScore" xml:space="preserve">
+    <value>最新分數</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>載入中</value>
+  </data>
+  <data name="LoadingCharacterRanks" xml:space="preserve">
+    <value>正在載入角色段位</value>
+  </data>
+  <data name="LoadingMatches" xml:space="preserve">
+    <value>正在載入戰績</value>
+  </data>
+  <data name="LoadingScores" xml:space="preserve">
+    <value>正在載入分數</value>
+  </data>
+  <data name="LoginPopupFailed" xml:space="preserve">
+    <value>登入彈窗未能打開，請重試。</value>
+  </data>
+  <data name="LoginSaveFailed" xml:space="preserve">
+    <value>登入狀態未能儲存，請重試。</value>
+  </data>
+  <data name="LoginToLoad" xml:space="preserve">
+    <value>需要登入后繼續載入。</value>
+  </data>
+  <data name="LoginVerificationPage" xml:space="preserve">
+    <value>官網返回驗證頁面，請重新登入。</value>
+  </data>
+  <data name="LoginWindowFailed" xml:space="preserve">
+    <value>登入視窗無法啟動：{0}。請檢查 WebView2 Runtime 和代理設定。</value>
+  </data>
+  <data name="LpSettlementUnknown" xml:space="preserve">
+    <value>本場 LP 結算未知</value>
+  </data>
+  <data name="MatchAllSelectedTags" xml:space="preserve">
+    <value>同時包含所選標簽</value>
+  </data>
+  <data name="MatchAnySelectedTags" xml:space="preserve">
+    <value>包含任一所選標簽</value>
+  </data>
+  <data name="MatchCategory" xml:space="preserve">
+    <value>戰績分類</value>
+  </data>
+  <data name="MatchCount" xml:space="preserve">
+    <value>{0} 場</value>
+  </data>
+  <data name="MatchDescription" xml:space="preserve">
+    <value>{0} · {1} · {2} 對 {3} · {4} {5}</value>
+  </data>
+  <data name="MatchList" xml:space="preserve">
+    <value>戰績列表</value>
+  </data>
+  <data name="MatchQuantity" xml:space="preserve">
+    <value>對戰場數</value>
+  </data>
+  <data name="MatchSummary" xml:space="preserve">
+    <value>{0} 場 · {1} 勝 {2} 負</value>
+  </data>
+  <data name="Matches" xml:space="preserve">
+    <value>戰績</value>
+  </data>
+  <data name="MatchesAdded" xml:space="preserve">
+    <value>新增 {0:N0} 場</value>
+  </data>
+  <data name="MatchesPrepared" xml:space="preserve">
+    <value>已準備 {0} 場</value>
+  </data>
+  <data name="MatchesPreparedOfTotal" xml:space="preserve">
+    <value>已準備 {0} / {1} 場</value>
+  </data>
+  <data name="MatchesSaved" xml:space="preserve">
+    <value>戰績已儲存</value>
+  </data>
+  <data name="MatchesSuffix" xml:space="preserve">
+    <value> 場</value>
+  </data>
+  <data name="Maximize" xml:space="preserve">
+    <value>最大化</value>
+  </data>
+  <data name="MeSuffix" xml:space="preserve">
+    <value>（我）</value>
+  </data>
+  <data name="Minimize" xml:space="preserve">
+    <value>最小化</value>
+  </data>
+  <data name="MinimizeToTray" xml:space="preserve">
+    <value>最小化到托盤</value>
+  </data>
+  <data name="MismatchedRecords" xml:space="preserve">
+    <value>戰績與所選玩家或分類不一致。</value>
+  </data>
+  <data name="MissingCharacterId" xml:space="preserve">
+    <value>角色 ID 缺失。</value>
+  </data>
+  <data name="MissingPagingData" xml:space="preserve">
+    <value>官網分頁信息缺失。</value>
+  </data>
+  <data name="MissingReplayId" xml:space="preserve">
+    <value>戰績缺少回放 ID，已停止同步。</value>
+  </data>
+  <data name="Mode" xml:space="preserve">
+    <value>模式</value>
+  </data>
+  <data name="MrSettlementUnknown" xml:space="preserve">
+    <value>本場 MR 結算未知</value>
+  </data>
+  <data name="MyRecords" xml:space="preserve">
+    <value>我的戰績</value>
+  </data>
+  <data name="NextMonth" xml:space="preserve">
+    <value>下個月日歷</value>
+  </data>
+  <data name="NextRequestIn" xml:space="preserve">
+    <value>下次請求：{0:F1} 秒后</value>
+  </data>
+  <data name="NicknameCopied" xml:space="preserve">
+    <value>已複製暱稱</value>
+  </data>
+  <data name="NicknameOrUid" xml:space="preserve">
+    <value>暱稱 / UID</value>
+  </data>
+  <data name="NinetyDays" xml:space="preserve">
+    <value>90 天</value>
+  </data>
+  <data name="NoMatchSelected" xml:space="preserve">
+    <value>未選擇對局</value>
+  </data>
+  <data name="NoMatchingFavorites" xml:space="preserve">
+    <value>沒有符合條件的收藏</value>
+  </data>
+  <data name="NoMatchingHistory" xml:space="preserve">
+    <value>無匹配的歷史記錄</value>
+  </data>
+  <data name="NoMatchingPlayers" xml:space="preserve">
+    <value>沒有匹配的用戶</value>
+  </data>
+  <data name="NoMatchingRecords" xml:space="preserve">
+    <value>沒有符合條件的戰績</value>
+  </data>
+  <data name="NoMatchingTags" xml:space="preserve">
+    <value>暫無匹配標簽</value>
+  </data>
+  <data name="NoMrForMatches" xml:space="preserve">
+    <value>這些對局沒有 MR</value>
+  </data>
+  <data name="NoPlayerUid" xml:space="preserve">
+    <value>沒有可用的玩家 UID。</value>
+  </data>
+  <data name="NoProfileToSave" xml:space="preserve">
+    <value>沒有可儲存的玩家資料。</value>
+  </data>
+  <data name="NoRankRecords" xml:space="preserve">
+    <value>暫無段位記錄</value>
+  </data>
+  <data name="NoRankedRecords" xml:space="preserve">
+    <value>暫無排位記錄</value>
+  </data>
+  <data name="NoRecordsRefresh" xml:space="preserve">
+    <value>暫無戰績，點選「刷新」開始儲存</value>
+  </data>
+  <data name="NoScores" xml:space="preserve">
+    <value>暫無可顯示的分數</value>
+  </data>
+  <data name="NoSearchHistory" xml:space="preserve">
+    <value>暫無查詢記錄</value>
+  </data>
+  <data name="NoSeasonMr" xml:space="preserve">
+    <value>該賽季暫無 MR 資料</value>
+  </data>
+  <data name="Off" xml:space="preserve">
+    <value>關閉</value>
+  </data>
+  <data name="OfficialCapcomSignIn" xml:space="preserve">
+    <value>CAPCOM 官方登入</value>
+  </data>
+  <data name="OfficialMatchScore" xml:space="preserve">
+    <value>官網記錄的對局時分數</value>
+  </data>
+  <data name="OneDay" xml:space="preserve">
+    <value>1天</value>
+  </data>
+  <data name="OneHour" xml:space="preserve">
+    <value>1小時</value>
+  </data>
+  <data name="OneSecond" xml:space="preserve">
+    <value>1秒</value>
+  </data>
+  <data name="OpenMainPanel" xml:space="preserve">
+    <value>打開主面板</value>
+  </data>
+  <data name="OpeningCapcom" xml:space="preserve">
+    <value>正在打開 CAPCOM 官網…</value>
+  </data>
+  <data name="OperationFailed" xml:space="preserve">
+    <value>操作失敗：{0}。已儲存的資料不會丟失。</value>
+  </data>
+  <data name="OpponentCharacter" xml:space="preserve">
+    <value>對手角色</value>
+  </data>
+  <data name="OutcomeDraw" xml:space="preserve">
+    <value>平</value>
+  </data>
+  <data name="OutcomeLoss" xml:space="preserve">
+    <value>負</value>
+  </data>
+  <data name="OutcomePending" xml:space="preserve">
+    <value>待確認</value>
+  </data>
+  <data name="OutcomeWin" xml:space="preserve">
+    <value>勝</value>
+  </data>
+  <data name="PageNotVerified" xml:space="preserve">
+    <value>頁面尚未通過驗證，請重新登入。</value>
+  </data>
+  <data name="Pages" xml:space="preserve">
+    <value>頁面</value>
+  </data>
+  <data name="PagesReadSuffix" xml:space="preserve">
+    <value> · 已讀取 {0} 頁</value>
+  </data>
+  <data name="PeakMr" xml:space="preserve">
+    <value>最高 MR</value>
+  </data>
+  <data name="Player" xml:space="preserve">
+    <value>用戶</value>
+  </data>
+  <data name="PlayerCharacterRanks" xml:space="preserve">
+    <value>玩家角色段位</value>
+  </data>
+  <data name="PlayerDropdown" xml:space="preserve">
+    <value>用戶 ▾</value>
+  </data>
+  <data name="PlayerNotFound" xml:space="preserve">
+    <value>未找到該玩家，請檢查 UID。</value>
+  </data>
+  <data name="PlayerNotInMatch" xml:space="preserve">
+    <value>玩家不屬于這場對局。</value>
+  </data>
+  <data name="PlayerProfileUnavailable" xml:space="preserve">
+    <value>暫時無法讀取該玩家資料，請稍后重試。</value>
+  </data>
+  <data name="PlayerRankHistory" xml:space="preserve">
+    <value>{0} · 歷史段位</value>
+  </data>
+  <data name="PlayerUidEnterToSearch" xml:space="preserve">
+    <value>玩家 UID，按回車查詢</value>
+  </data>
+  <data name="PortraitsNotUpdated" xml:space="preserve">
+    <value>頭像暫未更新，可稍后刷新。</value>
+  </data>
+  <data name="PostMatchScore" xml:space="preserve">
+    <value>賽后分數</value>
+  </data>
+  <data name="PreMatchLpUnknown" xml:space="preserve">
+    <value>LP 為賽前分數，本場結算未知</value>
+  </data>
+  <data name="PreMatchMrUnknown" xml:space="preserve">
+    <value>MR 為賽前分數，本場結算未知</value>
+  </data>
+  <data name="PreMatchScoreUnknown" xml:space="preserve">
+    <value>賽前分數，本場結算未知</value>
+  </data>
+  <data name="PreparingRefresh" xml:space="preserve">
+    <value>準備刷新</value>
+  </data>
+  <data name="PreviousMonth" xml:space="preserve">
+    <value>上個月日歷</value>
+  </data>
+  <data name="PreviousProcessRunning" xml:space="preserve">
+    <value>上一次瀏覽器進程尚未退出，請稍后重試。</value>
+  </data>
+  <data name="ProxyAddress" xml:space="preserve">
+    <value>代理伺服器位址</value>
+  </data>
+  <data name="ProxyHelp" xml:space="preserve">
+    <value>支持無認證 HTTP、HTTPS 和 SOCKS5 代理</value>
+  </data>
+  <data name="QueryType" xml:space="preserve">
+    <value>查詢類型</value>
+  </data>
+  <data name="RangeChange" xml:space="preserve">
+    <value>區間變化</value>
+  </data>
+  <data name="RangeWinRate" xml:space="preserve">
+    <value>區間勝率</value>
+  </data>
+  <data name="RankAndPoints" xml:space="preserve">
+    <value>段位積分</value>
+  </data>
+  <data name="RankFormatChanged" xml:space="preserve">
+    <value>官網段位資料格式已改變。</value>
+  </data>
+  <data name="RankHistory" xml:space="preserve">
+    <value>歷史段位</value>
+  </data>
+  <data name="RankLookupFailed" xml:space="preserve">
+    <value>暫時無法獲取段位，請稍后重試。</value>
+  </data>
+  <data name="RankLp" xml:space="preserve">
+    <value>段位 / LP</value>
+  </data>
+  <data name="RankedMatch" xml:space="preserve">
+    <value>排位賽</value>
+  </data>
+  <data name="RankedScoreTrend" xml:space="preserve">
+    <value>排位分數走勢</value>
+  </data>
+  <data name="RankedShort" xml:space="preserve">
+    <value>排位</value>
+  </data>
+  <data name="RateLimitDelay" xml:space="preserve">
+    <value>官網限流，請至少 {0} 秒后再同步。</value>
+  </data>
+  <data name="RateLimitPaused" xml:space="preserve">
+    <value>官網限流，本次同步已暫停，請稍后再試。</value>
+  </data>
+  <data name="ReadingCategoryPage" xml:space="preserve">
+    <value>讀取{0} · 第 {1} 頁</value>
+  </data>
+  <data name="ReadingRankedPage" xml:space="preserve">
+    <value>讀取排位 · 第 {0} 頁</value>
+  </data>
+  <data name="ReadyLocalData" xml:space="preserve">
+    <value>就緒 · 瀏覽和篩選使用本地資料</value>
+  </data>
+  <data name="RecentCount" xml:space="preserve">
+    <value>近 {0} 場</value>
+  </data>
+  <data name="RecentSearches" xml:space="preserve">
+    <value>最近查詢</value>
+  </data>
+  <data name="RecordsSavedImagesBackground" xml:space="preserve">
+    <value>戰績已儲存，頭像將在后臺更新</value>
+  </data>
+  <data name="RecordsUpdatedImagesPending" xml:space="preserve">
+    <value>戰績已更新，頭像可稍后刷新。</value>
+  </data>
+  <data name="Refresh" xml:space="preserve">
+    <value>刷新</value>
+  </data>
+  <data name="RefreshCancelled" xml:space="preserve">
+    <value>刷新已取消</value>
+  </data>
+  <data name="RefreshComplete" xml:space="preserve">
+    <value>刷新完成</value>
+  </data>
+  <data name="RefreshCompleteSummary" xml:space="preserve">
+    <value>刷新完成 · 新增 {0} 條 · {1} 頁 · {2} 次 HTTP 請求{3}</value>
+  </data>
+  <data name="RefreshIncomplete" xml:space="preserve">
+    <value>刷新未完成</value>
+  </data>
+  <data name="RefreshReminder" xml:space="preserve">
+    <value>更新提醒</value>
+  </data>
+  <data name="RefreshShortcut" xml:space="preserve">
+    <value>刷新 · Ctrl+R</value>
+  </data>
+  <data name="RemainingEstimateSuffix" xml:space="preserve">
+    <value> · 預計還需約 {0}</value>
+  </data>
+  <data name="RemainingUnknownSuffix" xml:space="preserve">
+    <value> · 剩余時間待確定</value>
+  </data>
+  <data name="RememberChoice" xml:space="preserve">
+    <value>不再詢問</value>
+  </data>
+  <data name="ReminderAccessible" xml:space="preserve">
+    <value>更新提醒間隔，單位秒，0 關閉</value>
+  </data>
+  <data name="ReminderOffHelp" xml:space="preserve">
+    <value>0 表示不再晃動提醒</value>
+  </data>
+  <data name="ReminderPresets" xml:space="preserve">
+    <value>更新提醒快速間隔</value>
+  </data>
+  <data name="RemoveTagFilter" xml:space="preserve">
+    <value>移除此標簽篩選</value>
+  </data>
+  <data name="Replay" xml:space="preserve">
+    <value>回放</value>
+  </data>
+  <data name="ReplayFormatChanged" xml:space="preserve">
+    <value>官網戰績結構已改變。</value>
+  </data>
+  <data name="ReplayStructureChanged" xml:space="preserve">
+    <value>官網戰績結構已改變，已停止同步。</value>
+  </data>
+  <data name="RequestTimedOut" xml:space="preserve">
+    <value>請求超時，請檢查代理或網路連線后重試。</value>
+  </data>
+  <data name="ResponseRetrying" xml:space="preserve">
+    <value>響應暫未完成，稍后重試</value>
+  </data>
+  <data name="Restore" xml:space="preserve">
+    <value>還原</value>
+  </data>
+  <data name="Result" xml:space="preserve">
+    <value>結果</value>
+  </data>
+  <data name="RoundScore" xml:space="preserve">
+    <value>比分</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>儲存</value>
+  </data>
+  <data name="Saved" xml:space="preserve">
+    <value>已儲存</value>
+  </data>
+  <data name="SavingRecords" xml:space="preserve">
+    <value>正在儲存戰績</value>
+  </data>
+  <data name="ScoreEstimateExplanation" xml:space="preserve">
+    <value>推算：尚無下一場同角色排位記錄，使用刷新時儲存的官網當前分數與本局賽前分數計算差值，可能包含未收錄對局的變化。</value>
+  </data>
+  <data name="ScoreNavigationTitle" xml:space="preserve">
+    <value>{0} - 分數 - {1}</value>
+  </data>
+  <data name="ScoreType" xml:space="preserve">
+    <value>分數類型</value>
+  </data>
+  <data name="Scores" xml:space="preserve">
+    <value>分數</value>
+  </data>
+  <data name="ScoresReady" xml:space="preserve">
+    <value>分數記錄已準備</value>
+  </data>
+  <data name="Search" xml:space="preserve">
+    <value>搜索</value>
+  </data>
+  <data name="SearchFailed" xml:space="preserve">
+    <value>查詢失敗，請檢查網路后重試。</value>
+  </data>
+  <data name="SearchFavoritePlayers" xml:space="preserve">
+    <value>搜索收藏中的用戶暱稱或 UID</value>
+  </data>
+  <data name="SearchOpponentReplay" xml:space="preserve">
+    <value>搜索對手暱稱、UID 或回放 ID</value>
+  </data>
+  <data name="SearchOrAddTags" xml:space="preserve">
+    <value>搜索或添加標簽</value>
+  </data>
+  <data name="SearchPlayers" xml:space="preserve">
+    <value>搜索玩家</value>
+  </data>
+  <data name="SearchSaveFailed" xml:space="preserve">
+    <value>無法儲存查詢結果，請檢查資料資料夾權限。</value>
+  </data>
+  <data name="SearchTags" xml:space="preserve">
+    <value>搜索標簽</value>
+  </data>
+  <data name="Searching" xml:space="preserve">
+    <value>查詢中…</value>
+  </data>
+  <data name="Season" xml:space="preserve">
+    <value>賽季</value>
+  </data>
+  <data name="SeasonDataUnavailable" xml:space="preserve">
+    <value>該賽季的資料暫時無法讀取。</value>
+  </data>
+  <data name="SeasonNumber" xml:space="preserve">
+    <value>賽季 {0}</value>
+  </data>
+  <data name="SecondsUnit" xml:space="preserve">
+    <value>秒</value>
+  </data>
+  <data name="SelectDateRange" xml:space="preserve">
+    <value>選擇日期范圍</value>
+  </data>
+  <data name="SelectEndDate" xml:space="preserve">
+    <value>選擇最后一天</value>
+  </data>
+  <data name="SelectedTagsCount" xml:space="preserve">
+    <value>標簽 · {0} ▾</value>
+  </data>
+  <data name="SessionExpired" xml:space="preserve">
+    <value>登入已失效，請重新登入。</value>
+  </data>
+  <data name="SessionExpiredCloseWindow" xml:space="preserve">
+    <value>登入已失效，請關閉此視窗后重新登入。</value>
+  </data>
+  <data name="SessionSaved" xml:space="preserve">
+    <value>登入已儲存。</value>
+  </data>
+  <data name="SessionSavedImagesPending" xml:space="preserve">
+    <value>登入已儲存；頭像暫未更新，下次刷新重試。</value>
+  </data>
+  <data name="Settings" xml:space="preserve">
+    <value>設定</value>
+  </data>
+  <data name="SettingsSavedDirect" xml:space="preserve">
+    <value>設定已儲存。下次登入和同步均直連。</value>
+  </data>
+  <data name="SettingsSavedProxy" xml:space="preserve">
+    <value>設定已儲存。下次登入和同步均通過所選代理。</value>
+  </data>
+  <data name="SettingsShortcut" xml:space="preserve">
+    <value>設定 · Ctrl+,</value>
+  </data>
+  <data name="SettlementUnknown" xml:space="preserve">
+    <value>本場結算未知</value>
+  </data>
+  <data name="ShortIntervalWarning" xml:space="preserve">
+    <value>間隔過短可能觸發官網風控；建議至少 5 秒。</value>
+  </data>
+  <data name="SignIn" xml:space="preserve">
+    <value>登入</value>
+  </data>
+  <data name="SignInAgain" xml:space="preserve">
+    <value>重新登入</value>
+  </data>
+  <data name="SignInBeforeSearch" xml:space="preserve">
+    <value>請先登入，再查詢玩家。</value>
+  </data>
+  <data name="SignInCancelled" xml:space="preserve">
+    <value>登入已取消。</value>
+  </data>
+  <data name="SignInCancelledLocal" xml:space="preserve">
+    <value>登入已取消，本地戰績仍可查看。</value>
+  </data>
+  <data name="SignInCapcom" xml:space="preserve">
+    <value>登入 CAPCOM ID</value>
+  </data>
+  <data name="SignInFirst" xml:space="preserve">
+    <value>請先登入。</value>
+  </data>
+  <data name="SignOut" xml:space="preserve">
+    <value>登出</value>
+  </data>
+  <data name="SignOutAccount" xml:space="preserve">
+    <value>登出帳號</value>
+  </data>
+  <data name="SignOutConfirmation" xml:space="preserve">
+    <value>是否登出「{0}」？
+
+將移除此設備儲存的登入，本地戰績保留。</value>
+  </data>
+  <data name="SignedOutLocalKept" xml:space="preserve">
+    <value>帳號已登出，本地戰績已保留。</value>
+  </data>
+  <data name="StopDownload" xml:space="preserve">
+    <value>停止下載</value>
+  </data>
+  <data name="StopDownloadShortcut" xml:space="preserve">
+    <value>停止下載 · Ctrl+R</value>
+  </data>
+  <data name="StoppedRecordsKept" xml:space="preserve">
+    <value>已停止，已下載的戰績已保留。</value>
+  </data>
+  <data name="Stopping" xml:space="preserve">
+    <value>正在停止</value>
+  </data>
+  <data name="SyncBoundaryReached" xml:space="preserve">
+    <value>已到上次同步邊界</value>
+  </data>
+  <data name="SystemDefault" xml:space="preserve">
+    <value>系統預設</value>
+  </data>
+  <data name="TagFilter" xml:space="preserve">
+    <value>標簽篩選</value>
+  </data>
+  <data name="TagNameEnterToAdd" xml:space="preserve">
+    <value>輸入標簽名稱，Enter 添加</value>
+  </data>
+  <data name="TagSaveFailed" xml:space="preserve">
+    <value>標簽儲存失敗，請重試。</value>
+  </data>
+  <data name="Tags" xml:space="preserve">
+    <value>標簽</value>
+  </data>
+  <data name="TagsDropdown" xml:space="preserve">
+    <value>標簽 ▾</value>
+  </data>
+  <data name="TenMinutes" xml:space="preserve">
+    <value>10分鐘</value>
+  </data>
+  <data name="TenSeconds" xml:space="preserve">
+    <value>10秒</value>
+  </data>
+  <data name="Test" xml:space="preserve">
+    <value>測試</value>
+  </data>
+  <data name="Testing" xml:space="preserve">
+    <value>測試中…</value>
+  </data>
+  <data name="ThisMonth" xml:space="preserve">
+    <value>本月</value>
+  </data>
+  <data name="ThreeSeconds" xml:space="preserve">
+    <value>3秒</value>
+  </data>
+  <data name="Time" xml:space="preserve">
+    <value>時間</value>
+  </data>
+  <data name="TooManyRequests" xml:space="preserve">
+    <value>請求過于頻繁，請稍后刷新。</value>
+  </data>
+  <data name="TwelveHours" xml:space="preserve">
+    <value>12小時</value>
+  </data>
+  <data name="TwentyMinutes" xml:space="preserve">
+    <value>20分鐘</value>
+  </data>
+  <data name="UnexpectedError" xml:space="preserve">
+    <value>應用遇到錯誤，請查看資料夾中的診斷記錄。</value>
+  </data>
+  <data name="UnknownCategory" xml:space="preserve">
+    <value>未知戰績類別。</value>
+  </data>
+  <data name="UnknownSummarySuffix" xml:space="preserve">
+    <value> · {0} 場待確認</value>
+  </data>
+  <data name="UpdateFailed" xml:space="preserve">
+    <value>暫時無法更新，請檢查網路后重試。</value>
+  </data>
+  <data name="UpdatedAtPrefix" xml:space="preserve">
+    <value>更新于 </value>
+  </data>
+  <data name="UpdatingCharacterProfiles" xml:space="preserve">
+    <value>更新角色資料</value>
+  </data>
+  <data name="UpdatingProfilesProgress" xml:space="preserve">
+    <value>正在更新角色資料和頭像…</value>
+  </data>
+  <data name="UseProxy" xml:space="preserve">
+    <value>使用代理伺服器</value>
+  </data>
+  <data name="VerificationRequired" xml:space="preserve">
+    <value>官網返回驗證頁面，請打開登入視窗完成驗證。</value>
+  </data>
+  <data name="ViewMatches" xml:space="preserve">
+    <value>查看戰績</value>
+  </data>
+  <data name="ViewMatchesAndScores" xml:space="preserve">
+    <value>查看戰績與分數</value>
+  </data>
+  <data name="ViewedPlayer" xml:space="preserve">
+    <value>當前查看玩家</value>
+  </data>
+  <data name="WaitingForRefresh" xml:space="preserve">
+    <value>等待刷新完成</value>
+  </data>
+  <data name="WaitingForResponse" xml:space="preserve">
+    <value>等待官網響應</value>
+  </data>
+  <data name="WaitingForSignIn" xml:space="preserve">
+    <value>等待登入</value>
+  </data>
+  <data name="WaitingToSend" xml:space="preserve">
+    <value>等待發送請求</value>
+  </data>
+  <data name="WhenWindowCloses" xml:space="preserve">
+    <value>關閉視窗時</value>
+  </data>
+  <data name="WinLossSummary" xml:space="preserve">
+    <value>{0} 勝  {1} 負</value>
+  </data>
+  <data name="WinRateRounded" xml:space="preserve">
+    <value>勝率 {0:F0}%</value>
+  </data>
+  <data name="WinRateSuffix" xml:space="preserve">
+    <value> 勝率</value>
+  </data>
+  <data name="WinRateValue" xml:space="preserve">
+    <value>勝率 {0}</value>
+  </data>
+  <data name="WrongOpponentProfile" xml:space="preserve">
+    <value>玩家資料與所選對手不一致。</value>
+  </data>
+  <data name="WrongPlayerRecords" xml:space="preserve">
+    <value>官網返回了不匹配的用戶戰績，已停止同步。</value>
+  </data>
+  <data name="Yesterday" xml:space="preserve">
+    <value>昨天</value>
+  </data>
+  <data name="YourCharacter" xml:space="preserve">
+    <value>己方角色</value>
+  </data>
+  <data name="CharacterNamesIncomplete" xml:space="preserve">
+    <value>多語言角色名單不完整，下次更新時將重試。</value>
+  </data>
+  <data name="RankHistoryAction" xml:space="preserve">
+    <value>歷史段位</value>
+  </data>
+  <data name="MatchSuffix" xml:space="preserve">
+    <value> 場</value>
+  </data>
+  <data name="SavedLoadingCharacterNames" xml:space="preserve">
+    <value>語言已儲存，正在取得角色名稱…</value>
+  </data>
+  <data name="SavedWaitingCharacterNames" xml:space="preserve">
+    <value>語言已儲存，等待取得角色名稱…</value>
+  </data>
+  <data name="SavedCharacterNamesReady" xml:space="preserve">
+    <value>語言及角色名稱已更新</value>
+  </data>
+  <data name="SavedCharacterNamesFailed" xml:space="preserve">
+    <value>語言已儲存，角色名稱取得失敗，請稍後重新整理。</value>
+  </data>
+  <data name="SavedCharacterNamesSignIn" xml:space="preserve">
+    <value>語言已儲存，登入後可取得角色名稱。</value>
+  </data>
+  <data name="SavedCharacterNamesCancelled" xml:space="preserve">
+    <value>語言已儲存，已停止取得角色名稱。</value>
+  </data>
+</root>

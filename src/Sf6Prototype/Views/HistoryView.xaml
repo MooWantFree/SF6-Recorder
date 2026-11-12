@@ -1,4 +1,4 @@
-<UserControl x:Class="Sf6Prototype.HistoryView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<UserControl x:Class="Sf6Prototype.HistoryView" Language="{DynamicResource UiLanguage}" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:Sf6Prototype">
   <UserControl.Resources>
     <DataTemplate x:Key="MatchRow">
@@ -10,14 +10,14 @@
           <Grid.ColumnDefinitions><ColumnDefinition Width="32"/><ColumnDefinition/></Grid.ColumnDefinitions>
           <ContentControl Content="{Binding OwnImage}" Style="{StaticResource Portrait}" Width="32" Height="32"/>
           <StackPanel Grid.Column="1" Margin="8,0,0,0" VerticalAlignment="Center">
-            <TextBlock Text="{Binding Battle.Character}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Battle.Character}"/>
+            <TextBlock Text="{Binding Character}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Character}"/>
           </StackPanel>
         </Grid>
         <Grid Grid.Column="3" Margin="8,0,8,0" VerticalAlignment="Center">
           <Grid.ColumnDefinitions><ColumnDefinition Width="32"/><ColumnDefinition/></Grid.ColumnDefinitions>
           <ContentControl Content="{Binding OpponentImage}" Style="{StaticResource Portrait}" Width="32" Height="32"/>
           <StackPanel Grid.Column="1" Margin="8,0,0,0" VerticalAlignment="Center">
-            <TextBlock Text="{Binding Battle.OpponentCharacter}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Battle.OpponentCharacter}"/>
+            <TextBlock Text="{Binding OpponentCharacter}" TextTrimming="CharacterEllipsis" ToolTip="{Binding OpponentCharacter}"/>
             <TextBlock Text="{Binding OpponentName}" Style="{StaticResource Caption}" FontSize="11" TextTrimming="CharacterEllipsis" ToolTip="{Binding OpponentName}" Margin="0,2,0,0"/>
           </StackPanel>
         </Grid>
@@ -34,7 +34,7 @@
             </StackPanel>
         </StackPanel>
         <TextBlock Grid.Column="6" Text="{Binding Clock}" Style="{StaticResource Number}" Foreground="{StaticResource Ink3}" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,14,0" ToolTip="{Binding FullTime}"/>
-        <Button x:Name="TagCell" Grid.Column="7" Style="{StaticResource GhostButton}" Padding="4,4,8,4" HorizontalContentAlignment="Left" VerticalAlignment="Stretch" Click="EditTags_Click" ToolTip="{Binding TagsTip}" AutomationProperties.Name="编辑此局标签" AutomationProperties.HelpText="{Binding TagsTip}">
+        <Button x:Name="TagCell" Grid.Column="7" Style="{StaticResource GhostButton}" Padding="4,4,8,4" HorizontalContentAlignment="Left" VerticalAlignment="Stretch" Click="EditTags_Click" ToolTip="{Binding TagsTip}" AutomationProperties.Name="{DynamicResource I18n.EditMatchTags}" AutomationProperties.HelpText="{Binding TagsTip}">
           <Grid VerticalAlignment="Center">
             <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
               <Border x:Name="TagSummary" Background="{Binding FirstTag.Color,Converter={StaticResource TagBrush}}" CornerRadius="10" Padding="7,2">
@@ -67,7 +67,7 @@
     <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition/></Grid.RowDefinitions>
     <Border BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1">
       <Grid>
-        <ListBox x:Name="CategoryFilter" Style="{StaticResource TabStrip}" ItemContainerStyle="{StaticResource CategoryTab}" SelectionChanged="Category_Changed" AutomationProperties.Name="战绩分类" VerticalAlignment="Bottom">
+        <ListBox x:Name="CategoryFilter" Style="{StaticResource TabStrip}" ItemContainerStyle="{StaticResource CategoryTab}" SelectionChanged="Category_Changed" AutomationProperties.Name="{DynamicResource I18n.MatchCategory}" VerticalAlignment="Bottom">
           <ListBox.ItemTemplate><DataTemplate>
             <StackPanel Orientation="Horizontal"><Border x:Name="FavoriteDivider" Width="1" Height="16" Background="{StaticResource Line}" Margin="0,0,16,0" Visibility="Collapsed"/><TextBlock Text="{Binding Name}"/><TextBlock Text="{Binding Count}" Style="{StaticResource Number}" FontSize="12" Margin="6,1,0,0" Opacity="0.7"/></StackPanel>
             <DataTemplate.Triggers><DataTrigger Binding="{Binding Key}" Value="favorites"><Setter TargetName="FavoriteDivider" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers>
@@ -77,25 +77,25 @@
     </Border>
     <StackPanel Grid.Row="1" Margin="0,10,0,0">
       <WrapPanel>
-        <Button x:Name="FavoriteUserButton" Content="用户 ▾" Click="FavoriteUser_Click" Width="170" Margin="0,0,8,6" Visibility="Collapsed" HorizontalContentAlignment="Left" AutomationProperties.Name="收藏用户"/>
-        <Button x:Name="FavoritesButton" Content="标签 ▾" Click="Favorites_Click" Margin="0,0,8,6" Visibility="Collapsed" AutomationProperties.Name="标签筛选"/>
+        <Button x:Name="FavoriteUserButton" Content="{DynamicResource I18n.PlayerDropdown}" Click="FavoriteUser_Click" Width="170" Margin="0,0,8,6" Visibility="Collapsed" HorizontalContentAlignment="Left" AutomationProperties.Name="{DynamicResource I18n.FavoritePlayers}"/>
+        <Button x:Name="FavoritesButton" Content="{DynamicResource I18n.TagsDropdown}" Click="Favorites_Click" Margin="0,0,8,6" Visibility="Collapsed" AutomationProperties.Name="{DynamicResource I18n.TagFilter}"/>
         <Grid Width="176" VerticalAlignment="Center" Margin="0,0,8,6">
-          <TextBox x:Name="SearchBox" Padding="28,5,8,5" TextChanged="Search_Changed" AutomationProperties.Name="搜索对手昵称、UID 或回放 ID" ToolTip="Ctrl+F"/>
+          <TextBox x:Name="SearchBox" Padding="28,5,8,5" TextChanged="Search_Changed" AutomationProperties.Name="{DynamicResource I18n.SearchOpponentReplay}" ToolTip="Ctrl+F"/>
           <TextBlock Text="&#xE721;" FontFamily="Segoe Fluent Icons" FontSize="12" Margin="10,0,0,0" Foreground="{StaticResource Ink3}" VerticalAlignment="Center" IsHitTestVisible="False"/>
-          <TextBlock Text="筛选对手 / UID / 回放" Margin="31,0,0,0" Foreground="{StaticResource Ink3}" FontSize="12" VerticalAlignment="Center" IsHitTestVisible="False">
+          <TextBlock Text="{DynamicResource I18n.FilterOpponentReplay}" Margin="31,0,0,0" Foreground="{StaticResource Ink3}" FontSize="12" VerticalAlignment="Center" IsHitTestVisible="False">
             <TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding Text,ElementName=SearchBox}" Value=""><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></TextBlock.Style>
           </TextBlock>
         </Grid>
-      <ComboBox x:Name="CharacterFilter" Width="112" SelectionChanged="Filter_Changed" AutomationProperties.Name="己方角色" Margin="0,0,8,6"/>
-      <ComboBox x:Name="OpponentCharacterFilter" Width="112" SelectionChanged="Filter_Changed" AutomationProperties.Name="对手角色" Margin="0,0,8,6"/>
-      <local:DateRangePicker x:Name="DateRange" Width="144" RangeChanged="Date_Changed" Margin="0,0,8,6"/>
-      <ListBox x:Name="OutcomeFilter" Style="{StaticResource Segmented}" SelectionChanged="Filter_Changed" AutomationProperties.Name="结果" VerticalAlignment="Center"/>
-      <Button x:Name="ResetButton" Content="清除筛选" Click="Reset_Click" Style="{StaticResource GhostButton}" Foreground="{StaticResource AccentText}" Margin="6,0,0,0" Visibility="Collapsed"/>
+      <ComboBox x:Name="CharacterFilter" Width="112" SelectionChanged="Filter_Changed" AutomationProperties.Name="{DynamicResource I18n.YourCharacter}" Margin="0,0,8,6"/>
+      <ComboBox x:Name="OpponentCharacterFilter" Width="112" SelectionChanged="Filter_Changed" AutomationProperties.Name="{DynamicResource I18n.OpponentCharacter}" Margin="0,0,8,6"/>
+      <local:DateRangePicker x:Name="DateRange" MinWidth="144" RangeChanged="Date_Changed" Margin="0,0,8,6"/>
+      <ListBox x:Name="OutcomeFilter" Style="{StaticResource Segmented}" SelectionChanged="Filter_Changed" AutomationProperties.Name="{DynamicResource I18n.Result}" VerticalAlignment="Center"/>
+      <Button x:Name="ResetButton" Content="{DynamicResource I18n.ClearFilters}" Click="Reset_Click" Style="{StaticResource GhostButton}" Foreground="{StaticResource AccentText}" Margin="6,0,0,0" Visibility="Collapsed"/>
       </WrapPanel>
       <ItemsControl x:Name="SelectedTags" Margin="0,2,0,0" Visibility="Collapsed">
         <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
         <ItemsControl.ItemTemplate><DataTemplate>
-          <Button Click="RemoveTagFilter_Click" Style="{StaticResource GhostButton}" Padding="0" Margin="0,0,4,2" MinHeight="24" ToolTip="移除此标签筛选">
+          <Button Click="RemoveTagFilter_Click" Style="{StaticResource GhostButton}" Padding="0" Margin="0,0,4,2" MinHeight="24" ToolTip="{DynamicResource I18n.RemoveTagFilter}">
             <Border CornerRadius="10" Padding="8,3" Background="{Binding Color,Converter={StaticResource TagBrush}}"><TextBlock Foreground="{Binding Color,Converter={StaticResource TagBrush},ConverterParameter=Text}" FontSize="11"><Run Text="{Binding Name,Mode=OneWay}"/><Run Text="  ×"/></TextBlock></Border>
           </Button>
         </DataTemplate></ItemsControl.ItemTemplate>
@@ -103,9 +103,9 @@
     </StackPanel>
     <DockPanel Grid.Row="2" Margin="2,8,2,8" LastChildFill="False">
       <TextBlock x:Name="TotalMetric" Text="0" FontSize="15" FontWeight="SemiBold" Style="{StaticResource Number}" VerticalAlignment="Center"/>
-      <TextBlock Text=" 场" Style="{StaticResource Caption}" VerticalAlignment="Center" Margin="0,0,18,0"/>
+      <TextBlock x:Name="TotalMetricUnit" Text="{DynamicResource I18n.MatchesSuffix}" Style="{StaticResource Caption}" VerticalAlignment="Center" Margin="0,0,18,0"/>
       <TextBlock x:Name="WinRateMetric" Text="—" FontSize="15" FontWeight="SemiBold" Style="{StaticResource Number}" VerticalAlignment="Center"/>
-      <TextBlock Text=" 胜率" Style="{StaticResource Caption}" VerticalAlignment="Center" Margin="0,0,18,0"/>
+      <TextBlock Text="{DynamicResource I18n.WinRateSuffix}" Style="{StaticResource Caption}" VerticalAlignment="Center" Margin="0,0,18,0"/>
       <TextBlock x:Name="ResultsMetric" Style="{StaticResource Caption}" VerticalAlignment="Center"/>
       <StackPanel x:Name="RecentPanel" DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
         <TextBlock x:Name="RecentLabel" Style="{StaticResource Caption}" VerticalAlignment="Center" Margin="0,0,8,0"/>
@@ -119,18 +119,18 @@
         <Grid.RowDefinitions><RowDefinition Height="32"/><RowDefinition/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
         <Border x:Name="ColumnHeaderHost" BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1">
           <local:HistoryTableGrid x:Name="ColumnHeaders" ModeWidth="{Binding ModeColumnWidth,RelativeSource={RelativeSource AncestorType=local:HistoryView}}" ScoreWidth="{Binding ScoreColumnWidth,RelativeSource={RelativeSource AncestorType=local:HistoryView}}" TagWidth="{Binding TagColumnWidth,RelativeSource={RelativeSource AncestorType=local:HistoryView}}" SnapsToDevicePixels="True">
-            <TextBlock Text="比分" Style="{StaticResource ColumnLabel}" HorizontalAlignment="Center"/>
-            <TextBlock Grid.Column="1" Text="己方角色" Style="{StaticResource ColumnLabel}" Margin="48,0,8,0"/>
-            <TextBlock Grid.Column="3" Text="对手角色" Style="{StaticResource ColumnLabel}" Margin="48,0,8,0"/>
-            <TextBlock Grid.Column="4" Text="模式" Style="{StaticResource ColumnLabel}" Margin="4,0,4,0" Visibility="{Binding ShowModeColumn,RelativeSource={RelativeSource AncestorType=local:HistoryView},Converter={StaticResource VisibleWhenTrue}}"/>
-            <TextBlock Grid.Column="5" Text="赛后分数" Style="{StaticResource ColumnLabel}" HorizontalAlignment="Right" Margin="8,0,8,0" Visibility="{Binding ShowScoreColumns,RelativeSource={RelativeSource AncestorType=local:HistoryView},Converter={StaticResource VisibleWhenTrue}}"/>
-            <TextBlock Grid.Column="6" Text="时间" Style="{StaticResource ColumnLabel}" HorizontalAlignment="Right" Margin="0,0,14,0"/>
-            <TextBlock Grid.Column="7" Text="标签" Style="{StaticResource ColumnLabel}" Margin="11,0,8,0"/>
+            <TextBlock Text="{DynamicResource I18n.RoundScore}" Style="{StaticResource ColumnLabel}" HorizontalAlignment="Center"/>
+            <TextBlock Grid.Column="1" Text="{DynamicResource I18n.YourCharacter}" Style="{StaticResource ColumnLabel}" Margin="48,0,8,0"/>
+            <TextBlock Grid.Column="3" Text="{DynamicResource I18n.OpponentCharacter}" Style="{StaticResource ColumnLabel}" Margin="48,0,8,0"/>
+            <TextBlock Grid.Column="4" Text="{DynamicResource I18n.Mode}" Style="{StaticResource ColumnLabel}" Margin="4,0,4,0" Visibility="{Binding ShowModeColumn,RelativeSource={RelativeSource AncestorType=local:HistoryView},Converter={StaticResource VisibleWhenTrue}}"/>
+            <TextBlock Grid.Column="5" Text="{DynamicResource I18n.PostMatchScore}" Style="{StaticResource ColumnLabel}" HorizontalAlignment="Right" Margin="8,0,8,0" Visibility="{Binding ShowScoreColumns,RelativeSource={RelativeSource AncestorType=local:HistoryView},Converter={StaticResource VisibleWhenTrue}}"/>
+            <TextBlock Grid.Column="6" Text="{DynamicResource I18n.Time}" Style="{StaticResource ColumnLabel}" HorizontalAlignment="Right" Margin="0,0,14,0"/>
+            <TextBlock Grid.Column="7" Text="{DynamicResource I18n.Tags}" Style="{StaticResource ColumnLabel}" Margin="11,0,8,0"/>
           </local:HistoryTableGrid>
         </Border>
         <ListBox x:Name="MatchesList" Grid.Row="1" Padding="0" BorderThickness="0" Background="Transparent" HorizontalContentAlignment="Stretch" ItemContainerStyle="{StaticResource MatchItem}" ItemTemplate="{StaticResource MatchRow}"
                  SelectionChanged="Matches_SelectionChanged" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.CanContentScroll="True" ScrollViewer.VerticalScrollBarVisibility="Auto"
-                 VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.IsVirtualizingWhenGrouping="True" VirtualizingPanel.ScrollUnit="Pixel" AutomationProperties.Name="战绩列表">
+                 VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.IsVirtualizingWhenGrouping="True" VirtualizingPanel.ScrollUnit="Pixel" AutomationProperties.Name="{DynamicResource I18n.MatchList}">
           <ListBox.GroupStyle><GroupStyle>
             <GroupStyle.ContainerStyle><Style TargetType="GroupItem"><Setter Property="Template"><Setter.Value><ControlTemplate TargetType="GroupItem"><StackPanel><ContentPresenter/><ItemsPresenter/></StackPanel></ControlTemplate></Setter.Value></Setter></Style></GroupStyle.ContainerStyle>
             <GroupStyle.HeaderTemplate><DataTemplate>
@@ -140,17 +140,17 @@
             </DataTemplate></GroupStyle.HeaderTemplate>
           </GroupStyle></ListBox.GroupStyle>
         </ListBox>
-        <StackPanel x:Name="InitialLoadingIndicator" Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False" Visibility="Collapsed" AutomationProperties.Name="正在加载战绩">
+        <StackPanel x:Name="InitialLoadingIndicator" Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False" Visibility="Collapsed" AutomationProperties.Name="{DynamicResource I18n.LoadingMatches}">
           <ContentControl Style="{StaticResource LoadingSpinner}" VerticalAlignment="Center"/>
-          <TextBlock Text="加载中" Style="{StaticResource Caption}" VerticalAlignment="Center" Margin="8,0,0,0"/>
+          <TextBlock Text="{DynamicResource I18n.Loading}" Style="{StaticResource Caption}" VerticalAlignment="Center" Margin="8,0,0,0"/>
         </StackPanel>
         <TextBlock x:Name="EmptyHint" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource Ink3}" IsHitTestVisible="False" Visibility="Collapsed"/>
         <Grid Grid.Row="2" Height="32">
-          <StackPanel x:Name="LoadingIndicator" Orientation="Horizontal" HorizontalAlignment="Center" Visibility="Hidden" AutomationProperties.Name="正在加载战绩">
+          <StackPanel x:Name="LoadingIndicator" Orientation="Horizontal" HorizontalAlignment="Center" Visibility="Hidden" AutomationProperties.Name="{DynamicResource I18n.LoadingMatches}">
             <ContentControl Style="{StaticResource LoadingSpinner}" VerticalAlignment="Center"/>
-            <TextBlock Text="加载中" Style="{StaticResource Caption}" VerticalAlignment="Center" Margin="8,0,0,0"/>
+            <TextBlock Text="{DynamicResource I18n.Loading}" Style="{StaticResource Caption}" VerticalAlignment="Center" Margin="8,0,0,0"/>
           </StackPanel>
-          <TextBlock x:Name="EndIndicator" Text="已经到最底了" Style="{StaticResource Caption}" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Hidden"/>
+          <TextBlock x:Name="EndIndicator" Text="{DynamicResource I18n.EndOfRecords}" Style="{StaticResource Caption}" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Hidden"/>
         </Grid>
       </Grid>
     </Border>

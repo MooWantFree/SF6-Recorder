@@ -11,7 +11,7 @@ namespace Sf6Prototype;
 public sealed class LoginWindow : Window
 {
     private readonly WebView2 _browser = new();
-    private readonly TextBlock _address = new() { Margin = new Thickness(12), Text = "正在打开 CAPCOM 官网…", TextTrimming = TextTrimming.CharacterEllipsis };
+    private readonly TextBlock _address = new() { Margin = new Thickness(12), Text = Strings.OpeningCapcom, TextTrimming = TextTrimming.CharacterEllipsis };
     private readonly TaskCompletionSource<SavedSession?> _completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly ConnectionSettings _settings;
     private readonly CookieVault _vault;
@@ -25,7 +25,7 @@ public sealed class LoginWindow : Window
     {
         Owner = owner; _settings = settings; _vault = vault;
         Icon = (System.Windows.Media.ImageSource)FindResource("AppIcon");
-        Title = "登录 CAPCOM ID"; Width = 1100; Height = 820; MinWidth = 800; MinHeight = 650;
+        Title = Strings.SignInCapcom; Width = 1100; Height = 820; MinWidth = 800; MinHeight = 650;
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
         var grid = new Grid(); grid.RowDefinitions.Add(new() { Height = GridLength.Auto }); grid.RowDefinitions.Add(new());
         grid.Children.Add(_address); Grid.SetRow(_browser, 1); grid.Children.Add(_browser); Content = grid;
@@ -55,7 +55,7 @@ public sealed class LoginWindow : Window
         }
         catch (Exception ex)
         {
-            _address.Text = $"登录窗口无法启动：{ex.GetType().Name}。请检查 WebView2 Runtime 和代理设置。";
+            _address.Text = Localization.Format(Strings.LoginWindowFailed, ex.GetType().Name);
         }
     }
     private void Configure(CoreWebView2 core)
@@ -73,7 +73,7 @@ public sealed class LoginWindow : Window
             using var deferral = e.GetDeferral(); e.Handled = true;
             if (_closed || !Uri.TryCreate(e.Uri, UriKind.Absolute, out var uri) || uri.Scheme != "https") return;
             var view = new WebView2();
-            var popup = new Window { Owner = this, Icon = this.Icon, Title = "CAPCOM 官方登录", Width = 1000, Height = 800, Content = view, WindowStartupLocation = WindowStartupLocation.CenterOwner };
+            var popup = new Window { Owner = this, Icon = this.Icon, Title = Strings.OfficialCapcomSignIn, Width = 1000, Height = 800, Content = view, WindowStartupLocation = WindowStartupLocation.CenterOwner };
             _popups.Add(popup);
             popup.Closed += (_, _) => { view.Dispose(); _popups.Remove(popup); if (!_closed && !_finishing) _browser.CoreWebView2.Reload(); };
             popup.Show();
@@ -82,7 +82,7 @@ public sealed class LoginWindow : Window
                 await view.EnsureCoreWebView2Async(_environment); Configure(view.CoreWebView2);
                 view.CoreWebView2.WindowCloseRequested += (_, _) => popup.Close(); e.NewWindow = view.CoreWebView2;
             }
-            catch { popup.Close(); _address.Text = "登录弹窗未能打开，请重试。"; }
+            catch { popup.Close(); _address.Text = Strings.LoginPopupFailed; }
         };
         core.DownloadStarting += (_, e) => e.Cancel = true;
     }
@@ -131,7 +131,7 @@ public sealed class LoginWindow : Window
             await _browser.CoreWebView2.Profile.ClearBrowsingDataAsync(CoreWebView2BrowsingDataKinds.AllProfile);
             _completion.TrySetResult(session); Close();
         }
-        catch { _finishing = false; _address.Text = "登录状态未能保存，请重试。"; }
+        catch { _finishing = false; _address.Text = Strings.LoginSaveFailed; }
     }
     protected override void OnClosed(EventArgs e)
     {

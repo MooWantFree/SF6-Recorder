@@ -28,11 +28,11 @@ public sealed class TagBrushConverter : IValueConverter
 // The same compact picker edits a replay's tags or filters the current player's favorites.
 public sealed class TagPicker : Popup
 {
-    private readonly TextBox _input=new() {MaxLength=32,Margin=new(0,0,6,0),ToolTip="输入标签名称"};
+    private readonly TextBox _input=new() {MaxLength=32,Margin=new(0,0,6,0),ToolTip=Strings.EnterTagName};
     private readonly WrapPanel _choices=new();
     private readonly TextBlock _error=new() {TextWrapping=TextWrapping.Wrap,Margin=new(0,6,0,0),Visibility=Visibility.Collapsed};
-    private readonly Button _add=new() {Content="添加",MinWidth=52};
-    private readonly ComboBox _match=new() {Width=114,ItemsSource=new[]{"任一标签","同时包含"},SelectedIndex=0};
+    private readonly Button _add=new() {Content=Strings.Add,MinWidth=52};
+    private readonly ComboBox _match=new() {Width=142,ItemsSource=new[]{Strings.AnyTag,Strings.AllTagsMatch},SelectedIndex=0};
     private readonly Grid _filterOptions=new() {Margin=new(0,8,0,0)};
     private readonly HashSet<string> _selected=new(StringComparer.OrdinalIgnoreCase);
     private BattleStore? _store;
@@ -50,11 +50,11 @@ public sealed class TagPicker : Popup
         content.Children.Add(new ScrollViewer {Content=_choices,MaxHeight=240,HorizontalScrollBarVisibility=ScrollBarVisibility.Disabled,VerticalScrollBarVisibility=ScrollBarVisibility.Auto,Margin=new(0,8,0,0)});
         _filterOptions.ColumnDefinitions.Add(new());_filterOptions.ColumnDefinitions.Add(new() {Width=GridLength.Auto});
         _filterOptions.Children.Add(_match);_match.HorizontalAlignment=HorizontalAlignment.Left;
-        var clear=new Button {Content="清空",Style=(Style)Application.Current.FindResource("GhostButton")};Grid.SetColumn(clear,1);_filterOptions.Children.Add(clear);
+        var clear=new Button {Content=Strings.Clear,Style=(Style)Application.Current.FindResource("GhostButton")};Grid.SetColumn(clear,1);_filterOptions.Children.Add(clear);
         content.Children.Add(_filterOptions);content.Children.Add(_error);
         Child=new ContentControl {Style=(Style)Application.Current.FindResource("PopupSurface"),Margin=new Thickness(0),Content=content,Width=308,Padding=new Thickness(10)};
         _error.SetResourceReference(TextBlock.ForegroundProperty,"Loss");
-        AutomationProperties.SetName(_input,"搜索或添加标签");
+        AutomationProperties.SetName(_input,Strings.SearchOrAddTags);
         _input.TextChanged+=(_,_)=>RenderChoices();
         _input.KeyDown+=(_,e)=> {if(e.Key==Key.Enter && _battle!=null) {AddTyped();e.Handled=true;}else if(e.Key==Key.Escape) {IsOpen=false;e.Handled=true;}};
         _add.Click+=(_,_)=>AddTyped();
@@ -81,7 +81,7 @@ public sealed class TagPicker : Popup
         PlacementTarget=target;
         _filterOptions.Visibility=filtering ? Visibility.Visible : Visibility.Collapsed;
         _add.Visibility=filtering ? Visibility.Collapsed : Visibility.Visible;
-        _input.ToolTip=filtering ? "搜索标签" : "输入标签名称，Enter 添加";
+        _input.ToolTip=filtering ? Strings.SearchTags : Strings.TagNameEnterToAdd;
         _input.Clear();_error.Visibility=Visibility.Collapsed;RenderChoices();IsOpen=true;
     }
     private void RenderChoices()
@@ -92,7 +92,7 @@ public sealed class TagPicker : Popup
             var row=new CheckBox {Content=tag.Name,DataContext=tag,IsChecked=_selected.Contains(tag.Name),Margin=new Thickness(0,0,5,5),Style=(Style)Application.Current.FindResource("TagChoice"),ToolTip=tag.Name};
             row.Checked+=(_,_)=>Toggle(tag,true);row.Unchecked+=(_,_)=>Toggle(tag,false);_choices.Children.Add(row);
         }
-        if(_choices.Children.Count==0) _choices.Children.Add(new TextBlock {Text=_battle!=null && _input.Text.Length>0 ? "Enter 创建标签" : "暂无匹配标签",Style=(Style)Application.Current.FindResource("Caption"),Margin=new Thickness(2,4,0,4)});
+        if(_choices.Children.Count==0) _choices.Children.Add(new TextBlock {Text=_battle!=null && _input.Text.Length>0 ? Strings.EnterToCreateTag : Strings.NoMatchingTags,Style=(Style)Application.Current.FindResource("Caption"),Margin=new Thickness(2,4,0,4)});
         _match.IsEnabled=_selected.Count>1;
     }
     private void Toggle(MatchTag tag,bool selected)
@@ -112,7 +112,7 @@ public sealed class TagPicker : Popup
                 _match.IsEnabled=_selected.Count>1;FilterChanged();
             }
         }
-        catch(Exception ex) when(ex is ArgumentException or Microsoft.Data.Sqlite.SqliteException) {Error(ex is ArgumentException ? ex.Message : "标签保存失败，请重试。");RenderChoices();}
+        catch(Exception ex) when(ex is ArgumentException or Microsoft.Data.Sqlite.SqliteException) {Error(ex is ArgumentException ? ex.Message : Strings.TagSaveFailed);RenderChoices();}
     }
     private void AddTyped()
     {
@@ -124,7 +124,7 @@ public sealed class TagPicker : Popup
             _selected.Add(name);
             _error.Visibility=Visibility.Collapsed;_edited?.Invoke();_input.Clear();RenderChoices();_input.Focus();
         }
-        catch(Exception ex) when(ex is ArgumentException or Microsoft.Data.Sqlite.SqliteException) {Error(ex is ArgumentException ? ex.Message : "标签保存失败，请重试。");}
+        catch(Exception ex) when(ex is ArgumentException or Microsoft.Data.Sqlite.SqliteException) {Error(ex is ArgumentException ? ex.Message : Strings.TagSaveFailed);}
     }
     private void Error(string text) {_error.Text=text;_error.Visibility=Visibility.Visible;}
     private void FilterChanged() {if(!_updating) _filtered?.Invoke(_selected.ToArray(),_match.SelectedIndex==1);}

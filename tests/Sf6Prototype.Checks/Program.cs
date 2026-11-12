@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Sf6Prototype;
 
+Localization.Apply("zh");
 var assertions = 0;
 void Check(bool condition, string description)
 {
@@ -58,4 +59,7 @@ assertions += await PlayerSearchChecks.Run();
 assertions += await TagChecks.Run();
 assertions += FavoriteChecks.Run();
 assertions += await RefreshProgressChecks.Run();
+assertions += LocalizationChecks.Run();
+assertions += await CharacterNameChecks.Run();
+assertions += await BundledCharacterNameChecks.Run();
 Console.WriteLine($"Passed {assertions} checks.");

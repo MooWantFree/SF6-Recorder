@@ -26,7 +26,7 @@ public sealed class CookieVault(string directory)
     }
     public void Save(SavedSession session)
     {
-        if (!System.Text.RegularExpressions.Regex.IsMatch(session.AccountId, @"^\d{10}$")) throw new ArgumentException("无效的账号 ID。");
+        if (!System.Text.RegularExpressions.Regex.IsMatch(session.AccountId, @"^\d{10}$")) throw new ArgumentException(Strings.InvalidAccountId);
         var plain = JsonSerializer.SerializeToUtf8Bytes(session);
         try
         {
@@ -40,7 +40,7 @@ public sealed class CookieVault(string directory)
     }
     private string AccountPath(string id)
     {
-        if (!System.Text.RegularExpressions.Regex.IsMatch(id, @"^\d{10}$")) throw new ArgumentException("无效的账号 ID。");
+        if (!System.Text.RegularExpressions.Regex.IsMatch(id, @"^\d{10}$")) throw new ArgumentException(Strings.InvalidAccountId);
         return Path.Combine(directory, "Accounts", id + ".dpapi");
     }
     private SavedSession? ReadAccount(string path)
@@ -65,7 +65,7 @@ public sealed class CookieVault(string directory)
     }
     public SavedSession Activate(string id)
     {
-        var session = ReadAccount(AccountPath(id)) ?? throw new InvalidDataException("此账号已登出，请重新登录。");
+        var session = ReadAccount(AccountPath(id)) ?? throw new InvalidDataException(Strings.AccountSignedOut);
         Save(session); return session;
     }
     public void Remove(string id)

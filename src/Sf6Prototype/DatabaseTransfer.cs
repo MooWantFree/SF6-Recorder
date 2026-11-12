@@ -17,14 +17,14 @@ public static class DatabaseTransfer
     private static void DistinctFiles(string source,string destination)
     {
         if(new[]{source,source+"-wal",source+"-shm",source+"-journal"}.Any(p=>string.Equals(Path.GetFullPath(p),Path.GetFullPath(destination),StringComparison.OrdinalIgnoreCase)))
-            throw new ArgumentException("请选择当前数据库之外的文件。");
+            throw new ArgumentException(Strings.ChooseDifferentDatabase);
     }
     public static Task BackupAsync(string source,string destination,CancellationToken token=default) => Task.Run(()=>Backup(source,destination,token),token);
     public static void Backup(string source,string destination,CancellationToken token=default)
     {
         source=Path.GetFullPath(source); destination=Path.GetFullPath(destination); DistinctFiles(source,destination);
         if(new[]{"-wal","-shm","-journal"}.Any(s=>File.Exists(destination+s)))
-            throw new ArgumentException("目标文件仍有数据库日志，请选择新的备份文件名。");
+            throw new ArgumentException(Strings.BackupJournalExists);
         token.ThrowIfCancellationRequested();
         var temporary=destination+"."+Guid.NewGuid().ToString("N")+".tmp";
         try
@@ -99,7 +99,7 @@ public static class DatabaseTransfer
             }
             token.ThrowIfCancellationRequested();
             cmd.CommandText="PRAGMA foreign_key_check";
-            using(var reader=cmd.ExecuteReader()) if(reader.Read()) throw new InvalidDataException("数据库中的关联记录不完整。");
+            using(var reader=cmd.ExecuteReader()) if(reader.Read()) throw new InvalidDataException(Strings.DatabaseLinksIncomplete);
             tx.Commit(); return new(added,total-added,backup);
         }
         finally { DeleteTemporary(snapshot); }
@@ -107,14 +107,14 @@ public static class DatabaseTransfer
     private static void CheckIntegrity(SqliteConnection db)
     {
         using var cmd=db.CreateCommand(); cmd.CommandText="PRAGMA integrity_check";
-        if(cmd.ExecuteScalar() as string!="ok") throw new InvalidDataException("数据库文件损坏，无法使用。");
+        if(cmd.ExecuteScalar() as string!="ok") throw new InvalidDataException(Strings.DatabaseCorrupt);
     }
     private static void ValidateArchive(SqliteConnection db,CancellationToken token)
     {
         CheckIntegrity(db);
         using var cmd=db.CreateCommand(); cmd.CommandText="PRAGMA user_version";
         var version=Convert.ToInt32(cmd.ExecuteScalar());
-        if(version is not (3 or 4)) throw new InvalidDataException("此数据库版本不兼容，请选择当前应用生成的备份。");
+        if(version is not (3 or 4)) throw new InvalidDataException(Strings.DatabaseVersionUnsupported);
         var schemas=new Dictionary<string,string[]>
         {
             ["battles"]=["owner_id","replay_id","category","played_at","character_id","character","opponent","outcome","lp","mr","data_json","saved_at"],
@@ -128,11 +128,11 @@ public static class DatabaseTransfer
             cmd.CommandText="SELECT sql FROM sqlite_master WHERE type='table' AND name=$name";
             cmd.Parameters.Clear(); cmd.Parameters.AddWithValue("$name",table);
             if(cmd.ExecuteScalar() is not string definition || !definition.StartsWith("CREATE TABLE",StringComparison.OrdinalIgnoreCase))
-                throw new InvalidDataException("请选择街霸 6 战绩的数据库备份。");
+                throw new InvalidDataException(Strings.ChooseAppBackup);
             cmd.CommandText=$"PRAGMA table_info({table})"; cmd.Parameters.Clear();
             using var reader=cmd.ExecuteReader(); var actual=new List<string>();
             while(reader.Read()) actual.Add(reader.GetString(1));
-            if(!actual.SequenceEqual(columns)) throw new InvalidDataException("数据库结构不兼容。");
+            if(!actual.SequenceEqual(columns)) throw new InvalidDataException(Strings.DatabaseSchemaUnsupported);
         }
         cmd.CommandText="SELECT owner_id,replay_id,category,played_at,character_id,data_json,character,opponent,outcome,lp,mr,saved_at FROM battles";
         using(var reader=cmd.ExecuteReader()) while(reader.Read())
@@ -140,7 +140,7 @@ public static class DatabaseTransfer
             token.ThrowIfCancellationRequested();
             Battle? battle;
             try { battle=JsonSerializer.Deserialize<Battle>(reader.GetString(5)); }
-            catch(JsonException) { throw new InvalidDataException("备份中有无法读取的战绩。"); }
+            catch(JsonException) { throw new InvalidDataException(Strings.BackupUnreadableMatches); }
             if(battle==null || !new PlayerIdentity(battle.OwnerId,battle.PlayerName).IsValid || string.IsNullOrWhiteSpace(battle.ReplayId) ||
                 battle.OwnerId!=reader.GetString(0) || battle.ReplayId!=reader.GetString(1) || battle.Category!=reader.GetString(2) ||
                 battle.PlayedAt!=reader.GetInt64(3) || battle.CharacterId!=reader.GetInt32(4) ||
@@ -148,21 +148,21 @@ public static class DatabaseTransfer
                 battle.Lp!=(reader.IsDBNull(9) ? (int?)null : reader.GetInt32(9)) || battle.Mr!=(reader.IsDBNull(10) ? (int?)null : reader.GetInt32(10)) ||
                 !DateTimeOffset.TryParse(reader.GetString(11),out _) ||
                 battle.PlayedAt<0 || battle.PlayedAt>253402271999 || !BattleCategory.All.Any(c=>c.Key==battle.Category))
-                throw new InvalidDataException("备份中的战绩信息不一致。");
+                throw new InvalidDataException(Strings.BackupInconsistentMatches);
         }
         cmd.CommandText="PRAGMA foreign_key_check";
-        using(var reader=cmd.ExecuteReader()) if(reader.Read()) throw new InvalidDataException("备份中的关联记录不完整。");
+        using(var reader=cmd.ExecuteReader()) if(reader.Read()) throw new InvalidDataException(Strings.BackupLinksIncomplete);
         cmd.CommandText="""
             SELECT COUNT(*) FROM sync_state s WHERE COALESCE(category,'') NOT IN ('rank','casual','custom','hub')
               OR owner_id IS NULL OR length(owner_id)<>10 OR owner_id GLOB '*[^0-9]*' OR julianday(completed_at) IS NULL
               OR (frontier_id IS NOT NULL AND NOT EXISTS(SELECT 1 FROM battles b WHERE b.owner_id=s.owner_id AND b.category=s.category AND b.replay_id=s.frontier_id));
             """;
-        if(Convert.ToInt64(cmd.ExecuteScalar())!=0) throw new InvalidDataException("备份中的同步记录不完整。");
+        if(Convert.ToInt64(cmd.ExecuteScalar())!=0) throw new InvalidDataException(Strings.BackupSyncIncomplete);
         cmd.CommandText="""
             SELECT COUNT(*) FROM score_snapshots s LEFT JOIN battles b ON b.owner_id=s.owner_id AND b.replay_id=s.replay_id
             WHERE b.replay_id IS NULL OR s.character_id IS NOT b.character_id OR s.played_at IS NOT b.played_at OR s.lp IS NOT b.lp OR s.mr IS NOT b.mr;
             """;
-        if(Convert.ToInt64(cmd.ExecuteScalar())!=0) throw new InvalidDataException("备份中的分数记录与战绩不一致。");
+        if(Convert.ToInt64(cmd.ExecuteScalar())!=0) throw new InvalidDataException(Strings.BackupScoresInconsistent);
         cmd.CommandText="""
             SELECT COUNT(*) FROM score_links s
             LEFT JOIN battles a ON a.owner_id=s.owner_id AND a.replay_id=s.replay_id
@@ -170,7 +170,7 @@ public static class DatabaseTransfer
             WHERE a.replay_id IS NULL OR b.replay_id IS NULL OR a.category<>'rank' OR b.category<>'rank'
               OR a.character_id<>b.character_id OR b.played_at<a.played_at OR (b.played_at=a.played_at AND b.replay_id<=a.replay_id);
             """;
-        if(Convert.ToInt64(cmd.ExecuteScalar())!=0) throw new InvalidDataException("备份中的分数关联记录不完整。");
+        if(Convert.ToInt64(cmd.ExecuteScalar())!=0) throw new InvalidDataException(Strings.BackupScoreLinksIncomplete);
         if(version==4)
         {
             cmd.CommandText="SELECT name,color FROM tags";
@@ -178,7 +178,7 @@ public static class DatabaseTransfer
             {
                 token.ThrowIfCancellationRequested();
                 try {if(reader.IsDBNull(0) || TagNames.Normalize(reader.GetString(0))!=reader.GetString(0) || reader.IsDBNull(1) || reader.GetInt32(1)<0) throw new ArgumentException();}
-                catch(ArgumentException) {throw new InvalidDataException("备份中的标签无效。");}
+                catch(ArgumentException) {throw new InvalidDataException(Strings.BackupTagsInvalid);}
             }
             cmd.CommandText="""
                 SELECT COUNT(*) FROM battle_tags t
@@ -186,7 +186,7 @@ public static class DatabaseTransfer
                 LEFT JOIN battles b ON b.owner_id=t.owner_id AND b.replay_id=t.replay_id
                 WHERE c.name IS NULL OR b.replay_id IS NULL;
                 """;
-            if(Convert.ToInt64(cmd.ExecuteScalar())!=0) throw new InvalidDataException("备份中的标签关联不完整。");
+            if(Convert.ToInt64(cmd.ExecuteScalar())!=0) throw new InvalidDataException(Strings.BackupTagLinksIncomplete);
         }
     }
     private static void DeleteTemporary(string path)

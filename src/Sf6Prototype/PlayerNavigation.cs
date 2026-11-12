@@ -4,7 +4,7 @@ public sealed record PlayerIdentity(string Id, string Name)
 {
     public bool IsValid => Id is {Length:10} && Id.All(char.IsAsciiDigit) && Id.Any(c=>c!='0');
     public string DisplayName => string.IsNullOrWhiteSpace(Name) ? Id : Name;
-    public string DisplayNameFor(string? signedInId) => DisplayName + (IsValid && Id==signedInId ? "（我）" : "");
+    public string DisplayNameFor(string? signedInId) => DisplayName + (IsValid && Id==signedInId ? Strings.MeSuffix : "");
 }
 
 public sealed record HistoryScrollAnchor(string ReplayId,double Top);
@@ -37,9 +37,9 @@ public sealed record PlayerViewState
 
 public sealed record NavigationDestination(PlayerIdentity Player,PlayerViewState View,int Steps)
 {
-    public string Title => View.PageIndex==1 ? $"{Player.DisplayName} - 分数 - {(View.Scores.ShowMr ? "MR" : "LP")}" :
-        View.History.FavoritesOnly ? $"{(View.History.FavoritePlayer ?? Player).DisplayName} - 战绩 - 收藏" :
-        $"{Player.DisplayName} - 战绩 - {BattleCategory.All.FirstOrDefault(c=>c.Key==View.History.Category)?.ShortName ?? "全部"}";
+    public string Title => View.PageIndex==1 ? Localization.Format(Strings.ScoreNavigationTitle, Player.DisplayName, (View.Scores.ShowMr ? "MR" : "LP")) :
+        View.History.FavoritesOnly ? Localization.Format(Strings.FavoritesNavigationTitle, (View.History.FavoritePlayer ?? Player).DisplayName) :
+        Localization.Format(Strings.HistoryNavigationTitle, Player.DisplayName, BattleCategory.All.FirstOrDefault(c=>c.Key==View.History.Category)?.ShortName ?? Strings.All);
 }
 
 // Browsing a public player profile must never change the signed-in account.
@@ -62,7 +62,7 @@ public sealed class PlayerNavigation
 
     public void SetHome(PlayerIdentity home, bool preserveView = false)
     {
-        if (!home.IsValid) throw new ArgumentException("无效的玩家 UID。");
+        if (!home.IsValid) throw new ArgumentException(Strings.InvalidPlayerUid);
         var wasHome = IsHome;
         var sameAccount = Home.Id==home.Id;
         Home = home;
@@ -72,7 +72,7 @@ public sealed class PlayerNavigation
     }
     public void SelectCategory(string category)
     {
-        if(category!="" && !BattleCategory.All.Any(c=>c.Key==category)) throw new ArgumentException("未知战绩类别。");
+        if(category!="" && !BattleCategory.All.Any(c=>c.Key==category)) throw new ArgumentException(Strings.UnknownCategory);
         RememberView(View with {History=View.History with {Category=category}});
     }
     public void RememberView(PlayerViewState view)
@@ -83,7 +83,7 @@ public sealed class PlayerNavigation
     }
     public bool Visit(PlayerIdentity player)
     {
-        if (!player.IsValid) throw new ArgumentException("无效的玩家 UID。");
+        if (!player.IsValid) throw new ArgumentException(Strings.InvalidPlayerUid);
         if (player.Id == Current.Id) return false;
         if (Current.IsValid) _back.Push(new(Current,View));
         _forward.Clear();

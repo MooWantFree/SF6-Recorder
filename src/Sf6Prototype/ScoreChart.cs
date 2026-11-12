@@ -97,7 +97,7 @@ public sealed class ScoreChart : FrameworkElement
         FormattedText Text(string text, Brush color) => new(text, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, new Typeface("Segoe UI"), 11, color, dpi);
         if (_points.Count == 0)
         {
-            var empty = new FormattedText(EmptyText, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, new Typeface("Microsoft YaHei UI"), 13, Res("Ink3"), dpi);
+            var empty = new FormattedText(EmptyText, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, new Typeface((FontFamily)FindResource("UiFont"),FontStyles.Normal,FontWeights.Normal,FontStretches.Normal), 13, Res("Ink3"), dpi);
             dc.DrawText(empty, new Point((width - empty.Width) / 2, (height - empty.Height) / 2)); return;
         }
         var (low, high, step) = NiceScale(_points.Min(p => p.Value), _points.Max(p => p.Value));

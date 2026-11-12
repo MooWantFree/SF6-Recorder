@@ -22,6 +22,7 @@ public partial class MainWindow : Window
     private BattleStore _store = null!;
     private CookieVault _vault = null!;
     private ProfileCache _profiles = null!;
+    private CharacterNameUpdater? _characterNames;
     private Archive _archive = null!;
     private ConnectionSettings _settings = new();
     private bool _ready, _busy, _closeRequested, _reloadingLocal, _restoringView;
@@ -38,8 +39,7 @@ public partial class MainWindow : Window
     private readonly Dictionary<string,BattlePager> _pagers=[];
     private BattlePager Pager => _pagers.TryGetValue(_navigation.Current.Id,out var pager) ? pager : _pagers[_navigation.Current.Id]=new(_store,_navigation.Current.Id);
     private SyncResult? _lastSync;
-    private Action? _noticeAction;
-    private readonly DispatcherTimer _noticeTimer = new() { Interval = TimeSpan.FromSeconds(5) };
+    private bool _savingSettings;
     private readonly DispatcherTimer _refreshReminderTimer = new() {Interval=TimeSpan.FromSeconds(30)};
     private readonly DispatcherTimer _autoRefreshTimer = new();
     private readonly AutoRefreshSchedule _autoRefresh = new();
@@ -78,7 +78,6 @@ public partial class MainWindow : Window
             else if (e.Key == Key.OemComma) { e.Handled = true; OpenSettings(); }
             else if (e.Key == Key.K) { e.Handled=true; OpenPlayerSearch(); }
         };
-        _noticeTimer.Tick += (_, _) => HideNotice();
         _refreshReminderTimer.Tick += (_,_)=>UpdateRefreshReminder();
         _autoRefreshTimer.Tick += AutoRefresh_Tick;
         History.SelectionChanged += row => { if (!_reloadingLocal && PageTabs.SelectedIndex == 0) {if(History.ActiveArchive is { } archive) Detail.Bind(archive);Detail.Show(row);if(_ready) RefreshViewedPlayerUi();} };
@@ -109,6 +108,15 @@ public partial class MainWindow : Window
         _vault = new CookieVault(App.DataDirectory);
         _playerSearch=new PlayerSearchHistory(App.DataDirectory);
         _profiles = new ProfileCache(App.DataDirectory);
+        _characterNames=new(_profiles.Names,()=>
+        {
+            var active=_vault.Load();
+            return active==null ? null : (new BucklerClient(_settings with {PlayerId=active.AccountId},active,_vault),active.AccountId);
+        },async token=>
+        {
+            await Task.Delay(400,token);
+            while(_busy || _savingSettings || _opponents.Values.Any(w=>w.QueryInProgress)) await Task.Delay(200,token);
+        },RefreshCharacterNames);
         _vault.Accounts();
         _store = new BattleStore(Path.Combine(App.DataDirectory, "battles.sqlite"));
         _archive = new Archive(_store, _profiles); History.Bind(_archive); Scores.Bind(_archive); Detail.Bind(_archive);
@@ -119,7 +127,7 @@ public partial class MainWindow : Window
         _ready = true; ReloadLocal();
         ConfigureRefreshReminder();
         ConfigureAutoRefresh();
-        SetStatus("ready", "就绪 · 浏览和筛选使用本地数据");
+        SetStatus("ready", Strings.ReadyLocalData);
         if (App.AutoSync) await SynchronizeAsync();
         if (App.Capture) await CaptureAllAsync();
     }
@@ -136,6 +144,24 @@ public partial class MainWindow : Window
         CancelButton.Visibility = announce ? Visibility.Visible : Visibility.Collapsed;
         foreach (var window in _opponents.Values) window.Suspended = busy;
         UpdateRefreshReminder();
+    }
+    private BucklerClient CreateClient(SavedSession session,string? owner=null)=>new(
+        owner==null ? _settings : _settings with {PlayerId=owner},session,_vault) {CharacterObserver=ObserveCharacterNames};
+    private void ObserveCharacterNames(CharacterObservation observation)
+    {
+        if(!App.Capture && !_closeRequested) _characterNames?.Observe(observation);
+    }
+    private void RefreshCharacterNames()
+    {
+        if(!_ready || _exitRequested) return;
+        var restoring=_restoringView;var reloading=_reloadingLocal;var detail=Detail.Row;
+        _restoringView=_reloadingLocal=true;
+        try
+        {
+            History.RefreshLanguage();Scores.RefreshLanguage();Detail.RefreshLanguage(detail);
+            foreach(var window in _opponents.Values) window.RefreshCharacterNames();
+        }
+        finally {_restoringView=restoring;_reloadingLocal=reloading;}
     }
     private void ConfigureRefreshReminder()
     {
@@ -180,10 +206,10 @@ public partial class MainWindow : Window
         var owner=session.AccountId;
         try
         {
-            await StopImageDownloadsAsync();
-            using var client=new BucklerClient(_settings with {PlayerId=owner},session,_vault);
+            await StopBackgroundDownloadsAsync();
+            using var client=CreateClient(session,owner);
             await client.ValidateAsync(token);
-            if(client.AccountId!=owner) throw new LoginRequiredException("登录账号已变更，请重新登录。");
+            if(client.AccountId!=owner) throw new LoginRequiredException(Strings.AccountChanged);
             var refreshed=await AccountRefresh.RunAsync(_store,client,owner,token);
             token.ThrowIfCancellationRequested();
             _pagers[owner]=refreshed.Pager;
@@ -228,20 +254,20 @@ public partial class MainWindow : Window
         _cancellation=new CancellationTokenSource(); var token=_cancellation.Token;
         try
         {
-            await StopImageDownloadsAsync();
+            await StopBackgroundDownloadsAsync();
             var session = await LoginWindow.SignInAsync(this, _settings, _vault);
             token.ThrowIfCancellationRequested();
-            if (session == null) { SetStatus("login_cancelled", "登录已取消，本地战绩仍可查看。"); return; }
+            if (session == null) { SetStatus("login_cancelled", Strings.SignInCancelledLocal); return; }
             SetActiveAccount(session, preserveView: session.AccountId == _settings.PlayerId); ReloadLocal();
-            using var client = new BucklerClient(_settings, session, _vault);
+            using var client = CreateClient(session);
             try
             {
                 var images = await _profiles.RefreshMetadataAsync(client, session.AccountId, token);
                 token.ThrowIfCancellationRequested();
                 StartImageDownloads(images);
             }
-            catch (Exception ex) when (ex is not OutOfMemoryException && ex is not OperationCanceledException) { SetStatus("profile_pending", "登录已保存；头像暂未更新，下次刷新重试。"); RefreshAccountUi(); return; }
-            RefreshAccountUi(); ReloadLocal(); SetStatus("logged_in", "登录已保存。");
+            catch (Exception ex) when (ex is not OutOfMemoryException && ex is not OperationCanceledException) { SetStatus("profile_pending", Strings.SessionSavedImagesPending); RefreshAccountUi(); return; }
+            RefreshAccountUi(); ReloadLocal(); SetStatus("logged_in", Strings.SessionSaved);
         }
         catch (OperationCanceledException) when(token.IsCancellationRequested) { }
         catch (Exception ex) { ReportError(ex); }
@@ -251,7 +277,7 @@ public partial class MainWindow : Window
     {
         var session = _vault.Load();
         var info = session == null ? null : _profiles.Profile(session.AccountId);
-        AccountName.Text = info?.Name ?? session?.AccountName ?? "登录";
+        AccountName.Text = info?.Name ?? session?.AccountName ?? Strings.SignIn;
         var picture = Pictures.Load(info?.AvatarPath, 96);
         AccountAvatar.Fill = picture == null ? Brushes.Transparent : new ImageBrush(picture) { Stretch = Stretch.UniformToFill };
         AccountsList.ItemsSource = _vault.Accounts().Select(s => new AccountChoice(s.AccountId, _profiles.Profile(s.AccountId)?.Name ?? s.AccountName,
@@ -281,7 +307,7 @@ public partial class MainWindow : Window
         if ((sender as Button)?.Tag is not string id) return;
         if(_vault.Load()?.AccountId==id) {AccountPopup.IsOpen=false;return;}
         var version=++_navigationVersion; await CancelDownloadsAsync(); if(version!=_navigationVersion) return;
-        try { SetActiveAccount(_vault.Activate(id)); AccountPopup.IsOpen = false; ReloadLocal(); SetStatus("account_switched", "已切换账号。"); }
+        try { SetActiveAccount(_vault.Activate(id)); AccountPopup.IsOpen = false; ReloadLocal(); SetStatus("account_switched", Strings.AccountSwitched); }
         catch (Exception ex) { ReportError(ex); }
     }
     private async void Logout_Click(object sender, RoutedEventArgs e)
@@ -289,29 +315,95 @@ public partial class MainWindow : Window
         if ((sender as Button)?.Tag is not string id) return;
         var session = _vault.Accounts().FirstOrDefault(s => s.AccountId == id); if (session == null) return;
         AccountPopup.IsOpen = false;
-        if (MessageBox.Show(this, $"是否登出「{session.AccountName}」？\n\n将移除此设备保存的登录，本地战绩保留。", "登出账号", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No) != MessageBoxResult.Yes) return;
+        if (MessageBox.Show(this, Localization.Format(Strings.SignOutConfirmation, session.AccountName), Strings.SignOutAccount, MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No) != MessageBoxResult.Yes) return;
         var version=++_navigationVersion; await CancelDownloadsAsync(); if(version!=_navigationVersion) return;
         _imageCancellation?.Cancel();
         var active = _vault.Load()?.AccountId == id; _vault.Remove(id); CloseOpponents();
         if (active && _vault.Accounts().FirstOrDefault() is { } next) SetActiveAccount(_vault.Activate(next.AccountId));
         else if (active) { _navigation.SetHome(_navigation.Home); History.ResetFilters(); Scores.ResetSelection(); }
-        RefreshAccountUi(); ReloadLocal(); SetStatus("logged_out", "账号已登出，本地战绩已保留。");
+        RefreshAccountUi(); ReloadLocal(); SetStatus("logged_out", Strings.SignedOutLocalKept);
     }
     private void Settings_Click(object sender, RoutedEventArgs e) => OpenSettings();
-    private void OpenSettings()
+    private async void OpenSettings()
     {
-        if (!_ready || _exitRequested) return;
+        if (!_ready || _exitRequested || _savingSettings) return;
         var dialog = CreateSettingsWindow();
         if (dialog.ShowDialog() != true || dialog.Result == null) return;
+        _savingSettings=true;
         try
         {
             var settings=dialog.Result with {PlayerId=_settings.PlayerId}; settings.Save(App.DataDirectory); _settings=settings;
             RequestGate.Shared.Interval=TimeSpan.FromSeconds(_settings.ApiIntervalSeconds);
             ConfigureRefreshReminder();
             ConfigureAutoRefresh();
-            SetStatus("settings_saved", _settings.UseProxy ? "设置已保存。下次登录和同步均通过所选代理。" : "设置已保存。下次登录和同步均直连。");
+            var language=Localization.Resolve(_settings.Language,Localization.SystemCulture).Name;
+            var languageChanged=language!=Localization.Culture.Name;
+            if(languageChanged)
+            {
+                await CancelDownloadsAsync();
+                if(_exitRequested) return;
+                ApplyLanguage();
+            }
+            SetStatus("settings_saved", _settings.UseProxy ? Strings.SettingsSavedProxy : Strings.SettingsSavedDirect);
+            var roster=_profiles.Characters.Select(c=>(c.Id,c.Name,c.ToolName)).ToList();
+            if(languageChanged && !App.Capture && _profiles.Names.NeedsLanguage(language,roster))
+            {
+                var session=_vault.Load();
+                if(session==null)
+                    ShowNotice(Strings.SavedCharacterNamesSignIn,false,Strings.SignIn,()=>_=LoginAsync());
+                else
+                    await (_foregroundTask=LoadLanguageNamesAsync(session,language,roster));
+            }
         }
         catch (Exception ex) { ReportError(ex); }
+        finally {_savingSettings=false;}
+    }
+
+    private async Task LoadLanguageNamesAsync(SavedSession session,string language,
+        IReadOnlyList<(int Id,string Name,string ToolName)> roster)
+    {
+        SetBusy(true,quiet:true,background:true);
+        _cancellation=new CancellationTokenSource();var token=_cancellation.Token;
+        Toast.BeginProgress(Strings.SavedLoadingCharacterNames);
+        try
+        {
+            using var client=CreateClient(session,session.AccountId);
+            client.Activity+=activity=>Toast.UpdateProgress(activity.Phase==RequestPhase.Waiting
+                ? Strings.SavedWaitingCharacterNames : Strings.SavedLoadingCharacterNames);
+            await _profiles.Names.EnsureLanguageAsync(client,session.AccountId,language,roster,token);
+            token.ThrowIfCancellationRequested();
+            ApplyLanguage();
+            Toast.CompleteProgress(Strings.SavedCharacterNamesReady);
+        }
+        catch(OperationCanceledException) when(token.IsCancellationRequested)
+        {Toast.CompleteProgress(Strings.SavedCharacterNamesCancelled);}
+        catch(LoginRequiredException)
+        {Toast.CompleteProgress(Strings.SavedCharacterNamesSignIn,true,Strings.SignInAgain,()=>_=LoginAsync());}
+        catch(Exception ex) when(ex is not OutOfMemoryException)
+        {Toast.CompleteProgress(Strings.SavedCharacterNamesFailed,true);}
+        finally
+        {
+            _cancellation.Dispose();_cancellation=null;
+            SetBusy(false);
+        }
+    }
+
+    private void ApplyLanguage()
+    {
+        var detail=Detail.Row;
+        // Rebuild only presentation state. Do not navigate, refresh, or reopen any remote page.
+        _restoringView=true; _reloadingLocal=true;
+        try
+        {
+            LocalizationWpf.Apply(_settings.Language);
+            History.RefreshLanguage(); Scores.RefreshLanguage();
+            Detail.RefreshLanguage(detail);
+            RefreshAccountUi(); RefreshViewedPlayerUi(); UpdateSearchEmptyState();
+            SetSearchError(null); HideNotice(); HideButtonProgress(); UpdateRefreshAction();
+            foreach(var window in _opponents.Values) window.RefreshLanguage();
+            _tray?.RefreshLanguage();
+        }
+        finally { _restoringView=false; _reloadingLocal=false; }
     }
 
     private SettingsWindow CreateSettingsWindow()
@@ -365,7 +457,7 @@ public partial class MainWindow : Window
     {
         if(PlayerSearchEmpty==null || PlayerSearchHistoryList==null) return;
         PlayerSearchEmpty.Visibility=PlayerSearchHistoryList.Items.Count==0 && !_searchingPlayer && PlayerSearchError.Visibility!=Visibility.Visible ? Visibility.Visible : Visibility.Collapsed;
-        PlayerSearchEmpty.Text=string.IsNullOrWhiteSpace(PlayerUidBox.Text) ? "暂无查询记录" : "无匹配的历史记录";
+        PlayerSearchEmpty.Text=string.IsNullOrWhiteSpace(PlayerUidBox.Text) ? Strings.NoSearchHistory : Strings.NoMatchingHistory;
     }
     private void UpdateSearchHistory()
     {
@@ -401,7 +493,7 @@ public partial class MainWindow : Window
         if(_searchingPlayer && _lookupUid==id && _cancellation?.IsCancellationRequested==false) return;
         var version=++_navigationVersion; await CancelDownloadsAsync(); if(version!=_navigationVersion || _exitRequested) return;
         var session=_vault.Load();
-        if(session==null) {SetSearchError("请先登录，再查询玩家。");return;}
+        if(session==null) {SetSearchError(Strings.SignInBeforeSearch);return;}
         var lookup=LookupPlayerCoreAsync(id,session); _foregroundTask=lookup;
         var player=await lookup;
         if(player==null || version!=_navigationVersion || _exitRequested) return;
@@ -418,7 +510,7 @@ public partial class MainWindow : Window
             }
             await ViewPlayerAsync(player);
         }
-        catch(Exception ex) { SetSearchError("无法保存查询结果，请检查数据目录权限。"); if(!PlayerSearchPopup.IsOpen) ReportError(ex); }
+        catch(Exception ex) { SetSearchError(Strings.SearchSaveFailed); if(!PlayerSearchPopup.IsOpen) ReportError(ex); }
     }
     private async Task<PlayerIdentity?> LookupPlayerCoreAsync(string id,SavedSession session)
     {
@@ -428,13 +520,13 @@ public partial class MainWindow : Window
         var token=_cancellation.Token;
         try
         {
-            using var client=new BucklerClient(_settings,session,_vault);
+            using var client=CreateClient(session);
             return await PlayerLookup.FindAsync(client,id,token);
         }
         catch(OperationCanceledException) when(token.IsCancellationRequested) {return null;}
         catch(Exception ex)
         {
-            SetSearchError(ex is InvalidDataException or ArgumentException ? ex.Message : ex is LoginRequiredException ? "登录已失效，请重新登录。" : "查询失败，请检查网络后重试。");
+            SetSearchError(ex is InvalidDataException or ArgumentException ? ex.Message : ex is LoginRequiredException ? Strings.SessionExpired : Strings.SearchFailed);
             return null;
         }
         finally
@@ -458,9 +550,9 @@ public partial class MainWindow : Window
         _stoppingRefresh=true;
         try
         {
-            ProgressStage("正在停止");
+            ProgressStage(Strings.Stopping);
             await CancelDownloadsAsync(silent:false);
-            if(!_closeRequested) ShowNotice("已停止，已下载的战绩已保留。");
+            if(!_closeRequested) ShowNotice(Strings.StoppedRecordsKept);
         }
         finally {_stoppingRefresh=false;}
     }
@@ -502,7 +594,7 @@ public partial class MainWindow : Window
         }
         try
         {
-            await StopImageDownloadsAsync();
+            await StopBackgroundDownloadsAsync();
             if(more && !pager.MoreNeedsNetwork(History.Filtered,category))
             {
                 await pager.LoadMoreAsync(null,category,History.Filtered,token,PageSaved);
@@ -512,10 +604,10 @@ public partial class MainWindow : Window
             var session = _vault.Load();
             if (session == null)
             {
-                SetStatus("login_needed", "请完成 CAPCOM 登录。");
-                ProgressStage("等待登录");
+                SetStatus("login_needed", Strings.CompleteCapcomSignIn);
+                ProgressStage(Strings.WaitingForSignIn);
                 session = await LoginWindow.SignInAsync(this, _settings, _vault);
-                if (session == null) { SetStatus("login_cancelled", "登录已取消。"); return; }
+                if (session == null) { SetStatus("login_cancelled", Strings.SignInCancelled); return; }
                 var sameAccount=session.AccountId==_settings.PlayerId;
                 SetActiveAccount(session, preserveView:sameAccount);
                 if(!sameAccount) requestedScores=Scores.Range;
@@ -523,10 +615,10 @@ public partial class MainWindow : Window
                 if(reset) pager.Reset(category);
             }
             _cancellation.Token.ThrowIfCancellationRequested();
-            using var client = new BucklerClient(_settings, session, _vault);
+            using var client = CreateClient(session);
             client.Activity+=RequestProgress;
-            ProgressStage("检查登录状态");
-            SetStatus("validating", "正在检查登录状态…");
+            ProgressStage(Strings.CheckingSession);
+            SetStatus("validating", Strings.CheckingSessionProgress);
             if(!more) await client.ValidateAsync(token);
             if (client.AccountId != _settings.PlayerId && _vault.Load() is { } validated)
             { SetActiveAccount(validated); requestedScores=Scores.Range; if(reset) Pager.Reset(category); }
@@ -540,7 +632,7 @@ public partial class MainWindow : Window
             var profileMessage = "";
             try
             {
-                SetStatus("profiles", "正在更新角色资料和头像…");
+                SetStatus("profiles", Strings.UpdatingProfilesProgress);
                 if(!more && (!scoreRange || pager.RankHeadFetched))
                 {
                     if(_progressVisible) {_refreshProgress.Metadata();UpdateButtonProgress();}
@@ -550,15 +642,15 @@ public partial class MainWindow : Window
                 }
             }
             catch (Exception ex) when (ex is not OperationCanceledException && ex is not OutOfMemoryException)
-            { profileMessage = " · 头像更新未完成，下次刷新重试"; }
+            { profileMessage = Strings.ImagesPendingSuffix; }
             _lastSync = _lastSync with { Requests = client.Requests };
             ReloadLocal(preserveViewport: true); RefreshAccountUi();
-            SetStatus("sync_complete", $"刷新完成 · 新增 {_lastSync.Inserted} 条 · {_lastSync.Pages} 页 · {_lastSync.Requests} 次 HTTP 请求{profileMessage}");
+            SetStatus(profileMessage.Length>0 ? "sync_complete_images_pending" : "sync_complete", Localization.Format(Strings.RefreshCompleteSummary, _lastSync.Inserted, _lastSync.Pages, _lastSync.Requests, profileMessage));
             completed=true;
             if(target==_settings.PlayerId) _autoRefresh.Resume(DateTimeOffset.UtcNow);
         }
         catch (OperationCanceledException) when (token.IsCancellationRequested)
-        { if(!_silentCancellation) SetStatus("cancelled", "已取消，已加载的战绩已保存。"); }
+        { if(!_silentCancellation) SetStatus("cancelled", Strings.CancelledLoadedSaved); }
         catch (Exception ex) { ReloadLocal(preserveViewport: true); ReportError(ex); }
         finally
         {
@@ -581,8 +673,8 @@ public partial class MainWindow : Window
             System.Net.Http.HttpRequestException => ex.Message,
             InvalidDataException => ex.Message,
             ArgumentException => ex.Message,
-            TaskCanceledException => "请求超时，请检查代理或网络连接后重试。",
-            _ => $"操作失败：{ex.GetType().Name}。已保存的数据不会丢失。"
+            TaskCanceledException => Strings.RequestTimedOut,
+            _ => Localization.Format(Strings.OperationFailed, ex.GetType().Name)
         };
         SetStatus(ex is LoginRequiredException ? "login_required" : "error", text);
     }
@@ -641,11 +733,12 @@ public partial class MainWindow : Window
         catch (OperationCanceledException) when (token.IsCancellationRequested) { }
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {
-            if (!_closeRequested && !token.IsCancellationRequested) SetStatus("images_pending", $"头像下载待重试：{ex.GetType().Name}");
+            if (!_closeRequested && !token.IsCancellationRequested) SetStatus("images_pending", Localization.Format(Strings.ImageRetryPending, ex.GetType().Name));
         }
     }
-    private async Task StopImageDownloadsAsync()
+    private async Task StopBackgroundDownloadsAsync()
     {
+        if(_characterNames!=null) await _characterNames.CancelAsync();
         var cancellation = _imageCancellation; var task = _imageTask;
         cancellation?.Cancel();
         if (task != null) await task;
@@ -664,7 +757,7 @@ public partial class MainWindow : Window
         RequestCancellation();
         _silentCancellation=silent;
         await _foregroundTask;
-        await StopImageDownloadsAsync();
+        await StopBackgroundDownloadsAsync();
     }
     private async Task CategoryChangedAsync()
     {
@@ -693,7 +786,7 @@ public partial class MainWindow : Window
         _navigation.UpdateName(_profiles.Profile(_navigation.Current.Id)?.Name ?? _archive.All.FirstOrDefault()?.PlayerName);
         var viewed=PageTabs.SelectedIndex==0 && History.FavoritesOnly ? History.FavoritePlayer ?? _navigation.Current : _navigation.Current;
         var signedInId=_vault.Load()?.AccountId;
-        ViewedPlayerName.Text = viewed.Id==signedInId ? "我的战绩" : viewed.DisplayName;
+        ViewedPlayerName.Text = viewed.Id==signedInId ? Strings.MyRecords : viewed.DisplayName;
         ViewedPlayerName.ToolTip = $"{viewed.DisplayName}\nUID {viewed.Id}";
         Detail.CurrentPlayerId=_navigation.Current.Id;
         Detail.IsFavoritesView=History.FavoritesOnly;
@@ -703,12 +796,12 @@ public partial class MainWindow : Window
         var lastUpdated = _store.LastSuccessfulLoad(viewed.Id);
         _viewingActiveAccount=viewed.Id==signedInId;
         _lastViewedUpdate=lastUpdated; UpdateRefreshReminder();
-        UpdatedLabel.Text = lastUpdated == null ? "" : "更新于 " + BattleDateDisplay.Timestamp(lastUpdated.Value.ToOffset(TimeSpan.FromHours(8)).ToString("yyyy-MM-dd HH:mm"));
+        UpdatedLabel.Text = lastUpdated == null ? "" : Strings.UpdatedAtPrefix + BattleDateDisplay.Timestamp(lastUpdated.Value.ToOffset(TimeSpan.FromHours(8)).ToString("yyyy-MM-dd HH:mm"));
     }
     private async Task ViewPlayerAsync(PlayerIdentity player)
     {
         if (!_ready || _exitRequested) return;
-        if (!player.IsValid) { ShowNotice("没有可用的玩家 UID。"); return; }
+        if (!player.IsValid) { ShowNotice(Strings.NoPlayerUid); return; }
         if(player.Id==_navigation.Current.Id && !History.FavoritesOnly) return;
         if(Detail.PendingPlayerId==player.Id) return;
         var version=++_navigationVersion;
@@ -782,12 +875,12 @@ public partial class MainWindow : Window
 
     private void OpenPlayerRanks(PlayerIdentity player)
     {
-        if(!player.IsValid) { ShowNotice("没有可用的玩家 UID。"); return; }
+        if(!player.IsValid) { ShowNotice(Strings.NoPlayerUid); return; }
         var session = _vault.Load();
-        if (session == null) { ShowNotice("请先登录。", true, "登录", () => _ = LoginAsync()); return; }
+        if (session == null) { ShowNotice(Strings.SignInFirst, true, Strings.SignIn, () => _ = LoginAsync()); return; }
         var id = player.Id;
         if (_opponents.TryGetValue(id, out var open)) { open.Activate(); return; }
-        var window = new OpponentWindow(this, id, player.DisplayName, _settings, session, _vault, _profiles) {Suspended=_busy};
+        var window = new OpponentWindow(this, id, player.DisplayName, _settings, session, _vault, _profiles,ObserveCharacterNames) {Suspended=_busy};
         _opponents[id] = window; window.Closed += (_, _) => _opponents.Remove(id);
         window.Show();
     }
@@ -808,30 +901,20 @@ public partial class MainWindow : Window
     }
 
     private void ShowNotice(string text, bool danger = false, string? actionText = null, Action? action = null)
-    {
-        NoticeText.Text = text;
-        NoticeText.Foreground = (Brush)FindResource(danger ? "Loss" : "Ink");
-        NoticeBar.Background = (Brush)FindResource(danger ? "DangerSoft" : "InfoSoft");
-        _noticeAction = action; NoticeAction.Content = actionText;
-        NoticeAction.Visibility = action == null ? Visibility.Collapsed : Visibility.Visible;
-        NoticeBar.Visibility = Visibility.Visible;
-        _noticeTimer.Stop(); if (!danger) _noticeTimer.Start();
-    }
-    private void HideNotice() { _noticeTimer.Stop(); NoticeBar.Visibility = Visibility.Collapsed; _noticeAction = null; }
-    private void DismissNotice_Click(object sender, RoutedEventArgs e) => HideNotice();
-    private void NoticeAction_Click(object sender, RoutedEventArgs e) { var action = _noticeAction; HideNotice(); action?.Invoke(); }
+        =>Toast.Show(text,danger,actionText,action);
+    private void HideNotice()=>Toast.Dismiss();
     private void SetStatus(string stage, string message)
     {
         switch (stage)
         {
-            case "error": ShowNotice(message.Contains("限流") ? "请求过于频繁，请稍后刷新。" : message.StartsWith("请输入") ? message : "暂时无法更新，请检查网络后重试。", true); break;
-            case "login_required": ShowNotice("登录已失效，请重新登录。", true, "重新登录", () => _ = LoginAsync()); break;
-            case "login_needed": ShowNotice("请先登录。"); break;
-            case "settings_saved": ShowNotice("已保存"); break;
-            case "cancelled": ShowNotice("已取消，已获取的战绩已保存。"); break;
-            case "profile_pending": ShowNotice("头像暂未更新，可稍后刷新。"); break;
-            case "sync_complete":
-                if (message.Contains("头像更新未完成")) ShowNotice("战绩已更新，头像可稍后刷新。");
+            case "error": ShowNotice(message, true); break;
+            case "login_required": ShowNotice(Strings.SessionExpired, true, Strings.SignInAgain, () => _ = LoginAsync()); break;
+            case "login_needed": ShowNotice(Strings.SignInFirst); break;
+            case "settings_saved": ShowNotice(Strings.Saved); break;
+            case "cancelled": ShowNotice(Strings.CancelledFetchedSaved); break;
+            case "profile_pending": ShowNotice(Strings.PortraitsNotUpdated); break;
+            case "sync_complete_images_pending":
+                ShowNotice(Strings.RecordsUpdatedImagesPending);
                 break;
         }
         var path = Path.Combine(App.DataDirectory, "status.json");
@@ -877,7 +960,7 @@ public partial class MainWindow : Window
                 {
                     var settings=_settings with {WindowCloseAction=choice};
                     try {settings.Save(App.DataDirectory);_settings=settings;}
-                    catch {ShowNotice("无法保存关闭方式，下次仍会询问。",true);}
+                    catch {ShowNotice(Strings.CloseActionSaveFailed,true);}
                 }
             }
             finally {_showingCloseChoice=false;}
@@ -913,5 +996,5 @@ public partial class MainWindow : Window
         _exitReady=true;Close();
     }
     protected override void OnClosed(EventArgs e)
-    { _tray?.Dispose();_noticeTimer.Stop();_refreshReminderTimer.Stop();_autoRefreshTimer.Stop();_progressTimer.Stop();base.OnClosed(e); }
+    { _tray?.Dispose();_refreshReminderTimer.Stop();_autoRefreshTimer.Stop();_progressTimer.Stop();base.OnClosed(e); }
 }

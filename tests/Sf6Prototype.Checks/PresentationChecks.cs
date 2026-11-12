@@ -71,7 +71,7 @@ public static class PresentationChecks
         }
         Check(CharacterRank.LeagueFromLp(null)==null && CharacterRank.LeagueFromLp(-1)==null && CharacterRank.LeagueFromLp(int.MaxValue)==36,"Unknown and placement LP remain distinct; high LP alone never implies Legend");
         Check(new CharacterRank(0,"CAMMY",13070,0,null,null) is {RankName:"Platinum I",ResolvedLeagueRank:26},"Legacy opponent rows display their LP-derived rank without network requests");
-        Check(new CharacterRank(1,"RYU",0,0,0,0).RankName=="未定级" && new CharacterRank(1,"RYU",-1,0,null,null).RankName==ScoreDisplay.NewChallenger,"Explicit placement status takes precedence over zero LP");
+        Check(new CharacterRank(1,"RYU",0,0,0,0).RankName=="Unranked" && new CharacterRank(1,"RYU",-1,0,null,null).RankName==ScoreDisplay.NewChallenger,"Explicit placement status takes precedence over zero LP");
         Check(new CharacterRank(1,"RYU",13000,0,25,0).RankName=="Gold V","A retained official league rank takes precedence over a fallback LP calculation");
         foreach(var (mr,name) in new[]{(1599,"Master"),(1600,"High Master"),(1699,"High Master"),(1700,"Grand Master"),(1799,"Grand Master"),(1800,"Ultimate Master")})
             Check(new CharacterRank(1,"RYU",25000,mr,null,null).RankName==name,$"Master boundary {mr} MR");

@@ -6,15 +6,16 @@ namespace Sf6Prototype;
 public static class ScoreDisplay
 {
     public const string NewChallenger = "New Challenger";
-    public const string EstimateExplanation = "推算：尚无下一场同角色排位记录，使用刷新时保存的官网当前分数与本局赛前分数计算差值，可能包含未收录对局的变化。";
+    public static string EstimateExplanation => Strings.ScoreEstimateExplanation;
     public static string Value(int? score) => score<0 ? NewChallenger : score?.ToString("N0") ?? "—";
     public static string WithUnit(int? score,string unit) => score<0 ? NewChallenger : $"{Value(score)} {unit}";
 }
 
-public record BattleCategory(string Key, string Name)
+public record BattleCategory(string Key, string NameKey)
 {
-    public string ShortName => Key switch { "rank" => "排位", "casual" => "休闲", "custom" => "比赛间", "hub" => "格斗中心", _ => "全部" };
-    public static readonly BattleCategory[] All = [new("rank", "排位赛"), new("casual", "休闲赛"), new("custom", "比赛间对战"), new("hub", "格斗中心对战")];
+    public string Name => Localization.Get(NameKey);
+    public string ShortName => Key switch { "rank" => Strings.RankedShort, "casual" => Strings.CasualShort, "custom" => Strings.CustomShort, "hub" => Strings.HubShort, _ => Strings.All };
+    public static readonly BattleCategory[] All = [new("rank", nameof(Strings.RankedMatch)), new("casual", nameof(Strings.CasualMatch)), new("custom", nameof(Strings.CustomRoom)), new("hub", nameof(Strings.BattleHub))];
     public override string ToString() => Name;
 }
 
@@ -47,6 +48,7 @@ public record Battle
     public int? Season { get; init; }
     public string Outcome => MyRounds is null || OpponentRounds is null ? "待确认" : MyRounds > OpponentRounds ? "胜" : MyRounds < OpponentRounds ? "负" : "平";
     public string Score => MyRounds is null || OpponentRounds is null ? "—" : $"{MyRounds} : {OpponentRounds}";
+    [System.Text.Json.Serialization.JsonIgnore]
     public string Mode => BattleCategory.All.FirstOrDefault(c => c.Key == Category)?.Name ?? Category;
     public string Time => TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTimeOffset.FromUnixTimeSeconds(PlayedAt), "Taipei Standard Time").ToString("yyyy-MM-dd HH:mm:ss");
     public string LpText => ScoreDisplay.Value(Lp);
@@ -81,23 +83,23 @@ public static class MatchParser
         using var doc = JsonDocument.Parse(json);
         var p = doc.RootElement.GetProperty("pageProps");
         var list = p.GetProperty("replay_list");
-        if (list.ValueKind != JsonValueKind.Array) throw new InvalidDataException("官网战绩结构已改变。");
+        if (list.ValueKind != JsonValueKind.Array) throw new InvalidDataException(Strings.ReplayFormatChanged);
         var records = new List<Battle>();
         foreach (var r in list.EnumerateArray())
         {
             var one = r.GetProperty("player1_info"); var two = r.GetProperty("player2_info");
             var oneId = Id(one.GetProperty("player"), "short_id"); var twoId = Id(two.GetProperty("player"), "short_id");
-            if (oneId != owner && twoId != owner) throw new InvalidDataException("官网返回了不匹配的用户战绩，已停止同步。");
+            if (oneId != owner && twoId != owner) throw new InvalidDataException(Strings.WrongPlayerRecords);
             var mine = oneId == owner ? one : two; var other = oneId == owner ? two : one;
             var replayId = Text(r, "replay_id");
-            if (string.IsNullOrWhiteSpace(replayId)) throw new InvalidDataException("战绩缺少回放 ID，已停止同步。");
+            if (string.IsNullOrWhiteSpace(replayId)) throw new InvalidDataException(Strings.MissingReplayId);
             var seconds = r.GetProperty("uploaded_at").GetInt64();
             if (seconds > 100_000_000_000) seconds /= 1000;
             records.Add(new Battle
             {
                 OwnerId = owner, ReplayId = replayId, Category = category, PlayedAt = seconds,
                 PlayerName = Text(mine.GetProperty("player"), "fighter_id"),
-                CharacterId = Int(mine, "character_id") ?? throw new InvalidDataException("角色 ID 缺失。"),
+                CharacterId = Int(mine, "character_id") ?? throw new InvalidDataException(Strings.MissingCharacterId),
                 Character = Text(mine, "character_name"), OpponentId = Id(other.GetProperty("player"), "short_id"),
                 Opponent = Text(other.GetProperty("player"), "fighter_id"), OpponentCharacter = Text(other, "character_name"),
                 OpponentCharacterId=Int(other,"character_id"),
@@ -111,7 +113,7 @@ public static class MatchParser
                 MyRounds = Rounds(mine), OpponentRounds = Rounds(other)
             });
         }
-        return new(Int(p, "current_page") ?? 1, Int(p, "total_page") ?? throw new InvalidDataException("官网分页信息缺失。"), records);
+        return new(Int(p, "current_page") ?? 1, Int(p, "total_page") ?? throw new InvalidDataException(Strings.MissingPagingData), records);
     }
     public static string Text(JsonElement e, string key) => e.TryGetProperty(key, out var v) ? v.ToString() : "";
     public static string Id(JsonElement e, string key) => e.TryGetProperty(key, out var v) && v.ValueKind == JsonValueKind.Number

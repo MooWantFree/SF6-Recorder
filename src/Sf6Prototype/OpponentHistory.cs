@@ -3,7 +3,7 @@ namespace Sf6Prototype;
 public sealed record OpponentHistory(int Total, int Wins, int Losses, int Draws, int Unknown, IReadOnlyList<Battle> Matches)
 {
     public string WinRate => Wins+Losses+Draws==0 ? "—" : $"{100d*Wins/(Wins+Losses+Draws):F1}%";
-    public string Summary => $"{Total} 场 · {Wins} 胜 {Losses} 负" + (Draws>0 ? $" {Draws} 平" : "") + (Unknown>0 ? $" · {Unknown} 场待确认" : "");
+    public string Summary => Localization.Format(Strings.MatchSummary, Total, Wins, Losses) + (Draws>0 ? Localization.Format(Strings.DrawSummarySuffix, Draws) : "") + (Unknown>0 ? Localization.Format(Strings.UnknownSummarySuffix, Unknown) : "");
     public static OpponentHistory From(IEnumerable<Battle> archive, string owner, string opponent)
     {
         // Names may change or collide; only stable IDs identify a head-to-head history.

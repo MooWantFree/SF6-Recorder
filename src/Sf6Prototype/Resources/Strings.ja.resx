@@ -1,0 +1,1197 @@
+<?xml version='1.0' encoding='utf-8'?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms</value>
+  </resheader>
+  <data name="Account" xml:space="preserve">
+    <value>アカウント</value>
+  </data>
+  <data name="AccountChanged" xml:space="preserve">
+    <value>ログイン中のアカウントが変わりました。再ログインしてください。</value>
+  </data>
+  <data name="AccountSignedOut" xml:space="preserve">
+    <value>このアカウントはログアウト済みです。再ログインしてください。</value>
+  </data>
+  <data name="AccountSwitched" xml:space="preserve">
+    <value>アカウントを切り替えました。</value>
+  </data>
+  <data name="ActivatePlayerSearch" xml:space="preserve">
+    <value>プレイヤー検索を開く</value>
+  </data>
+  <data name="Add" xml:space="preserve">
+    <value>追加</value>
+  </data>
+  <data name="AddOrSignInAccount" xml:space="preserve">
+    <value>アカウントを追加・再ログイン</value>
+  </data>
+  <data name="AddTags" xml:space="preserve">
+    <value>タグを追加</value>
+  </data>
+  <data name="AfterMatch" xml:space="preserve">
+    <value>対戦後：{0}</value>
+  </data>
+  <data name="All" xml:space="preserve">
+    <value>すべて</value>
+  </data>
+  <data name="AllDates" xml:space="preserve">
+    <value>全期間</value>
+  </data>
+  <data name="AllTagsDropdown" xml:space="preserve">
+    <value>全タグ ▾</value>
+  </data>
+  <data name="AllTagsMatch" xml:space="preserve">
+    <value>すべてのタグ</value>
+  </data>
+  <data name="AnyTag" xml:space="preserve">
+    <value>いずれかのタグ</value>
+  </data>
+  <data name="ApiInterval" xml:space="preserve">
+    <value>CAPCOM リクエスト間隔</value>
+  </data>
+  <data name="ApiIntervalAccessible" xml:space="preserve">
+    <value>CAPCOM リクエスト間隔（秒）</value>
+  </data>
+  <data name="ApiIntervalHelp" xml:space="preserve">
+    <value>公式サイトへのリクエスト開始間の最短間隔です。データとポートレートで共用します。ログイン画面と Google テストには適用されません。</value>
+  </data>
+  <data name="ApiIntervalPresets" xml:space="preserve">
+    <value>CAPCOM リクエスト間隔のプリセット</value>
+  </data>
+  <data name="AppTitle" xml:space="preserve">
+    <value>ストリートファイター6 戦績</value>
+  </data>
+  <data name="AskEveryTime" xml:space="preserve">
+    <value>毎回確認</value>
+  </data>
+  <data name="AutoRefresh" xml:space="preserve">
+    <value>自動更新</value>
+  </data>
+  <data name="AutoRefreshAccessible" xml:space="preserve">
+    <value>自動更新の間隔（秒）、0 で無効</value>
+  </data>
+  <data name="AutoRefreshHelp" xml:space="preserve">
+    <value>0 で無効。ログイン中のアカウントのみ更新</value>
+  </data>
+  <data name="AutoRefreshPresets" xml:space="preserve">
+    <value>自動更新のプリセット</value>
+  </data>
+  <data name="AvailableRangeReached" xml:space="preserve">
+    <value> · 取得可能な範囲の末尾</value>
+  </data>
+  <data name="Back" xml:space="preserve">
+    <value>戻る</value>
+  </data>
+  <data name="BackShortcut" xml:space="preserve">
+    <value>戻る · Alt+←
+右クリックで履歴を表示</value>
+  </data>
+  <data name="BackedUp" xml:space="preserve">
+    <value>バックアップしました</value>
+  </data>
+  <data name="BackingUp" xml:space="preserve">
+    <value>バックアップ中…</value>
+  </data>
+  <data name="BackupDatabase" xml:space="preserve">
+    <value>データベースをバックアップ</value>
+  </data>
+  <data name="BackupFailed" xml:space="preserve">
+    <value>バックアップに失敗しました。保存先とフォルダーの権限を確認してください。</value>
+  </data>
+  <data name="BackupHelp" xml:space="preserve">
+    <value>戦績とスコアを含みます。ログイン情報・設定・ポートレートは含みません</value>
+  </data>
+  <data name="BackupInconsistentMatches" xml:space="preserve">
+    <value>バックアップの戦績に不整合があります。</value>
+  </data>
+  <data name="BackupJournalExists" xml:space="preserve">
+    <value>保存先にデータベースログが残っています。別のバックアップ名を選択してください。</value>
+  </data>
+  <data name="BackupLinksIncomplete" xml:space="preserve">
+    <value>バックアップの関連レコードが不完全です。</value>
+  </data>
+  <data name="BackupScoreLinksIncomplete" xml:space="preserve">
+    <value>バックアップのスコア関連レコードが不完全です。</value>
+  </data>
+  <data name="BackupScoresInconsistent" xml:space="preserve">
+    <value>バックアップのスコアと戦績が一致しません。</value>
+  </data>
+  <data name="BackupSyncIncomplete" xml:space="preserve">
+    <value>バックアップの同期記録が不完全です。</value>
+  </data>
+  <data name="BackupTagLinksIncomplete" xml:space="preserve">
+    <value>バックアップのタグ関連レコードが不完全です。</value>
+  </data>
+  <data name="BackupTagsInvalid" xml:space="preserve">
+    <value>バックアップに無効なタグが含まれています。</value>
+  </data>
+  <data name="BackupUnreadableMatches" xml:space="preserve">
+    <value>バックアップに読み取れない戦績が含まれています。</value>
+  </data>
+  <data name="BattleHub" xml:space="preserve">
+    <value>バトルハブ</value>
+  </data>
+  <data name="BeforeMatch" xml:space="preserve">
+    <value>対戦前：{0}</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>キャンセル</value>
+  </data>
+  <data name="CancelRefresh" xml:space="preserve">
+    <value>更新をキャンセル</value>
+  </data>
+  <data name="CancelledFetchedSaved" xml:space="preserve">
+    <value>キャンセルしました。取得済みの戦績は保存されています。</value>
+  </data>
+  <data name="CancelledLoadedSaved" xml:space="preserve">
+    <value>キャンセルしました。読み込み済みの戦績は保存されています。</value>
+  </data>
+  <data name="CapcomSessionExpired" xml:space="preserve">
+    <value>ログインの有効期限が切れました。CAPCOM ID に再ログインしてください。</value>
+  </data>
+  <data name="CasualMatch" xml:space="preserve">
+    <value>カジュアルマッチ</value>
+  </data>
+  <data name="CasualShort" xml:space="preserve">
+    <value>カジュアル</value>
+  </data>
+  <data name="CategoriesRead" xml:space="preserve">
+    <value>読み込み済み：{0} ページ · カテゴリー：{1} / {2}</value>
+  </data>
+  <data name="Character" xml:space="preserve">
+    <value>キャラクター</value>
+  </data>
+  <data name="ChartHelp" xml:space="preserve">
+    <value>スコアの点を選択すると対戦を表示します。左右の矢印キーでも選択できます。</value>
+  </data>
+  <data name="CheckingSession" xml:space="preserve">
+    <value>ログイン状態を確認</value>
+  </data>
+  <data name="CheckingSessionProgress" xml:space="preserve">
+    <value>ログイン状態を確認しています…</value>
+  </data>
+  <data name="ChooseAppBackup" xml:space="preserve">
+    <value>このアプリで作成した戦績データベースのバックアップを選択してください。</value>
+  </data>
+  <data name="ChooseDifferentDatabase" xml:space="preserve">
+    <value>現在のデータベース以外のファイルを選択してください。</value>
+  </data>
+  <data name="Clear" xml:space="preserve">
+    <value>クリア</value>
+  </data>
+  <data name="ClearFilters" xml:space="preserve">
+    <value>絞り込みを解除</value>
+  </data>
+  <data name="ClearPlayerUid" xml:space="preserve">
+    <value>プレイヤーの UID をクリア</value>
+  </data>
+  <data name="ClickAgainToStop" xml:space="preserve">
+    <value>
+もう一度クリックして停止 · Ctrl+R</value>
+  </data>
+  <data name="ClipboardUnavailable" xml:space="preserve">
+    <value>クリップボードを使用できません。再試行してください。</value>
+  </data>
+  <data name="Close" xml:space="preserve">
+    <value>閉じる</value>
+  </data>
+  <data name="CloseActionSaveFailed" xml:space="preserve">
+    <value>閉じるときの動作を保存できません。次回も確認します。</value>
+  </data>
+  <data name="CloseWindow" xml:space="preserve">
+    <value>ウィンドウを閉じる</value>
+  </data>
+  <data name="CloseWindowQuestion" xml:space="preserve">
+    <value>終了しますか？トレイに最小化しますか？</value>
+  </data>
+  <data name="CompleteCapcomSignIn" xml:space="preserve">
+    <value>CAPCOM へのログインを完了してください。</value>
+  </data>
+  <data name="ConnectionFailed" xml:space="preserve">
+    <value>接続に失敗しました。プロキシ設定を確認してください。</value>
+  </data>
+  <data name="ConnectionTimedOut" xml:space="preserve">
+    <value>接続がタイムアウトしました</value>
+  </data>
+  <data name="Copied" xml:space="preserve">
+    <value>コピーしました</value>
+  </data>
+  <data name="Copy" xml:space="preserve">
+    <value>コピー</value>
+  </data>
+  <data name="CopyNickname" xml:space="preserve">
+    <value>名前をコピー</value>
+  </data>
+  <data name="CopyPlayerUid" xml:space="preserve">
+    <value>プレイヤーの UID をコピー</value>
+  </data>
+  <data name="CopyReplayId" xml:space="preserve">
+    <value>リプレイ ID をコピー</value>
+  </data>
+  <data name="CopyUid" xml:space="preserve">
+    <value>UID をコピー</value>
+  </data>
+  <data name="CurrentMatch" xml:space="preserve">
+    <value>選択中の対戦</value>
+  </data>
+  <data name="CurrentSeason" xml:space="preserve">
+    <value>シーズン {0} · 現在</value>
+  </data>
+  <data name="CustomRoom" xml:space="preserve">
+    <value>カスタムルーム</value>
+  </data>
+  <data name="CustomShort" xml:space="preserve">
+    <value>カスタム</value>
+  </data>
+  <data name="DataDirectoryInUse" xml:space="preserve">
+    <value>このデータフォルダーは別の戦績ウィンドウで使用中です。</value>
+  </data>
+  <data name="Database" xml:space="preserve">
+    <value>データベース</value>
+  </data>
+  <data name="DatabaseCorrupt" xml:space="preserve">
+    <value>データベースファイルが破損しているため使用できません。</value>
+  </data>
+  <data name="DatabaseFileFilter" xml:space="preserve">
+    <value>SQLite データベース|*.sqlite;*.db</value>
+  </data>
+  <data name="DatabaseLinksIncomplete" xml:space="preserve">
+    <value>データベースの関連レコードが不完全です。</value>
+  </data>
+  <data name="DatabaseSchemaUnsupported" xml:space="preserve">
+    <value>データベースの構造に互換性がありません。</value>
+  </data>
+  <data name="DatabaseVersionUnsupported" xml:space="preserve">
+    <value>データベースのバージョンに互換性がありません。現在のアプリで作成したバックアップを選択してください。</value>
+  </data>
+  <data name="DateRange" xml:space="preserve">
+    <value>期間</value>
+  </data>
+  <data name="DayGroupDate" xml:space="preserve">
+    <value>M月d日  dddd</value>
+  </data>
+  <data name="DayGroupDateYear" xml:space="preserve">
+    <value>yyyy年M月d日  dddd</value>
+  </data>
+  <data name="DismissNotice" xml:space="preserve">
+    <value>通知を閉じる</value>
+  </data>
+  <data name="DrawCountSuffix" xml:space="preserve">
+    <value> {0} 分</value>
+  </data>
+  <data name="DrawSummarySuffix" xml:space="preserve">
+    <value> {0} 分</value>
+  </data>
+  <data name="DuplicateContent" xml:space="preserve">
+    <value>公式サイトから重複した戦績が返されました。</value>
+  </data>
+  <data name="DuplicateContentStopped" xml:space="preserve">
+    <value>公式サイトから重複した内容が返されました。同期を停止しました。</value>
+  </data>
+  <data name="DuplicatePage" xml:space="preserve">
+    <value>公式サイトから重複したページが返されました。</value>
+  </data>
+  <data name="DuplicatePageStopped" xml:space="preserve">
+    <value>公式サイトから重複したページが返されました。リクエストの繰り返しを防ぐため停止しました。</value>
+  </data>
+  <data name="DurationMinutesSeconds" xml:space="preserve">
+    <value>{0} 分 {1} 秒</value>
+  </data>
+  <data name="DurationSeconds" xml:space="preserve">
+    <value>{0} 秒</value>
+  </data>
+  <data name="EditMatchTags" xml:space="preserve">
+    <value>この対戦のタグを編集</value>
+  </data>
+  <data name="ElapsedDuration" xml:space="preserve">
+    <value>経過：{0}</value>
+  </data>
+  <data name="EndOfRecords" xml:space="preserve">
+    <value>すべて表示しました</value>
+  </data>
+  <data name="EnterPlayerUid" xml:space="preserve">
+    <value>プレイヤーの UID を入力</value>
+  </data>
+  <data name="EnterTagName" xml:space="preserve">
+    <value>タグ名を入力</value>
+  </data>
+  <data name="EnterTenDigitUid" xml:space="preserve">
+    <value>10 桁の数字の UID を入力してください。</value>
+  </data>
+  <data name="EnterToCreateTag" xml:space="preserve">
+    <value>Enter でタグを作成</value>
+  </data>
+  <data name="EstimateTimingHelp" xml:space="preserve">
+    <value>現在の間隔と実際の応答時間から推定しています</value>
+  </data>
+  <data name="Exit" xml:space="preserve">
+    <value>終了</value>
+  </data>
+  <data name="FavoritePlayers" xml:space="preserve">
+    <value>お気に入りのプレイヤー</value>
+  </data>
+  <data name="FavoriteRemoved" xml:space="preserve">
+    <value>このお気に入りは削除されています。</value>
+  </data>
+  <data name="Favorites" xml:space="preserve">
+    <value>お気に入り</value>
+  </data>
+  <data name="FavoritesNavigationTitle" xml:space="preserve">
+    <value>{0} - 戦績 - お気に入り</value>
+  </data>
+  <data name="FilterOpponentReplay" xml:space="preserve">
+    <value>相手 / UID / リプレイ</value>
+  </data>
+  <data name="FindPlayerShortcut" xml:space="preserve">
+    <value>プレイヤーを検索 · Ctrl+K</value>
+  </data>
+  <data name="FiveMinutes" xml:space="preserve">
+    <value>5 分</value>
+  </data>
+  <data name="FiveSeconds" xml:space="preserve">
+    <value>5 秒</value>
+  </data>
+  <data name="Forward" xml:space="preserve">
+    <value>進む</value>
+  </data>
+  <data name="ForwardShortcut" xml:space="preserve">
+    <value>進む · Alt+→
+右クリックで履歴を表示</value>
+  </data>
+  <data name="GoogleHttpError" xml:space="preserve">
+    <value>Google から HTTP {0} が返されました</value>
+  </data>
+  <data name="GoogleLatency" xml:space="preserve">
+    <value>Google の応答時間</value>
+  </data>
+  <data name="HeadToHead" xml:space="preserve">
+    <value>対戦履歴</value>
+  </data>
+  <data name="HighestReached" xml:space="preserve">
+    <value>最高到達</value>
+  </data>
+  <data name="HistoryNavigationTitle" xml:space="preserve">
+    <value>{0} - 戦績 - {1}</value>
+  </data>
+  <data name="Home" xml:space="preserve">
+    <value>ホーム</value>
+  </data>
+  <data name="HomeTooltip" xml:space="preserve">
+    <value>ホーム · 自分の戦績</value>
+  </data>
+  <data name="HttpSyncStopped" xml:space="preserve">
+    <value>公式サイトから HTTP {0} が返されました。同期を停止しました。</value>
+  </data>
+  <data name="HttpVerificationRequired" xml:space="preserve">
+    <value>公式サイトで再認証が必要です（HTTP {0}）。再ログインしてください。</value>
+  </data>
+  <data name="HubShort" xml:space="preserve">
+    <value>ハブ</value>
+  </data>
+  <data name="ImageRetryPending" xml:space="preserve">
+    <value>ポートレートの再取得待ち：{0}</value>
+  </data>
+  <data name="ImageTooLarge" xml:space="preserve">
+    <value>ポートレートのファイルが大きすぎます。</value>
+  </data>
+  <data name="ImagesPendingSuffix" xml:space="preserve">
+    <value> · ポートレートの更新が未完了です。次回の更新時に再試行します</value>
+  </data>
+  <data name="Import" xml:space="preserve">
+    <value>インポート</value>
+  </data>
+  <data name="ImportDatabase" xml:space="preserve">
+    <value>データベースをインポート</value>
+  </data>
+  <data name="ImportDetails" xml:space="preserve">
+    <value>重複をスキップ：{0:N0} 戦
+インポート前のバックアップ：{1}</value>
+  </data>
+  <data name="ImportFailed" xml:space="preserve">
+    <value>インポートに失敗しました。データベースファイルとフォルダーの権限を確認してください。既存の戦績は保持されています。</value>
+  </data>
+  <data name="ImportHelp" xml:space="preserve">
+    <value>戦績を統合し、既存の記録を保持</value>
+  </data>
+  <data name="Importing" xml:space="preserve">
+    <value>インポート中…</value>
+  </data>
+  <data name="IncludeUnranked" xml:space="preserve">
+    <value>Unranked を含む</value>
+  </data>
+  <data name="InvalidAccountId" xml:space="preserve">
+    <value>アカウント ID が無効です。</value>
+  </data>
+  <data name="InvalidApiInterval" xml:space="preserve">
+    <value>CAPCOM のリクエスト間隔は 0.1～3600 秒で入力してください。小数も使用できます。</value>
+  </data>
+  <data name="InvalidAutoRefresh" xml:space="preserve">
+    <value>自動更新は 0 以上の整数で秒数を入力してください。0 で無効になります。</value>
+  </data>
+  <data name="InvalidCloseAction" xml:space="preserve">
+    <value>ウィンドウを閉じるときの動作を選択してください。</value>
+  </data>
+  <data name="InvalidImageFormat" xml:space="preserve">
+    <value>公式ポートレートの形式が無効です。</value>
+  </data>
+  <data name="InvalidImageUrl" xml:space="preserve">
+    <value>公式画像の URL が無効です。</value>
+  </data>
+  <data name="InvalidInterval" xml:space="preserve">
+    <value>{0}：0 以上の整数で秒数を入力してください。0 で無効になります。</value>
+  </data>
+  <data name="InvalidLanguage" xml:space="preserve">
+    <value>対応する言語を選択してください。</value>
+  </data>
+  <data name="InvalidPlayer" xml:space="preserve">
+    <value>プレイヤーが無効です。</value>
+  </data>
+  <data name="InvalidPlayerUid" xml:space="preserve">
+    <value>プレイヤーの UID が無効です。</value>
+  </data>
+  <data name="InvalidProxy" xml:space="preserve">
+    <value>http://ホスト:ポート または socks5://ホスト:ポート を入力してください。認証なしのプロキシに対応しています。</value>
+  </data>
+  <data name="InvalidReminder" xml:space="preserve">
+    <value>更新リマインダーは 0 以上の整数で秒数を入力してください。0 で無効になります。</value>
+  </data>
+  <data name="InvalidReplayJson" xml:space="preserve">
+    <value>公式サイトの戦績データを読み取れません。同期を停止しました。</value>
+  </data>
+  <data name="InvalidSeasonFilter" xml:space="preserve">
+    <value>シーズンの絞り込み条件が無効です。</value>
+  </data>
+  <data name="InvalidTagName" xml:space="preserve">
+    <value>タグ名は 1～32 文字で入力してください。</value>
+  </data>
+  <data name="InvalidUserCode" xml:space="preserve">
+    <value>ユーザーコードが無効です。</value>
+  </data>
+  <data name="LanguageLabel" xml:space="preserve">
+    <value>言語 (Language)</value>
+  </data>
+  <data name="LastFifty" xml:space="preserve">
+    <value>直近 50 戦</value>
+  </data>
+  <data name="LastHundred" xml:space="preserve">
+    <value>直近 100 戦</value>
+  </data>
+  <data name="LastMonth" xml:space="preserve">
+    <value>先月</value>
+  </data>
+  <data name="LastTwenty" xml:space="preserve">
+    <value>直近 20 戦</value>
+  </data>
+  <data name="LatestScore" xml:space="preserve">
+    <value>最新スコア</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>読み込み中</value>
+  </data>
+  <data name="LoadingCharacterRanks" xml:space="preserve">
+    <value>キャラクターのランクを読み込み中</value>
+  </data>
+  <data name="LoadingMatches" xml:space="preserve">
+    <value>戦績を読み込み中</value>
+  </data>
+  <data name="LoadingScores" xml:space="preserve">
+    <value>スコアを読み込み中</value>
+  </data>
+  <data name="LoginPopupFailed" xml:space="preserve">
+    <value>ログインのポップアップを開けません。再試行してください。</value>
+  </data>
+  <data name="LoginSaveFailed" xml:space="preserve">
+    <value>ログイン状態を保存できません。再試行してください。</value>
+  </data>
+  <data name="LoginToLoad" xml:space="preserve">
+    <value>続きを読み込むにはログインしてください。</value>
+  </data>
+  <data name="LoginVerificationPage" xml:space="preserve">
+    <value>公式サイトで認証が必要です。再ログインしてください。</value>
+  </data>
+  <data name="LoginWindowFailed" xml:space="preserve">
+    <value>ログイン画面を開けません：{0}。WebView2 Runtime とプロキシ設定を確認してください。</value>
+  </data>
+  <data name="LpSettlementUnknown" xml:space="preserve">
+    <value>LP の変動は不明</value>
+  </data>
+  <data name="MatchAllSelectedTags" xml:space="preserve">
+    <value>選択したタグをすべて含む</value>
+  </data>
+  <data name="MatchAnySelectedTags" xml:space="preserve">
+    <value>選択したタグのいずれかを含む</value>
+  </data>
+  <data name="MatchCategory" xml:space="preserve">
+    <value>対戦カテゴリー</value>
+  </data>
+  <data name="MatchCount" xml:space="preserve">
+    <value>{0} 戦</value>
+  </data>
+  <data name="MatchDescription" xml:space="preserve">
+    <value>{0} · {1} · {2} 対 {3} · {4} {5}</value>
+  </data>
+  <data name="MatchList" xml:space="preserve">
+    <value>戦績一覧</value>
+  </data>
+  <data name="MatchQuantity" xml:space="preserve">
+    <value>対戦数</value>
+  </data>
+  <data name="MatchSummary" xml:space="preserve">
+    <value>{0} 戦 · {1} 勝 {2} 敗</value>
+  </data>
+  <data name="Matches" xml:space="preserve">
+    <value>戦績</value>
+  </data>
+  <data name="MatchesAdded" xml:space="preserve">
+    <value>追加した対戦：{0:N0} 戦</value>
+  </data>
+  <data name="MatchesPrepared" xml:space="preserve">
+    <value>準備済みの対戦：{0}</value>
+  </data>
+  <data name="MatchesPreparedOfTotal" xml:space="preserve">
+    <value>準備済みの対戦：{0} / {1}</value>
+  </data>
+  <data name="MatchesSaved" xml:space="preserve">
+    <value>戦績を保存しました</value>
+  </data>
+  <data name="MatchesSuffix" xml:space="preserve">
+    <value> 戦</value>
+  </data>
+  <data name="Maximize" xml:space="preserve">
+    <value>最大化</value>
+  </data>
+  <data name="MeSuffix" xml:space="preserve">
+    <value>（自分）</value>
+  </data>
+  <data name="Minimize" xml:space="preserve">
+    <value>最小化</value>
+  </data>
+  <data name="MinimizeToTray" xml:space="preserve">
+    <value>トレイに最小化</value>
+  </data>
+  <data name="MismatchedRecords" xml:space="preserve">
+    <value>戦績が選択したプレイヤーまたはカテゴリーと一致しません。</value>
+  </data>
+  <data name="MissingCharacterId" xml:space="preserve">
+    <value>キャラクター ID がありません。</value>
+  </data>
+  <data name="MissingPagingData" xml:space="preserve">
+    <value>公式サイトの応答にページ情報がありません。</value>
+  </data>
+  <data name="MissingReplayId" xml:space="preserve">
+    <value>戦績にリプレイ ID がありません。同期を停止しました。</value>
+  </data>
+  <data name="Mode" xml:space="preserve">
+    <value>モード</value>
+  </data>
+  <data name="MrSettlementUnknown" xml:space="preserve">
+    <value>MR の変動は不明</value>
+  </data>
+  <data name="MyRecords" xml:space="preserve">
+    <value>自分の戦績</value>
+  </data>
+  <data name="NextMonth" xml:space="preserve">
+    <value>次の月</value>
+  </data>
+  <data name="NextRequestIn" xml:space="preserve">
+    <value>次のリクエストまで {0:F1} 秒</value>
+  </data>
+  <data name="NicknameCopied" xml:space="preserve">
+    <value>名前をコピーしました</value>
+  </data>
+  <data name="NicknameOrUid" xml:space="preserve">
+    <value>名前 / UID</value>
+  </data>
+  <data name="NinetyDays" xml:space="preserve">
+    <value>90 日</value>
+  </data>
+  <data name="NoMatchSelected" xml:space="preserve">
+    <value>対戦が選択されていません</value>
+  </data>
+  <data name="NoMatchingFavorites" xml:space="preserve">
+    <value>条件に合うお気に入りがありません</value>
+  </data>
+  <data name="NoMatchingHistory" xml:space="preserve">
+    <value>一致する検索履歴がありません</value>
+  </data>
+  <data name="NoMatchingPlayers" xml:space="preserve">
+    <value>該当するプレイヤーがいません</value>
+  </data>
+  <data name="NoMatchingRecords" xml:space="preserve">
+    <value>条件に合う戦績がありません</value>
+  </data>
+  <data name="NoMatchingTags" xml:space="preserve">
+    <value>一致するタグがありません</value>
+  </data>
+  <data name="NoMrForMatches" xml:space="preserve">
+    <value>この対戦には MR がありません</value>
+  </data>
+  <data name="NoPlayerUid" xml:space="preserve">
+    <value>プレイヤーの UID がありません。</value>
+  </data>
+  <data name="NoProfileToSave" xml:space="preserve">
+    <value>保存するプレイヤー情報がありません。</value>
+  </data>
+  <data name="NoRankRecords" xml:space="preserve">
+    <value>ランクの記録がありません</value>
+  </data>
+  <data name="NoRankedRecords" xml:space="preserve">
+    <value>ランクマッチの記録がありません</value>
+  </data>
+  <data name="NoRecordsRefresh" xml:space="preserve">
+    <value>戦績がありません。「更新」で保存を開始します</value>
+  </data>
+  <data name="NoScores" xml:space="preserve">
+    <value>表示できるスコアがありません</value>
+  </data>
+  <data name="NoSearchHistory" xml:space="preserve">
+    <value>検索履歴がありません</value>
+  </data>
+  <data name="NoSeasonMr" xml:space="preserve">
+    <value>このシーズンの MR データはありません</value>
+  </data>
+  <data name="Off" xml:space="preserve">
+    <value>オフ</value>
+  </data>
+  <data name="OfficialCapcomSignIn" xml:space="preserve">
+    <value>CAPCOM 公式ログイン</value>
+  </data>
+  <data name="OfficialMatchScore" xml:space="preserve">
+    <value>公式サイトに記録された対戦時のスコア</value>
+  </data>
+  <data name="OneDay" xml:space="preserve">
+    <value>1 日</value>
+  </data>
+  <data name="OneHour" xml:space="preserve">
+    <value>1 時間</value>
+  </data>
+  <data name="OneSecond" xml:space="preserve">
+    <value>1 秒</value>
+  </data>
+  <data name="OpenMainPanel" xml:space="preserve">
+    <value>メイン画面を開く</value>
+  </data>
+  <data name="OpeningCapcom" xml:space="preserve">
+    <value>CAPCOM 公式サイトを開いています…</value>
+  </data>
+  <data name="OperationFailed" xml:space="preserve">
+    <value>操作に失敗しました：{0}。保存済みのデータは保持されています。</value>
+  </data>
+  <data name="OpponentCharacter" xml:space="preserve">
+    <value>相手のキャラ</value>
+  </data>
+  <data name="OutcomeDraw" xml:space="preserve">
+    <value>引き分け</value>
+  </data>
+  <data name="OutcomeLoss" xml:space="preserve">
+    <value>負け</value>
+  </data>
+  <data name="OutcomePending" xml:space="preserve">
+    <value>未確定</value>
+  </data>
+  <data name="OutcomeWin" xml:space="preserve">
+    <value>勝ち</value>
+  </data>
+  <data name="PageNotVerified" xml:space="preserve">
+    <value>認証が完了していません。再ログインしてください。</value>
+  </data>
+  <data name="Pages" xml:space="preserve">
+    <value>ページ</value>
+  </data>
+  <data name="PagesReadSuffix" xml:space="preserve">
+    <value> · 読み込み済み：{0} ページ</value>
+  </data>
+  <data name="PeakMr" xml:space="preserve">
+    <value>最高 MR</value>
+  </data>
+  <data name="Player" xml:space="preserve">
+    <value>プレイヤー</value>
+  </data>
+  <data name="PlayerCharacterRanks" xml:space="preserve">
+    <value>キャラクター別ランク</value>
+  </data>
+  <data name="PlayerDropdown" xml:space="preserve">
+    <value>プレイヤー ▾</value>
+  </data>
+  <data name="PlayerNotFound" xml:space="preserve">
+    <value>プレイヤーが見つかりません。UID を確認してください。</value>
+  </data>
+  <data name="PlayerNotInMatch" xml:space="preserve">
+    <value>このプレイヤーはこの対戦に参加していません。</value>
+  </data>
+  <data name="PlayerProfileUnavailable" xml:space="preserve">
+    <value>プレイヤー情報を読み取れません。後で再試行してください。</value>
+  </data>
+  <data name="PlayerRankHistory" xml:space="preserve">
+    <value>{0} · ランク履歴</value>
+  </data>
+  <data name="PlayerUidEnterToSearch" xml:space="preserve">
+    <value>プレイヤーの UID、Enter で検索</value>
+  </data>
+  <data name="PortraitsNotUpdated" xml:space="preserve">
+    <value>ポートレートを更新できませんでした。後で更新してください。</value>
+  </data>
+  <data name="PostMatchScore" xml:space="preserve">
+    <value>対戦後スコア</value>
+  </data>
+  <data name="PreMatchLpUnknown" xml:space="preserve">
+    <value>対戦前の LP（対戦後の変動は不明）</value>
+  </data>
+  <data name="PreMatchMrUnknown" xml:space="preserve">
+    <value>対戦前の MR（対戦後の変動は不明）</value>
+  </data>
+  <data name="PreMatchScoreUnknown" xml:space="preserve">
+    <value>対戦前のスコア（対戦後の変動は不明）</value>
+  </data>
+  <data name="PreparingRefresh" xml:space="preserve">
+    <value>更新の準備中</value>
+  </data>
+  <data name="PreviousMonth" xml:space="preserve">
+    <value>前の月</value>
+  </data>
+  <data name="PreviousProcessRunning" xml:space="preserve">
+    <value>前のブラウザプロセスを終了しています。しばらくしてから再試行してください。</value>
+  </data>
+  <data name="ProxyAddress" xml:space="preserve">
+    <value>プロキシアドレス</value>
+  </data>
+  <data name="ProxyHelp" xml:space="preserve">
+    <value>認証なしの HTTP、HTTPS、SOCKS5 プロキシに対応</value>
+  </data>
+  <data name="QueryType" xml:space="preserve">
+    <value>取得する項目</value>
+  </data>
+  <data name="RangeChange" xml:space="preserve">
+    <value>期間内の変動</value>
+  </data>
+  <data name="RangeWinRate" xml:space="preserve">
+    <value>期間内の勝率</value>
+  </data>
+  <data name="RankAndPoints" xml:space="preserve">
+    <value>ランク / ポイント</value>
+  </data>
+  <data name="RankFormatChanged" xml:space="preserve">
+    <value>公式サイトのランクデータ形式が変更されています。</value>
+  </data>
+  <data name="RankHistory" xml:space="preserve">
+    <value>ランク履歴</value>
+  </data>
+  <data name="RankLookupFailed" xml:space="preserve">
+    <value>ランクを取得できません。後で再試行してください。</value>
+  </data>
+  <data name="RankLp" xml:space="preserve">
+    <value>ランク / LP</value>
+  </data>
+  <data name="RankedMatch" xml:space="preserve">
+    <value>ランクマッチ</value>
+  </data>
+  <data name="RankedScoreTrend" xml:space="preserve">
+    <value>ランクマッチのスコア推移</value>
+  </data>
+  <data name="RankedShort" xml:space="preserve">
+    <value>ランク</value>
+  </data>
+  <data name="RateLimitDelay" xml:space="preserve">
+    <value>リクエストが多すぎます。{0} 秒以上待ってから同期してください。</value>
+  </data>
+  <data name="RateLimitPaused" xml:space="preserve">
+    <value>リクエストが多すぎるため同期を一時停止しました。後で再試行してください。</value>
+  </data>
+  <data name="ReadingCategoryPage" xml:space="preserve">
+    <value>{0}を読み込み中 · {1} ページ</value>
+  </data>
+  <data name="ReadingRankedPage" xml:space="preserve">
+    <value>ランクマッチを読み込み中 · {0} ページ</value>
+  </data>
+  <data name="ReadyLocalData" xml:space="preserve">
+    <value>準備完了 · 閲覧と絞り込みにはローカルデータを使用します</value>
+  </data>
+  <data name="RecentCount" xml:space="preserve">
+    <value>直近 {0} 戦</value>
+  </data>
+  <data name="RecentSearches" xml:space="preserve">
+    <value>最近の検索</value>
+  </data>
+  <data name="RecordsSavedImagesBackground" xml:space="preserve">
+    <value>戦績を保存しました。ポートレートはバックグラウンドで更新します。</value>
+  </data>
+  <data name="RecordsUpdatedImagesPending" xml:space="preserve">
+    <value>戦績を更新しました。ポートレートは後で更新できます。</value>
+  </data>
+  <data name="Refresh" xml:space="preserve">
+    <value>更新</value>
+  </data>
+  <data name="RefreshCancelled" xml:space="preserve">
+    <value>更新をキャンセルしました</value>
+  </data>
+  <data name="RefreshComplete" xml:space="preserve">
+    <value>更新完了</value>
+  </data>
+  <data name="RefreshCompleteSummary" xml:space="preserve">
+    <value>更新完了 · 追加：{0} 件 · {1} ページ · HTTP リクエスト：{2} 回{3}</value>
+  </data>
+  <data name="RefreshIncomplete" xml:space="preserve">
+    <value>更新が完了していません</value>
+  </data>
+  <data name="RefreshReminder" xml:space="preserve">
+    <value>更新リマインダー</value>
+  </data>
+  <data name="RefreshShortcut" xml:space="preserve">
+    <value>更新 · Ctrl+R</value>
+  </data>
+  <data name="RemainingEstimateSuffix" xml:space="preserve">
+    <value> · 残り約 {0}</value>
+  </data>
+  <data name="RemainingUnknownSuffix" xml:space="preserve">
+    <value> · 残り時間は未定</value>
+  </data>
+  <data name="RememberChoice" xml:space="preserve">
+    <value>次回から確認しない</value>
+  </data>
+  <data name="ReminderAccessible" xml:space="preserve">
+    <value>更新リマインダーの間隔（秒）、0 で無効</value>
+  </data>
+  <data name="ReminderOffHelp" xml:space="preserve">
+    <value>0 でアニメーションによる通知を無効化</value>
+  </data>
+  <data name="ReminderPresets" xml:space="preserve">
+    <value>更新リマインダーのプリセット</value>
+  </data>
+  <data name="RemoveTagFilter" xml:space="preserve">
+    <value>このタグの絞り込みを解除</value>
+  </data>
+  <data name="Replay" xml:space="preserve">
+    <value>リプレイ</value>
+  </data>
+  <data name="ReplayFormatChanged" xml:space="preserve">
+    <value>公式サイトの戦績形式が変更されています。</value>
+  </data>
+  <data name="ReplayStructureChanged" xml:space="preserve">
+    <value>公式サイトの戦績形式が変更されています。同期を停止しました。</value>
+  </data>
+  <data name="RequestTimedOut" xml:space="preserve">
+    <value>リクエストがタイムアウトしました。プロキシやネットワークを確認して再試行してください。</value>
+  </data>
+  <data name="ResponseRetrying" xml:space="preserve">
+    <value>応答が未完了です。まもなく再試行します</value>
+  </data>
+  <data name="Restore" xml:space="preserve">
+    <value>元に戻す</value>
+  </data>
+  <data name="Result" xml:space="preserve">
+    <value>結果</value>
+  </data>
+  <data name="RoundScore" xml:space="preserve">
+    <value>ラウンド</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>保存</value>
+  </data>
+  <data name="Saved" xml:space="preserve">
+    <value>保存しました</value>
+  </data>
+  <data name="SavingRecords" xml:space="preserve">
+    <value>戦績を保存中</value>
+  </data>
+  <data name="ScoreEstimateExplanation" xml:space="preserve">
+    <value>推定値：同じキャラクターの次のランクマッチがないため、更新時に保存した公式サイトの現在スコアとこの対戦の開始前スコアから算出しています。未収録の対戦による変動を含む場合があります。</value>
+  </data>
+  <data name="ScoreNavigationTitle" xml:space="preserve">
+    <value>{0} - スコア - {1}</value>
+  </data>
+  <data name="ScoreType" xml:space="preserve">
+    <value>スコアの種類</value>
+  </data>
+  <data name="Scores" xml:space="preserve">
+    <value>スコア</value>
+  </data>
+  <data name="ScoresReady" xml:space="preserve">
+    <value>スコア記録の準備完了</value>
+  </data>
+  <data name="Search" xml:space="preserve">
+    <value>検索</value>
+  </data>
+  <data name="SearchFailed" xml:space="preserve">
+    <value>検索に失敗しました。ネットワークを確認して再試行してください。</value>
+  </data>
+  <data name="SearchFavoritePlayers" xml:space="preserve">
+    <value>お気に入りのプレイヤーを名前または UID で検索</value>
+  </data>
+  <data name="SearchOpponentReplay" xml:space="preserve">
+    <value>相手の名前、UID、リプレイ ID で検索</value>
+  </data>
+  <data name="SearchOrAddTags" xml:space="preserve">
+    <value>タグを検索または追加</value>
+  </data>
+  <data name="SearchPlayers" xml:space="preserve">
+    <value>プレイヤーを検索</value>
+  </data>
+  <data name="SearchSaveFailed" xml:space="preserve">
+    <value>検索結果を保存できません。データフォルダーの権限を確認してください。</value>
+  </data>
+  <data name="SearchTags" xml:space="preserve">
+    <value>タグを検索</value>
+  </data>
+  <data name="Searching" xml:space="preserve">
+    <value>検索中…</value>
+  </data>
+  <data name="Season" xml:space="preserve">
+    <value>シーズン</value>
+  </data>
+  <data name="SeasonDataUnavailable" xml:space="preserve">
+    <value>このシーズンのデータは現在読み取れません。</value>
+  </data>
+  <data name="SeasonNumber" xml:space="preserve">
+    <value>シーズン {0}</value>
+  </data>
+  <data name="SecondsUnit" xml:space="preserve">
+    <value>秒</value>
+  </data>
+  <data name="SelectDateRange" xml:space="preserve">
+    <value>期間を選択</value>
+  </data>
+  <data name="SelectEndDate" xml:space="preserve">
+    <value>終了日を選択</value>
+  </data>
+  <data name="SelectedTagsCount" xml:space="preserve">
+    <value>タグ · {0} ▾</value>
+  </data>
+  <data name="SessionExpired" xml:space="preserve">
+    <value>ログインの有効期限が切れました。再ログインしてください。</value>
+  </data>
+  <data name="SessionExpiredCloseWindow" xml:space="preserve">
+    <value>ログインの有効期限が切れました。このウィンドウを閉じて再ログインしてください。</value>
+  </data>
+  <data name="SessionSaved" xml:space="preserve">
+    <value>ログイン状態を保存しました。</value>
+  </data>
+  <data name="SessionSavedImagesPending" xml:space="preserve">
+    <value>ログイン状態を保存しました。ポートレートは次回の更新時に再取得します。</value>
+  </data>
+  <data name="Settings" xml:space="preserve">
+    <value>設定</value>
+  </data>
+  <data name="SettingsSavedDirect" xml:space="preserve">
+    <value>設定を保存しました。次回のログインと同期は直接接続します。</value>
+  </data>
+  <data name="SettingsSavedProxy" xml:space="preserve">
+    <value>設定を保存しました。次回のログインと同期には選択したプロキシを使用します。</value>
+  </data>
+  <data name="SettingsShortcut" xml:space="preserve">
+    <value>設定 · Ctrl+,</value>
+  </data>
+  <data name="SettlementUnknown" xml:space="preserve">
+    <value>対戦後の変動は不明</value>
+  </data>
+  <data name="ShortIntervalWarning" xml:space="preserve">
+    <value>間隔が短いと公式サイトのアクセス制限を受ける場合があります。5 秒以上を推奨します。</value>
+  </data>
+  <data name="SignIn" xml:space="preserve">
+    <value>ログイン</value>
+  </data>
+  <data name="SignInAgain" xml:space="preserve">
+    <value>再ログイン</value>
+  </data>
+  <data name="SignInBeforeSearch" xml:space="preserve">
+    <value>プレイヤーを検索するにはログインしてください。</value>
+  </data>
+  <data name="SignInCancelled" xml:space="preserve">
+    <value>ログインをキャンセルしました。</value>
+  </data>
+  <data name="SignInCancelledLocal" xml:space="preserve">
+    <value>ログインをキャンセルしました。ローカルの戦績は閲覧できます。</value>
+  </data>
+  <data name="SignInCapcom" xml:space="preserve">
+    <value>CAPCOM ID にログイン</value>
+  </data>
+  <data name="SignInFirst" xml:space="preserve">
+    <value>先にログインしてください。</value>
+  </data>
+  <data name="SignOut" xml:space="preserve">
+    <value>ログアウト</value>
+  </data>
+  <data name="SignOutAccount" xml:space="preserve">
+    <value>アカウントからログアウト</value>
+  </data>
+  <data name="SignOutConfirmation" xml:space="preserve">
+    <value>「{0}」からログアウトしますか？
+
+この端末のログイン情報を削除します。ローカルの戦績は保持されます。</value>
+  </data>
+  <data name="SignedOutLocalKept" xml:space="preserve">
+    <value>ログアウトしました。ローカルの戦績は保持されています。</value>
+  </data>
+  <data name="StopDownload" xml:space="preserve">
+    <value>ダウンロードを停止</value>
+  </data>
+  <data name="StopDownloadShortcut" xml:space="preserve">
+    <value>ダウンロードを停止 · Ctrl+R</value>
+  </data>
+  <data name="StoppedRecordsKept" xml:space="preserve">
+    <value>停止しました。ダウンロード済みの戦績は保持されています。</value>
+  </data>
+  <data name="Stopping" xml:space="preserve">
+    <value>停止中</value>
+  </data>
+  <data name="SyncBoundaryReached" xml:space="preserve">
+    <value>前回の同期範囲に到達しました</value>
+  </data>
+  <data name="SystemDefault" xml:space="preserve">
+    <value>システム既定</value>
+  </data>
+  <data name="TagFilter" xml:space="preserve">
+    <value>タグで絞り込み</value>
+  </data>
+  <data name="TagNameEnterToAdd" xml:space="preserve">
+    <value>タグ名を入力し、Enter で追加</value>
+  </data>
+  <data name="TagSaveFailed" xml:space="preserve">
+    <value>タグを保存できません。再試行してください。</value>
+  </data>
+  <data name="Tags" xml:space="preserve">
+    <value>タグ</value>
+  </data>
+  <data name="TagsDropdown" xml:space="preserve">
+    <value>タグ ▾</value>
+  </data>
+  <data name="TenMinutes" xml:space="preserve">
+    <value>10 分</value>
+  </data>
+  <data name="TenSeconds" xml:space="preserve">
+    <value>10 秒</value>
+  </data>
+  <data name="Test" xml:space="preserve">
+    <value>テスト</value>
+  </data>
+  <data name="Testing" xml:space="preserve">
+    <value>テスト中…</value>
+  </data>
+  <data name="ThisMonth" xml:space="preserve">
+    <value>今月</value>
+  </data>
+  <data name="ThreeSeconds" xml:space="preserve">
+    <value>3 秒</value>
+  </data>
+  <data name="Time" xml:space="preserve">
+    <value>時刻</value>
+  </data>
+  <data name="TooManyRequests" xml:space="preserve">
+    <value>リクエストが多すぎます。後で更新してください。</value>
+  </data>
+  <data name="TwelveHours" xml:space="preserve">
+    <value>12 時間</value>
+  </data>
+  <data name="TwentyMinutes" xml:space="preserve">
+    <value>20 分</value>
+  </data>
+  <data name="UnexpectedError" xml:space="preserve">
+    <value>エラーが発生しました。データフォルダーの診断ログを確認してください。</value>
+  </data>
+  <data name="UnknownCategory" xml:space="preserve">
+    <value>不明な対戦カテゴリーです。</value>
+  </data>
+  <data name="UnknownSummarySuffix" xml:space="preserve">
+    <value> · 未確定：{0} 戦</value>
+  </data>
+  <data name="UpdateFailed" xml:space="preserve">
+    <value>更新できません。ネットワークを確認して再試行してください。</value>
+  </data>
+  <data name="UpdatedAtPrefix" xml:space="preserve">
+    <value>更新：</value>
+  </data>
+  <data name="UpdatingCharacterProfiles" xml:space="preserve">
+    <value>キャラクター情報を更新中</value>
+  </data>
+  <data name="UpdatingProfilesProgress" xml:space="preserve">
+    <value>キャラクター情報とポートレートを更新しています…</value>
+  </data>
+  <data name="UseProxy" xml:space="preserve">
+    <value>プロキシを使用</value>
+  </data>
+  <data name="VerificationRequired" xml:space="preserve">
+    <value>ログイン画面を開いて認証を完了してください。</value>
+  </data>
+  <data name="ViewMatches" xml:space="preserve">
+    <value>戦績を見る</value>
+  </data>
+  <data name="ViewMatchesAndScores" xml:space="preserve">
+    <value>戦績とスコアを表示</value>
+  </data>
+  <data name="ViewedPlayer" xml:space="preserve">
+    <value>閲覧中のプレイヤー</value>
+  </data>
+  <data name="WaitingForRefresh" xml:space="preserve">
+    <value>更新の完了を待っています</value>
+  </data>
+  <data name="WaitingForResponse" xml:space="preserve">
+    <value>公式サイトの応答待ち</value>
+  </data>
+  <data name="WaitingForSignIn" xml:space="preserve">
+    <value>ログイン待機中</value>
+  </data>
+  <data name="WaitingToSend" xml:space="preserve">
+    <value>リクエストの送信待ち</value>
+  </data>
+  <data name="WhenWindowCloses" xml:space="preserve">
+    <value>ウィンドウを閉じるとき</value>
+  </data>
+  <data name="WinLossSummary" xml:space="preserve">
+    <value>{0} 勝 {1} 敗</value>
+  </data>
+  <data name="WinRateRounded" xml:space="preserve">
+    <value>勝率 {0:F0}%</value>
+  </data>
+  <data name="WinRateSuffix" xml:space="preserve">
+    <value> 勝率</value>
+  </data>
+  <data name="WinRateValue" xml:space="preserve">
+    <value>勝率 {0}</value>
+  </data>
+  <data name="WrongOpponentProfile" xml:space="preserve">
+    <value>プレイヤー情報が選択した対戦相手と一致しません。</value>
+  </data>
+  <data name="WrongPlayerRecords" xml:space="preserve">
+    <value>公式サイトから別のプレイヤーの戦績が返されました。同期を停止しました。</value>
+  </data>
+  <data name="Yesterday" xml:space="preserve">
+    <value>昨日</value>
+  </data>
+  <data name="YourCharacter" xml:space="preserve">
+    <value>自分のキャラ</value>
+  </data>
+  <data name="CharacterNamesIncomplete" xml:space="preserve">
+    <value>多言語のキャラクター一覧が不完全です。次回の更新時に再試行します。</value>
+  </data>
+  <data name="RankHistoryAction" xml:space="preserve">
+    <value>ランク履歴</value>
+  </data>
+  <data name="MatchSuffix" xml:space="preserve">
+    <value> 戦</value>
+  </data>
+  <data name="SavedLoadingCharacterNames" xml:space="preserve">
+    <value>言語を保存しました。キャラクター名を取得中…</value>
+  </data>
+  <data name="SavedWaitingCharacterNames" xml:space="preserve">
+    <value>言語を保存しました。キャラクター名の取得待機中…</value>
+  </data>
+  <data name="SavedCharacterNamesReady" xml:space="preserve">
+    <value>言語とキャラクター名を更新しました</value>
+  </data>
+  <data name="SavedCharacterNamesFailed" xml:space="preserve">
+    <value>言語を保存しました。キャラクター名を取得できませんでした。再度更新してください。</value>
+  </data>
+  <data name="SavedCharacterNamesSignIn" xml:space="preserve">
+    <value>言語を保存しました。キャラクター名の取得にはログインが必要です。</value>
+  </data>
+  <data name="SavedCharacterNamesCancelled" xml:space="preserve">
+    <value>言語を保存しました。キャラクター名の取得を中止しました。</value>
+  </data>
+</root>

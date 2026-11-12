@@ -116,7 +116,7 @@
     </ControlTemplate></Setter.Value></Setter>
   </Style>
   <Style x:Key="NavigationMenu" TargetType="ContextMenu">
-    <Setter Property="FontFamily" Value="Microsoft YaHei UI"/><Setter Property="FontSize" Value="13"/><Setter Property="Width" Value="340"/>
+    <Setter Property="FontFamily" Value="{DynamicResource UiFont}"/><Setter Property="FontSize" Value="13"/><Setter Property="Width" Value="340"/>
     <Setter Property="ItemContainerStyle" Value="{StaticResource NavigationMenuItem}"/>
     <Setter Property="HasDropShadow" Value="False"/>
     <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ContextMenu">
@@ -164,7 +164,7 @@
   </Style>
 
   <Style TargetType="ToolTip">
-    <Setter Property="FontFamily" Value="Microsoft YaHei UI"/><Setter Property="FontSize" Value="12"/><Setter Property="Padding" Value="10,7"/><Setter Property="Background" Value="{StaticResource Surface}"/><Setter Property="Foreground" Value="{StaticResource Ink}"/><Setter Property="BorderBrush" Value="{StaticResource Line}"/><Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="FontFamily" Value="{DynamicResource UiFont}"/><Setter Property="FontSize" Value="12"/><Setter Property="Padding" Value="10,7"/><Setter Property="Background" Value="{StaticResource Surface}"/><Setter Property="Foreground" Value="{StaticResource Ink}"/><Setter Property="BorderBrush" Value="{StaticResource Line}"/><Setter Property="BorderThickness" Value="1"/>
     <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ToolTip"><ContentControl Style="{StaticResource PopupSurface}" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}" ContentStringFormat="{TemplateBinding ContentStringFormat}"/></ControlTemplate></Setter.Value></Setter>
   </Style>
 
@@ -225,7 +225,7 @@
   </Style>
   <Style x:Key="PlayerLink" TargetType="Button" BasedOn="{StaticResource GhostButton}">
     <Setter Property="Padding" Value="0"/><Setter Property="MinHeight" Value="0"/><Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-    <Setter Property="ToolTip" Value="查看战绩与分数"/>
+    <Setter Property="ToolTip" Value="{DynamicResource I18n.ViewMatchesAndScores}"/>
   </Style>
   <Style x:Key="IconButton" TargetType="Button" BasedOn="{StaticResource GhostButton}">
     <Setter Property="Width" Value="32"/><Setter Property="Height" Value="32"/><Setter Property="Padding" Value="0"/><Setter Property="FontFamily" Value="Segoe Fluent Icons"/><Setter Property="FontSize" Value="14"/><Setter Property="Foreground" Value="{StaticResource Ink2}"/>
@@ -248,10 +248,10 @@
     </Style.Triggers>
   </Style>
   <Style x:Key="MaximizeCaptionButton" TargetType="Button" BasedOn="{StaticResource CaptionButton}">
-    <Setter Property="Content" Value="&#xE922;"/><Setter Property="ToolTip" Value="最大化"/><Setter Property="AutomationProperties.Name" Value="最大化"/>
+    <Setter Property="Content" Value="&#xE922;"/><Setter Property="ToolTip" Value="{DynamicResource I18n.Maximize}"/><Setter Property="AutomationProperties.Name" Value="{DynamicResource I18n.Maximize}"/>
     <Style.Triggers>
       <DataTrigger Binding="{Binding WindowState,RelativeSource={RelativeSource AncestorType=Window}}" Value="Maximized">
-        <Setter Property="Content" Value="&#xE923;"/><Setter Property="ToolTip" Value="还原"/><Setter Property="AutomationProperties.Name" Value="还原"/>
+        <Setter Property="Content" Value="&#xE923;"/><Setter Property="ToolTip" Value="{DynamicResource I18n.Restore}"/><Setter Property="AutomationProperties.Name" Value="{DynamicResource I18n.Restore}"/>
       </DataTrigger>
       <DataTrigger Binding="{Binding IsMaximizeHot,RelativeSource={RelativeSource AncestorType=Window}}" Value="True"><Setter Property="Background" Value="{StaticResource CaptionHover}"/></DataTrigger>
       <DataTrigger Binding="{Binding IsMaximizePressed,RelativeSource={RelativeSource AncestorType=Window}}" Value="True"><Setter Property="Background" Value="{StaticResource CaptionPressed}"/></DataTrigger>

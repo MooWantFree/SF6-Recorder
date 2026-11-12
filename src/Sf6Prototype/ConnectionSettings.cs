@@ -19,6 +19,7 @@ public record ConnectionSettings
     public int RefreshReminderSeconds { get; init; } = DefaultRefreshReminderSeconds;
     public int AutoRefreshSeconds { get; init; }
     public CloseAction WindowCloseAction { get; init; }
+    public string Language { get; init; } = Localization.SystemLanguage;
     public bool UseProxy { get; init; }
     public string ProxyAddress { get; init; } = "http://127.0.0.1:7890";
     public string PlayerId { get; init; } = "3396336472";
@@ -28,7 +29,7 @@ public record ConnectionSettings
         if (!Uri.TryCreate(ProxyAddress.Trim(), UriKind.Absolute, out var uri) ||
             uri.Scheme is not ("http" or "https" or "socks5") || string.IsNullOrEmpty(uri.Host) || uri.Port <= 0 ||
             !string.IsNullOrEmpty(uri.UserInfo) || uri.AbsolutePath != "/" || !string.IsNullOrEmpty(uri.Query) || !string.IsNullOrEmpty(uri.Fragment))
-            throw new ArgumentException("请输入 http://主机:端口 或 socks5://主机:端口；此版本支持无认证代理。");
+            throw new ArgumentException(Strings.InvalidProxy);
         return uri;
     }
     public string BrowserArguments => UseProxy
@@ -45,7 +46,7 @@ public record ConnectionSettings
         using var client = new HttpClient(CreateHandler()) { Timeout = TimeSpan.FromSeconds(15) };
         var watch = Stopwatch.StartNew();
         using var response = await client.GetAsync("https://www.google.com/generate_204", HttpCompletionOption.ResponseHeadersRead, token);
-        if (response.StatusCode != HttpStatusCode.NoContent) throw new HttpRequestException($"Google 返回 HTTP {(int)response.StatusCode}");
+        if (response.StatusCode != HttpStatusCode.NoContent) throw new HttpRequestException(Localization.Format(Strings.GoogleHttpError, (int)response.StatusCode));
         return watch.ElapsedMilliseconds;
     }
     public static ConnectionSettings Load(string directory)
@@ -58,32 +59,34 @@ public record ConnectionSettings
             RefreshReminderSeconds=settings.RefreshReminderSeconds>=0 ? settings.RefreshReminderSeconds : DefaultRefreshReminderSeconds,
             AutoRefreshSeconds=Math.Max(0,settings.AutoRefreshSeconds),
             ApiIntervalSeconds=ValidApiInterval(settings.ApiIntervalSeconds) ? settings.ApiIntervalSeconds : DefaultApiIntervalSeconds,
-            WindowCloseAction=Enum.IsDefined(settings.WindowCloseAction) ? settings.WindowCloseAction : CloseAction.Ask
+            WindowCloseAction=Enum.IsDefined(settings.WindowCloseAction) ? settings.WindowCloseAction : CloseAction.Ask,
+            Language=Localization.Normalize(settings.Language)
         };
     }
     public static int ParseReminderSeconds(string value)
     {
-        return ParseIntervalSeconds(value,"更新提醒");
+        return ParseIntervalSeconds(value,Strings.RefreshReminder);
     }
-    public static int ParseAutoRefreshSeconds(string value) => ParseIntervalSeconds(value,"自动刷新");
+    public static int ParseAutoRefreshSeconds(string value) => ParseIntervalSeconds(value,Strings.AutoRefresh);
     public static double ParseApiIntervalSeconds(string value)
     {
         if(!double.TryParse(value.Trim(),NumberStyles.AllowDecimalPoint,CultureInfo.InvariantCulture,out var seconds) || !ValidApiInterval(seconds))
-            throw new ArgumentException("CAPCOM 请求间隔请输入 0.1–3600 秒，可用小数。");
+            throw new ArgumentException(Strings.InvalidApiInterval);
         return seconds;
     }
     private static int ParseIntervalSeconds(string value,string name)
     {
         if(!int.TryParse(value.Trim(),NumberStyles.None,CultureInfo.InvariantCulture,out var seconds))
-            throw new ArgumentException($"{name}请输入非负整数秒数，0 表示关闭。");
+            throw new ArgumentException(Localization.Format(Strings.InvalidInterval, name));
         return seconds;
     }
     public void Save(string directory)
     {
-        if(RefreshReminderSeconds<0) throw new ArgumentException("更新提醒请输入非负整数秒数，0 表示关闭。");
-        if(AutoRefreshSeconds<0) throw new ArgumentException("自动刷新请输入非负整数秒数，0 表示关闭。");
-        if(!ValidApiInterval(ApiIntervalSeconds)) throw new ArgumentException("CAPCOM 请求间隔请输入 0.1–3600 秒，可用小数。");
-        if(!Enum.IsDefined(WindowCloseAction)) throw new ArgumentException("请选择关闭窗口时的操作。");
+        if(RefreshReminderSeconds<0) throw new ArgumentException(Strings.InvalidReminder);
+        if(AutoRefreshSeconds<0) throw new ArgumentException(Strings.InvalidAutoRefresh);
+        if(!ValidApiInterval(ApiIntervalSeconds)) throw new ArgumentException(Strings.InvalidApiInterval);
+        if(!Enum.IsDefined(WindowCloseAction)) throw new ArgumentException(Strings.InvalidCloseAction);
+        if(!Localization.IsSupported(Language)) throw new ArgumentException(Strings.InvalidLanguage);
         if (UseProxy) ValidateProxy();
         File.WriteAllText(Path.Combine(directory, "settings.json"), JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true }));
     }

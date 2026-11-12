@@ -41,8 +41,8 @@ public partial class MainWindow
     }
     private void UpdateRefreshAction()
     {
-        AutomationProperties.SetName(SyncButton,_busy ? "停止下载" : "刷新");
-        if(!_progressVisible) SyncButton.ToolTip=_busy ? "停止下载 · Ctrl+R" : "刷新 · Ctrl+R";
+        AutomationProperties.SetName(SyncButton,_busy ? Strings.StopDownload : Strings.Refresh);
+        if(!_progressVisible) SyncButton.ToolTip=_busy ? Strings.StopDownloadShortcut : Strings.RefreshShortcut;
     }
     private void ProgressStage(string stage)
     {if(!_progressVisible)return;_refreshProgress.SetStage(stage);UpdateButtonProgress();}
@@ -61,7 +61,7 @@ public partial class MainWindow
     {
         if(!_progressVisible)return;
         _progressTip.Text=_refreshProgress.Tooltip(_progressElapsed.Elapsed,RequestGate.Shared.Interval,RequestGate.Shared.RemainingDelay,_requestElapsed.Elapsed);
-        if(_busy && !_progressFinished) _progressTip.Text+="\n再次点击停止 · Ctrl+R";
+        if(_busy && !_progressFinished) _progressTip.Text+=Strings.ClickAgainToStop;
         AutomationProperties.SetHelpText(SyncButton,_progressTip.Text);
     }
     private void FinishButtonProgress(bool success,bool cancelled)

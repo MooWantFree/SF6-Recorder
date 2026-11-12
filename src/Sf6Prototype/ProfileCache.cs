@@ -13,13 +13,14 @@ public interface IProfileSource
 }
 public sealed class ProfileCache(string directory)
 {
+    public CharacterNames Names { get; } = new(directory);
     public string DirectoryPath => Path.Combine(directory, "Images");
     public List<CharacterAsset> Characters { get; private set; } = Read<List<CharacterAsset>>(Path.Combine(directory, "characters.json")) ?? [];
     private static T? Read<T>(string path) { try { return File.Exists(path) ? JsonSerializer.Deserialize<T>(File.ReadAllText(path)) : default; } catch (JsonException) { return default; } }
     public ProfileMetadata? Profile(string id) => Regex.IsMatch(id, @"^\d{10}$") ? Read<ProfileMetadata>(Path.Combine(directory, "profile-" + id + ".json")) : null;
     public void RememberIdentity(PlayerIdentity player)
     {
-        if(!player.IsValid) throw new ArgumentException("无效的玩家 UID。");
+        if(!player.IsValid) throw new ArgumentException(Strings.InvalidPlayerUid);
         var previous=Profile(player.Id);
         WriteJson(Path.Combine(directory,"profile-"+player.Id+".json"),new ProfileMetadata(player.Id,player.Name,previous?.AvatarPath ?? "",DateTimeOffset.UtcNow));
     }
@@ -51,6 +52,8 @@ public sealed class ProfileCache(string directory)
             if (existing < 0) Characters.Add(asset); else Characters[existing] = asset;
         }
         WriteJson(Path.Combine(directory,"characters.json"), Characters);
+        // Name discovery is queued by the shared request observer. It must not extend this
+        // foreground refresh or turn a name-service failure into a portrait/score failure.
         var images = Characters.Where(c => !File.Exists(c.ImagePath)).Select(c =>
             new ImageDownload($"/6/buckler/assets/images/material/character/character_{c.ToolName}_l.png", c.ImagePath)).ToList();
         var card = await client.FetchCardAsync(owner, token);

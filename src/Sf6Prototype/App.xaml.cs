@@ -23,7 +23,7 @@ public partial class App : Application
         foreach (var pid in (Arg("--wait-for") ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries))
         {
             if (!int.TryParse(pid, out var id)) continue;
-            try { using var p = Process.GetProcessById(id); if (!p.WaitForExit(20_000)) throw new IOException("上一次浏览器进程尚未退出，请稍后重试。"); }
+            try { using var p = Process.GetProcessById(id); if (!p.WaitForExit(20_000)) throw new IOException(Strings.PreviousProcessRunning); }
             catch (ArgumentException) { }
         }
         DataDirectory = DataPaths.Resolve(AppContext.BaseDirectory, Arg("--data-dir"));
@@ -31,17 +31,18 @@ public partial class App : Application
         Capture = e.Args.Contains("--capture");
         if (Arg("--size")?.Split('x') is [var w, var h] && int.TryParse(w, out var width) && int.TryParse(h, out var height)) StartSize = new(width, height);
         Directory.CreateDirectory(DataDirectory);
+        LocalizationWpf.Apply(ConnectionSettings.Load(DataDirectory).Language);
         try { _instanceLock = new FileStream(Path.Combine(DataDirectory, "instance.lock"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None); }
         catch (IOException)
         {
-            MessageBox.Show("这个数据目录已有运行中的战绩窗口。", "街霸 6 战绩");
+            MessageBox.Show(Strings.DataDirectoryInUse, Strings.AppTitle);
             Shutdown();
             return;
         }
         DispatcherUnhandledException += (_, args) =>
         {
             File.WriteAllText(Path.Combine(DataDirectory, "fatal-error.txt"), args.Exception.GetType().Name + " / " + args.Exception.HResult);
-            MessageBox.Show("应用遇到错误，请查看数据目录中的诊断记录。", "街霸 6 战绩");
+            MessageBox.Show(Strings.UnexpectedError, Strings.AppTitle);
             args.Handled = true;
             IsShuttingDown=true;
             Shutdown(1);

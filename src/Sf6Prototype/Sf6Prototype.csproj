@@ -8,6 +8,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>Sf6Prototype</AssemblyName>
     <RootNamespace>Sf6Prototype</RootNamespace>
+    <NeutralLanguage>en</NeutralLanguage>
     <ApplicationIcon>Assets\app.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
@@ -15,6 +16,7 @@
     <Using Remove="System.Drawing"/>
     <Resource Include="Assets\app.ico"/>
     <Resource Include="Assets\Ranks\*.png"/>
+    <EmbeddedResource Include="Resources\CharacterNames.json" LogicalName="Sf6Prototype.Resources.CharacterNames.json"/>
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4314.35" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.15" />
   </ItemGroup>

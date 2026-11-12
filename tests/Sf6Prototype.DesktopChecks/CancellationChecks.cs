@@ -69,7 +69,7 @@ internal static class CancellationChecks
             Check(((TextBlock)sync.ToolTip).Text.Contains("再次点击停止"),"The busy refresh tooltip advertises the click-to-stop action");
             var version=Get<int>("_viewLoadVersion");sync.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));Pump();
             Check(first.Token.IsCancellationRequested && first.Work.Task.IsCompleted && queued.IsCompleted && Get<int>("_viewLoadVersion")>version && !Get<bool>("_busy"),"A second refresh click stops work and invalidates the queued range without restarting");
-            Check(ring.Visibility==Visibility.Collapsed && ((TextBlock)main.FindName("NoticeText")).Text.Contains("已停止"),"An explicit stop restores the refresh icon and confirms saved records are retained");
+            Check(ring.Visibility==Visibility.Collapsed && ((TextBlock)((StatusToast)main.FindName("Toast")).FindName("MessageText")).Text.Contains("已停止"),"An explicit stop restores the refresh icon and confirms saved records are retained");
             Check(store.Query(new(home.Id)).Count==3,"Stopping retains downloaded local matches");
 
             ((ListBox)main.FindName("PageTabs")).SelectedIndex=0;Pump();
@@ -121,7 +121,7 @@ internal static class CancellationChecks
             {
                 var failed=Download(delayed:true);var failedRequest=(Task)Call(main,"ViewPlayerAsync",home)!;Pump();
                 Busy(false);failed.Work.SetException(new System.IO.IOException("Synthetic cancellation failure"));Complete(failedRequest);
-                Check(detail.PendingPlayerId=="" && navigation.Current.Id==other.Id && ((FrameworkElement)main.FindName("NoticeBar")).Visibility==Visibility.Visible,"A failed switch reports its error and clears loading so the action can be retried");
+                Check(detail.PendingPlayerId=="" && navigation.Current.Id==other.Id && ((FrameworkElement)main.FindName("Toast")).Visibility==Visibility.Visible,"A failed switch reports its error and clears loading so the action can be retried");
             }
             finally {dataDirectory.SetValue(null,"");}
             Check(App.DataDirectory=="" && !main.IsVisible && new System.Windows.Interop.WindowInteropHelper(main).Handle==IntPtr.Zero,"Cancellation regression checks never show a window or access real user data");

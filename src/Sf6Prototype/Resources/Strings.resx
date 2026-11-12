@@ -1,0 +1,1197 @@
+<?xml version='1.0' encoding='utf-8'?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms</value>
+  </resheader>
+  <data name="Account" xml:space="preserve">
+    <value>Account</value>
+  </data>
+  <data name="AccountChanged" xml:space="preserve">
+    <value>The signed-in account changed. Sign in again.</value>
+  </data>
+  <data name="AccountSignedOut" xml:space="preserve">
+    <value>This account is signed out. Sign in again.</value>
+  </data>
+  <data name="AccountSwitched" xml:space="preserve">
+    <value>Account switched.</value>
+  </data>
+  <data name="ActivatePlayerSearch" xml:space="preserve">
+    <value>Activate player search</value>
+  </data>
+  <data name="Add" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="AddOrSignInAccount" xml:space="preserve">
+    <value>Add account or sign in again</value>
+  </data>
+  <data name="AddTags" xml:space="preserve">
+    <value>Add tags</value>
+  </data>
+  <data name="AfterMatch" xml:space="preserve">
+    <value>After: {0}</value>
+  </data>
+  <data name="All" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="AllDates" xml:space="preserve">
+    <value>All dates</value>
+  </data>
+  <data name="AllTagsDropdown" xml:space="preserve">
+    <value>All tags ▾</value>
+  </data>
+  <data name="AllTagsMatch" xml:space="preserve">
+    <value>All tags</value>
+  </data>
+  <data name="AnyTag" xml:space="preserve">
+    <value>Any tag</value>
+  </data>
+  <data name="ApiInterval" xml:space="preserve">
+    <value>CAPCOM interval</value>
+  </data>
+  <data name="ApiIntervalAccessible" xml:space="preserve">
+    <value>CAPCOM request interval in seconds</value>
+  </data>
+  <data name="ApiIntervalHelp" xml:space="preserve">
+    <value>Minimum time between requests to the official site, shared by data and portraits. Sign-in pages and Google tests are excluded.</value>
+  </data>
+  <data name="ApiIntervalPresets" xml:space="preserve">
+    <value>CAPCOM request interval presets</value>
+  </data>
+  <data name="AppTitle" xml:space="preserve">
+    <value>Street Fighter 6 Records</value>
+  </data>
+  <data name="AskEveryTime" xml:space="preserve">
+    <value>Ask every time</value>
+  </data>
+  <data name="AutoRefresh" xml:space="preserve">
+    <value>Auto refresh</value>
+  </data>
+  <data name="AutoRefreshAccessible" xml:space="preserve">
+    <value>Auto refresh interval in seconds; 0 turns it off</value>
+  </data>
+  <data name="AutoRefreshHelp" xml:space="preserve">
+    <value>Use 0 to turn off; refreshes only the signed-in account</value>
+  </data>
+  <data name="AutoRefreshPresets" xml:space="preserve">
+    <value>Auto refresh presets</value>
+  </data>
+  <data name="AvailableRangeReached" xml:space="preserve">
+    <value> · End of available records</value>
+  </data>
+  <data name="Back" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="BackShortcut" xml:space="preserve">
+    <value>Back · Alt+←
+Right-click for history</value>
+  </data>
+  <data name="BackedUp" xml:space="preserve">
+    <value>Backed up</value>
+  </data>
+  <data name="BackingUp" xml:space="preserve">
+    <value>Backing up…</value>
+  </data>
+  <data name="BackupDatabase" xml:space="preserve">
+    <value>Back up database</value>
+  </data>
+  <data name="BackupFailed" xml:space="preserve">
+    <value>Backup failed. Check the save location and folder permissions.</value>
+  </data>
+  <data name="BackupHelp" xml:space="preserve">
+    <value>Includes match records and scores; excludes sign-in, settings and portraits</value>
+  </data>
+  <data name="BackupInconsistentMatches" xml:space="preserve">
+    <value>The backup contains inconsistent match records.</value>
+  </data>
+  <data name="BackupJournalExists" xml:space="preserve">
+    <value>The destination still has database logs. Choose a new backup filename.</value>
+  </data>
+  <data name="BackupLinksIncomplete" xml:space="preserve">
+    <value>The backup has incomplete linked records.</value>
+  </data>
+  <data name="BackupScoreLinksIncomplete" xml:space="preserve">
+    <value>The backup has incomplete score links.</value>
+  </data>
+  <data name="BackupScoresInconsistent" xml:space="preserve">
+    <value>Scores in the backup do not match its battle records.</value>
+  </data>
+  <data name="BackupSyncIncomplete" xml:space="preserve">
+    <value>The backup has incomplete sync records.</value>
+  </data>
+  <data name="BackupTagLinksIncomplete" xml:space="preserve">
+    <value>The backup has incomplete tag links.</value>
+  </data>
+  <data name="BackupTagsInvalid" xml:space="preserve">
+    <value>The backup contains invalid tags.</value>
+  </data>
+  <data name="BackupUnreadableMatches" xml:space="preserve">
+    <value>The backup contains unreadable match records.</value>
+  </data>
+  <data name="BattleHub" xml:space="preserve">
+    <value>Battle Hub</value>
+  </data>
+  <data name="BeforeMatch" xml:space="preserve">
+    <value>Before: {0}</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="CancelRefresh" xml:space="preserve">
+    <value>Cancel refresh</value>
+  </data>
+  <data name="CancelledFetchedSaved" xml:space="preserve">
+    <value>Cancelled. Retrieved records have been saved.</value>
+  </data>
+  <data name="CancelledLoadedSaved" xml:space="preserve">
+    <value>Cancelled. Loaded records have been saved.</value>
+  </data>
+  <data name="CapcomSessionExpired" xml:space="preserve">
+    <value>Your session expired. Sign in to CAPCOM ID again.</value>
+  </data>
+  <data name="CasualMatch" xml:space="preserve">
+    <value>Casual Match</value>
+  </data>
+  <data name="CasualShort" xml:space="preserve">
+    <value>Casual</value>
+  </data>
+  <data name="CategoriesRead" xml:space="preserve">
+    <value>Pages read: {0} · Categories: {1} / {2}</value>
+  </data>
+  <data name="Character" xml:space="preserve">
+    <value>Character</value>
+  </data>
+  <data name="ChartHelp" xml:space="preserve">
+    <value>Select a score point to view the match, or use the left and right arrow keys.</value>
+  </data>
+  <data name="CheckingSession" xml:space="preserve">
+    <value>Checking session</value>
+  </data>
+  <data name="CheckingSessionProgress" xml:space="preserve">
+    <value>Checking your session…</value>
+  </data>
+  <data name="ChooseAppBackup" xml:space="preserve">
+    <value>Choose a Street Fighter 6 Records database backup.</value>
+  </data>
+  <data name="ChooseDifferentDatabase" xml:space="preserve">
+    <value>Choose a file other than the current database.</value>
+  </data>
+  <data name="Clear" xml:space="preserve">
+    <value>Clear</value>
+  </data>
+  <data name="ClearFilters" xml:space="preserve">
+    <value>Clear filters</value>
+  </data>
+  <data name="ClearPlayerUid" xml:space="preserve">
+    <value>Clear player UID</value>
+  </data>
+  <data name="ClickAgainToStop" xml:space="preserve">
+    <value>
+Click again to stop · Ctrl+R</value>
+  </data>
+  <data name="ClipboardUnavailable" xml:space="preserve">
+    <value>Clipboard unavailable. Try again.</value>
+  </data>
+  <data name="Close" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="CloseActionSaveFailed" xml:space="preserve">
+    <value>Unable to save the close action. You will be asked again next time.</value>
+  </data>
+  <data name="CloseWindow" xml:space="preserve">
+    <value>Close window</value>
+  </data>
+  <data name="CloseWindowQuestion" xml:space="preserve">
+    <value>Exit or minimize to the tray?</value>
+  </data>
+  <data name="CompleteCapcomSignIn" xml:space="preserve">
+    <value>Complete CAPCOM sign-in.</value>
+  </data>
+  <data name="ConnectionFailed" xml:space="preserve">
+    <value>Connection failed. Check proxy settings.</value>
+  </data>
+  <data name="ConnectionTimedOut" xml:space="preserve">
+    <value>Connection timed out</value>
+  </data>
+  <data name="Copied" xml:space="preserve">
+    <value>Copied</value>
+  </data>
+  <data name="Copy" xml:space="preserve">
+    <value>Copy</value>
+  </data>
+  <data name="CopyNickname" xml:space="preserve">
+    <value>Copy nickname</value>
+  </data>
+  <data name="CopyPlayerUid" xml:space="preserve">
+    <value>Copy player UID</value>
+  </data>
+  <data name="CopyReplayId" xml:space="preserve">
+    <value>Copy replay ID</value>
+  </data>
+  <data name="CopyUid" xml:space="preserve">
+    <value>Copy UID</value>
+  </data>
+  <data name="CurrentMatch" xml:space="preserve">
+    <value>Current match</value>
+  </data>
+  <data name="CurrentSeason" xml:space="preserve">
+    <value>Season {0} · Current</value>
+  </data>
+  <data name="CustomRoom" xml:space="preserve">
+    <value>Custom Room</value>
+  </data>
+  <data name="CustomShort" xml:space="preserve">
+    <value>Custom</value>
+  </data>
+  <data name="DataDirectoryInUse" xml:space="preserve">
+    <value>A match history window is already using this data folder.</value>
+  </data>
+  <data name="Database" xml:space="preserve">
+    <value>Database</value>
+  </data>
+  <data name="DatabaseCorrupt" xml:space="preserve">
+    <value>The database file is damaged and cannot be used.</value>
+  </data>
+  <data name="DatabaseFileFilter" xml:space="preserve">
+    <value>SQLite database|*.sqlite;*.db</value>
+  </data>
+  <data name="DatabaseLinksIncomplete" xml:space="preserve">
+    <value>The database has incomplete linked records.</value>
+  </data>
+  <data name="DatabaseSchemaUnsupported" xml:space="preserve">
+    <value>The database structure is incompatible.</value>
+  </data>
+  <data name="DatabaseVersionUnsupported" xml:space="preserve">
+    <value>This database version is incompatible. Choose a backup made by this version of the app.</value>
+  </data>
+  <data name="DateRange" xml:space="preserve">
+    <value>Date range</value>
+  </data>
+  <data name="DayGroupDate" xml:space="preserve">
+    <value>MMM d  dddd</value>
+  </data>
+  <data name="DayGroupDateYear" xml:space="preserve">
+    <value>MMM d, yyyy  dddd</value>
+  </data>
+  <data name="DismissNotice" xml:space="preserve">
+    <value>Dismiss notification</value>
+  </data>
+  <data name="DrawCountSuffix" xml:space="preserve">
+    <value> / D {0}</value>
+  </data>
+  <data name="DrawSummarySuffix" xml:space="preserve">
+    <value> / D {0}</value>
+  </data>
+  <data name="DuplicateContent" xml:space="preserve">
+    <value>The official site returned duplicate records.</value>
+  </data>
+  <data name="DuplicateContentStopped" xml:space="preserve">
+    <value>The official site returned duplicate page content. Sync stopped.</value>
+  </data>
+  <data name="DuplicatePage" xml:space="preserve">
+    <value>The official site returned a duplicate page.</value>
+  </data>
+  <data name="DuplicatePageStopped" xml:space="preserve">
+    <value>The official site returned a duplicate page. Stopped to avoid repeated requests.</value>
+  </data>
+  <data name="DurationMinutesSeconds" xml:space="preserve">
+    <value>{0} min {1} s</value>
+  </data>
+  <data name="DurationSeconds" xml:space="preserve">
+    <value>{0} s</value>
+  </data>
+  <data name="EditMatchTags" xml:space="preserve">
+    <value>Edit match tags</value>
+  </data>
+  <data name="ElapsedDuration" xml:space="preserve">
+    <value>Elapsed: {0}</value>
+  </data>
+  <data name="EndOfRecords" xml:space="preserve">
+    <value>End of records</value>
+  </data>
+  <data name="EnterPlayerUid" xml:space="preserve">
+    <value>Enter player UID</value>
+  </data>
+  <data name="EnterTagName" xml:space="preserve">
+    <value>Enter a tag name</value>
+  </data>
+  <data name="EnterTenDigitUid" xml:space="preserve">
+    <value>Enter a 10-digit UID.</value>
+  </data>
+  <data name="EnterToCreateTag" xml:space="preserve">
+    <value>Press Enter to create tag</value>
+  </data>
+  <data name="EstimateTimingHelp" xml:space="preserve">
+    <value>Estimate uses the current interval and observed response times</value>
+  </data>
+  <data name="Exit" xml:space="preserve">
+    <value>Exit</value>
+  </data>
+  <data name="FavoritePlayers" xml:space="preserve">
+    <value>Favorite players</value>
+  </data>
+  <data name="FavoriteRemoved" xml:space="preserve">
+    <value>This favorite has been removed.</value>
+  </data>
+  <data name="Favorites" xml:space="preserve">
+    <value>Favorites</value>
+  </data>
+  <data name="FavoritesNavigationTitle" xml:space="preserve">
+    <value>{0} - Matches - Favorites</value>
+  </data>
+  <data name="FilterOpponentReplay" xml:space="preserve">
+    <value>Name / UID / Replay</value>
+  </data>
+  <data name="FindPlayerShortcut" xml:space="preserve">
+    <value>Find player · Ctrl+K</value>
+  </data>
+  <data name="FiveMinutes" xml:space="preserve">
+    <value>5 min</value>
+  </data>
+  <data name="FiveSeconds" xml:space="preserve">
+    <value>5 s</value>
+  </data>
+  <data name="Forward" xml:space="preserve">
+    <value>Forward</value>
+  </data>
+  <data name="ForwardShortcut" xml:space="preserve">
+    <value>Forward · Alt+→
+Right-click for history</value>
+  </data>
+  <data name="GoogleHttpError" xml:space="preserve">
+    <value>Google returned HTTP {0}</value>
+  </data>
+  <data name="GoogleLatency" xml:space="preserve">
+    <value>Google latency</value>
+  </data>
+  <data name="HeadToHead" xml:space="preserve">
+    <value>Head-to-head</value>
+  </data>
+  <data name="HighestReached" xml:space="preserve">
+    <value>All-time best</value>
+  </data>
+  <data name="HistoryNavigationTitle" xml:space="preserve">
+    <value>{0} - Matches - {1}</value>
+  </data>
+  <data name="Home" xml:space="preserve">
+    <value>Home</value>
+  </data>
+  <data name="HomeTooltip" xml:space="preserve">
+    <value>Home · My records</value>
+  </data>
+  <data name="HttpSyncStopped" xml:space="preserve">
+    <value>The official site returned HTTP {0}. Sync stopped.</value>
+  </data>
+  <data name="HttpVerificationRequired" xml:space="preserve">
+    <value>The official site requires verification (HTTP {0}). Sign in again.</value>
+  </data>
+  <data name="HubShort" xml:space="preserve">
+    <value>Hub</value>
+  </data>
+  <data name="ImageRetryPending" xml:space="preserve">
+    <value>Portrait download pending retry: {0}</value>
+  </data>
+  <data name="ImageTooLarge" xml:space="preserve">
+    <value>The portrait file is too large.</value>
+  </data>
+  <data name="ImagesPendingSuffix" xml:space="preserve">
+    <value> · Portrait update incomplete; retry on next refresh</value>
+  </data>
+  <data name="Import" xml:space="preserve">
+    <value>Import</value>
+  </data>
+  <data name="ImportDatabase" xml:space="preserve">
+    <value>Import database</value>
+  </data>
+  <data name="ImportDetails" xml:space="preserve">
+    <value>Duplicates skipped: {0:N0}
+Backup before import: {1}</value>
+  </data>
+  <data name="ImportFailed" xml:space="preserve">
+    <value>Import failed. Check the database file and folder permissions. Existing records were not replaced.</value>
+  </data>
+  <data name="ImportHelp" xml:space="preserve">
+    <value>Merge match records and keep existing records</value>
+  </data>
+  <data name="Importing" xml:space="preserve">
+    <value>Importing…</value>
+  </data>
+  <data name="IncludeUnranked" xml:space="preserve">
+    <value>Include Unranked</value>
+  </data>
+  <data name="InvalidAccountId" xml:space="preserve">
+    <value>Invalid account ID.</value>
+  </data>
+  <data name="InvalidApiInterval" xml:space="preserve">
+    <value>Enter a CAPCOM request interval from 0.1 to 3600 seconds. Decimals are allowed.</value>
+  </data>
+  <data name="InvalidAutoRefresh" xml:space="preserve">
+    <value>Enter a non-negative whole number of seconds for auto refresh. Use 0 to turn off.</value>
+  </data>
+  <data name="InvalidCloseAction" xml:space="preserve">
+    <value>Choose what happens when the window closes.</value>
+  </data>
+  <data name="InvalidImageFormat" xml:space="preserve">
+    <value>Invalid official portrait format.</value>
+  </data>
+  <data name="InvalidImageUrl" xml:space="preserve">
+    <value>Invalid official image URL.</value>
+  </data>
+  <data name="InvalidInterval" xml:space="preserve">
+    <value>{0}: enter a non-negative whole number of seconds. Use 0 to turn off.</value>
+  </data>
+  <data name="InvalidLanguage" xml:space="preserve">
+    <value>Choose a supported language.</value>
+  </data>
+  <data name="InvalidPlayer" xml:space="preserve">
+    <value>Invalid player.</value>
+  </data>
+  <data name="InvalidPlayerUid" xml:space="preserve">
+    <value>Invalid player UID.</value>
+  </data>
+  <data name="InvalidProxy" xml:space="preserve">
+    <value>Enter http://host:port or socks5://host:port. Only proxies without authentication are supported.</value>
+  </data>
+  <data name="InvalidReminder" xml:space="preserve">
+    <value>Enter a non-negative whole number of seconds for the refresh reminder. Use 0 to turn off.</value>
+  </data>
+  <data name="InvalidReplayJson" xml:space="preserve">
+    <value>Unable to read the official match data. Sync stopped.</value>
+  </data>
+  <data name="InvalidSeasonFilter" xml:space="preserve">
+    <value>Invalid season filter.</value>
+  </data>
+  <data name="InvalidTagName" xml:space="preserve">
+    <value>Tag names must be 1–32 characters.</value>
+  </data>
+  <data name="InvalidUserCode" xml:space="preserve">
+    <value>Invalid user code.</value>
+  </data>
+  <data name="LanguageLabel" xml:space="preserve">
+    <value>Language (Language)</value>
+  </data>
+  <data name="LastFifty" xml:space="preserve">
+    <value>Last 50</value>
+  </data>
+  <data name="LastHundred" xml:space="preserve">
+    <value>Last 100</value>
+  </data>
+  <data name="LastMonth" xml:space="preserve">
+    <value>Last month</value>
+  </data>
+  <data name="LastTwenty" xml:space="preserve">
+    <value>Last 20</value>
+  </data>
+  <data name="LatestScore" xml:space="preserve">
+    <value>Latest score</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>Loading</value>
+  </data>
+  <data name="LoadingCharacterRanks" xml:space="preserve">
+    <value>Loading character ranks</value>
+  </data>
+  <data name="LoadingMatches" xml:space="preserve">
+    <value>Loading matches</value>
+  </data>
+  <data name="LoadingScores" xml:space="preserve">
+    <value>Loading scores</value>
+  </data>
+  <data name="LoginPopupFailed" xml:space="preserve">
+    <value>Unable to open the sign-in popup. Try again.</value>
+  </data>
+  <data name="LoginSaveFailed" xml:space="preserve">
+    <value>Unable to save your session. Try again.</value>
+  </data>
+  <data name="LoginToLoad" xml:space="preserve">
+    <value>Sign in to load more records.</value>
+  </data>
+  <data name="LoginVerificationPage" xml:space="preserve">
+    <value>The official site requires verification. Sign in again.</value>
+  </data>
+  <data name="LoginWindowFailed" xml:space="preserve">
+    <value>Unable to open sign-in: {0}. Check WebView2 Runtime and proxy settings.</value>
+  </data>
+  <data name="LpSettlementUnknown" xml:space="preserve">
+    <value>LP settlement unknown</value>
+  </data>
+  <data name="MatchAllSelectedTags" xml:space="preserve">
+    <value>Match all selected tags</value>
+  </data>
+  <data name="MatchAnySelectedTags" xml:space="preserve">
+    <value>Match any selected tag</value>
+  </data>
+  <data name="MatchCategory" xml:space="preserve">
+    <value>Match category</value>
+  </data>
+  <data name="MatchCount" xml:space="preserve">
+    <value>Matches: {0}</value>
+  </data>
+  <data name="MatchDescription" xml:space="preserve">
+    <value>{0} · {1} · {2} vs {3} · {4} {5}</value>
+  </data>
+  <data name="MatchList" xml:space="preserve">
+    <value>Match list</value>
+  </data>
+  <data name="MatchQuantity" xml:space="preserve">
+    <value>Match count</value>
+  </data>
+  <data name="MatchSummary" xml:space="preserve">
+    <value>Matches: {0} · W {1} / L {2}</value>
+  </data>
+  <data name="Matches" xml:space="preserve">
+    <value>Matches</value>
+  </data>
+  <data name="MatchesAdded" xml:space="preserve">
+    <value>Matches added: {0:N0}</value>
+  </data>
+  <data name="MatchesPrepared" xml:space="preserve">
+    <value>Matches ready: {0}</value>
+  </data>
+  <data name="MatchesPreparedOfTotal" xml:space="preserve">
+    <value>Matches ready: {0} / {1}</value>
+  </data>
+  <data name="MatchesSaved" xml:space="preserve">
+    <value>Match history saved</value>
+  </data>
+  <data name="MatchesSuffix" xml:space="preserve">
+    <value> matches</value>
+  </data>
+  <data name="Maximize" xml:space="preserve">
+    <value>Maximize</value>
+  </data>
+  <data name="MeSuffix" xml:space="preserve">
+    <value> (me)</value>
+  </data>
+  <data name="Minimize" xml:space="preserve">
+    <value>Minimize</value>
+  </data>
+  <data name="MinimizeToTray" xml:space="preserve">
+    <value>Minimize to tray</value>
+  </data>
+  <data name="MismatchedRecords" xml:space="preserve">
+    <value>Records do not match the selected player or category.</value>
+  </data>
+  <data name="MissingCharacterId" xml:space="preserve">
+    <value>Character ID is missing.</value>
+  </data>
+  <data name="MissingPagingData" xml:space="preserve">
+    <value>The official response has no paging information.</value>
+  </data>
+  <data name="MissingReplayId" xml:space="preserve">
+    <value>A record has no replay ID. Sync stopped.</value>
+  </data>
+  <data name="Mode" xml:space="preserve">
+    <value>Mode</value>
+  </data>
+  <data name="MrSettlementUnknown" xml:space="preserve">
+    <value>MR settlement unknown</value>
+  </data>
+  <data name="MyRecords" xml:space="preserve">
+    <value>My records</value>
+  </data>
+  <data name="NextMonth" xml:space="preserve">
+    <value>Next month</value>
+  </data>
+  <data name="NextRequestIn" xml:space="preserve">
+    <value>Next request in {0:F1} s</value>
+  </data>
+  <data name="NicknameCopied" xml:space="preserve">
+    <value>Nickname copied</value>
+  </data>
+  <data name="NicknameOrUid" xml:space="preserve">
+    <value>Nickname / UID</value>
+  </data>
+  <data name="NinetyDays" xml:space="preserve">
+    <value>90 days</value>
+  </data>
+  <data name="NoMatchSelected" xml:space="preserve">
+    <value>No match selected</value>
+  </data>
+  <data name="NoMatchingFavorites" xml:space="preserve">
+    <value>No matching favorites</value>
+  </data>
+  <data name="NoMatchingHistory" xml:space="preserve">
+    <value>No matching recent searches</value>
+  </data>
+  <data name="NoMatchingPlayers" xml:space="preserve">
+    <value>No matching players</value>
+  </data>
+  <data name="NoMatchingRecords" xml:space="preserve">
+    <value>No matching records</value>
+  </data>
+  <data name="NoMatchingTags" xml:space="preserve">
+    <value>No matching tags</value>
+  </data>
+  <data name="NoMrForMatches" xml:space="preserve">
+    <value>These matches have no MR</value>
+  </data>
+  <data name="NoPlayerUid" xml:space="preserve">
+    <value>No player UID is available.</value>
+  </data>
+  <data name="NoProfileToSave" xml:space="preserve">
+    <value>No player profile to save.</value>
+  </data>
+  <data name="NoRankRecords" xml:space="preserve">
+    <value>No rank records</value>
+  </data>
+  <data name="NoRankedRecords" xml:space="preserve">
+    <value>No ranked matches</value>
+  </data>
+  <data name="NoRecordsRefresh" xml:space="preserve">
+    <value>No records yet. Select Refresh to start saving.</value>
+  </data>
+  <data name="NoScores" xml:space="preserve">
+    <value>No scores to display</value>
+  </data>
+  <data name="NoSearchHistory" xml:space="preserve">
+    <value>No recent searches</value>
+  </data>
+  <data name="NoSeasonMr" xml:space="preserve">
+    <value>No MR data for this season</value>
+  </data>
+  <data name="Off" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="OfficialCapcomSignIn" xml:space="preserve">
+    <value>CAPCOM sign-in</value>
+  </data>
+  <data name="OfficialMatchScore" xml:space="preserve">
+    <value>Score at match time recorded by the official site</value>
+  </data>
+  <data name="OneDay" xml:space="preserve">
+    <value>1 d</value>
+  </data>
+  <data name="OneHour" xml:space="preserve">
+    <value>1 h</value>
+  </data>
+  <data name="OneSecond" xml:space="preserve">
+    <value>1 s</value>
+  </data>
+  <data name="OpenMainPanel" xml:space="preserve">
+    <value>Open main window</value>
+  </data>
+  <data name="OpeningCapcom" xml:space="preserve">
+    <value>Opening the CAPCOM website…</value>
+  </data>
+  <data name="OperationFailed" xml:space="preserve">
+    <value>Operation failed: {0}. Saved data is safe.</value>
+  </data>
+  <data name="OpponentCharacter" xml:space="preserve">
+    <value>Opponent</value>
+  </data>
+  <data name="OutcomeDraw" xml:space="preserve">
+    <value>Draw</value>
+  </data>
+  <data name="OutcomeLoss" xml:space="preserve">
+    <value>Loss</value>
+  </data>
+  <data name="OutcomePending" xml:space="preserve">
+    <value>Pending</value>
+  </data>
+  <data name="OutcomeWin" xml:space="preserve">
+    <value>Win</value>
+  </data>
+  <data name="PageNotVerified" xml:space="preserve">
+    <value>Verification is incomplete. Sign in again.</value>
+  </data>
+  <data name="Pages" xml:space="preserve">
+    <value>Pages</value>
+  </data>
+  <data name="PagesReadSuffix" xml:space="preserve">
+    <value> · Pages read: {0}</value>
+  </data>
+  <data name="PeakMr" xml:space="preserve">
+    <value>Peak MR</value>
+  </data>
+  <data name="Player" xml:space="preserve">
+    <value>Player</value>
+  </data>
+  <data name="PlayerCharacterRanks" xml:space="preserve">
+    <value>Player character ranks</value>
+  </data>
+  <data name="PlayerDropdown" xml:space="preserve">
+    <value>Player ▾</value>
+  </data>
+  <data name="PlayerNotFound" xml:space="preserve">
+    <value>Player not found. Check the UID.</value>
+  </data>
+  <data name="PlayerNotInMatch" xml:space="preserve">
+    <value>This player is not part of this match.</value>
+  </data>
+  <data name="PlayerProfileUnavailable" xml:space="preserve">
+    <value>Unable to read this player’s profile. Try again later.</value>
+  </data>
+  <data name="PlayerRankHistory" xml:space="preserve">
+    <value>{0} · Rank history</value>
+  </data>
+  <data name="PlayerUidEnterToSearch" xml:space="preserve">
+    <value>Player UID; press Enter to search</value>
+  </data>
+  <data name="PortraitsNotUpdated" xml:space="preserve">
+    <value>Portraits could not be updated. Try refreshing later.</value>
+  </data>
+  <data name="PostMatchScore" xml:space="preserve">
+    <value>After match</value>
+  </data>
+  <data name="PreMatchLpUnknown" xml:space="preserve">
+    <value>Pre-match LP; settlement unknown</value>
+  </data>
+  <data name="PreMatchMrUnknown" xml:space="preserve">
+    <value>Pre-match MR; settlement unknown</value>
+  </data>
+  <data name="PreMatchScoreUnknown" xml:space="preserve">
+    <value>Pre-match score; settlement unknown</value>
+  </data>
+  <data name="PreparingRefresh" xml:space="preserve">
+    <value>Preparing refresh</value>
+  </data>
+  <data name="PreviousMonth" xml:space="preserve">
+    <value>Previous month</value>
+  </data>
+  <data name="PreviousProcessRunning" xml:space="preserve">
+    <value>The previous browser process is still closing. Try again shortly.</value>
+  </data>
+  <data name="ProxyAddress" xml:space="preserve">
+    <value>Proxy address</value>
+  </data>
+  <data name="ProxyHelp" xml:space="preserve">
+    <value>Supports HTTP, HTTPS and SOCKS5 proxies without authentication</value>
+  </data>
+  <data name="QueryType" xml:space="preserve">
+    <value>Query type</value>
+  </data>
+  <data name="RangeChange" xml:space="preserve">
+    <value>Change</value>
+  </data>
+  <data name="RangeWinRate" xml:space="preserve">
+    <value>Win rate</value>
+  </data>
+  <data name="RankAndPoints" xml:space="preserve">
+    <value>Rank / Points</value>
+  </data>
+  <data name="RankFormatChanged" xml:space="preserve">
+    <value>The official rank data format has changed.</value>
+  </data>
+  <data name="RankHistory" xml:space="preserve">
+    <value>Rank history</value>
+  </data>
+  <data name="RankLookupFailed" xml:space="preserve">
+    <value>Unable to load ranks. Try again later.</value>
+  </data>
+  <data name="RankLp" xml:space="preserve">
+    <value>Rank / LP</value>
+  </data>
+  <data name="RankedMatch" xml:space="preserve">
+    <value>Ranked Match</value>
+  </data>
+  <data name="RankedScoreTrend" xml:space="preserve">
+    <value>Ranked score trend</value>
+  </data>
+  <data name="RankedShort" xml:space="preserve">
+    <value>Ranked</value>
+  </data>
+  <data name="RateLimitDelay" xml:space="preserve">
+    <value>Too many requests. Wait at least {0} seconds before syncing.</value>
+  </data>
+  <data name="RateLimitPaused" xml:space="preserve">
+    <value>Too many requests. Sync paused; try again later.</value>
+  </data>
+  <data name="ReadingCategoryPage" xml:space="preserve">
+    <value>Loading {0} · Page {1}</value>
+  </data>
+  <data name="ReadingRankedPage" xml:space="preserve">
+    <value>Loading ranked matches · Page {0}</value>
+  </data>
+  <data name="ReadyLocalData" xml:space="preserve">
+    <value>Ready · Browsing and filtering use local data</value>
+  </data>
+  <data name="RecentCount" xml:space="preserve">
+    <value>Last {0}</value>
+  </data>
+  <data name="RecentSearches" xml:space="preserve">
+    <value>Recent searches</value>
+  </data>
+  <data name="RecordsSavedImagesBackground" xml:space="preserve">
+    <value>Records saved. Portraits will update in the background.</value>
+  </data>
+  <data name="RecordsUpdatedImagesPending" xml:space="preserve">
+    <value>Records updated. Portraits can be refreshed later.</value>
+  </data>
+  <data name="Refresh" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="RefreshCancelled" xml:space="preserve">
+    <value>Refresh cancelled</value>
+  </data>
+  <data name="RefreshComplete" xml:space="preserve">
+    <value>Refresh complete</value>
+  </data>
+  <data name="RefreshCompleteSummary" xml:space="preserve">
+    <value>Refresh complete · Added: {0} · Pages: {1} · HTTP requests: {2}{3}</value>
+  </data>
+  <data name="RefreshIncomplete" xml:space="preserve">
+    <value>Refresh incomplete</value>
+  </data>
+  <data name="RefreshReminder" xml:space="preserve">
+    <value>Refresh reminder</value>
+  </data>
+  <data name="RefreshShortcut" xml:space="preserve">
+    <value>Refresh · Ctrl+R</value>
+  </data>
+  <data name="RemainingEstimateSuffix" xml:space="preserve">
+    <value> · About {0} remaining</value>
+  </data>
+  <data name="RemainingUnknownSuffix" xml:space="preserve">
+    <value> · Time remaining unknown</value>
+  </data>
+  <data name="RememberChoice" xml:space="preserve">
+    <value>Remember my choice</value>
+  </data>
+  <data name="ReminderAccessible" xml:space="preserve">
+    <value>Refresh reminder interval in seconds; 0 turns it off</value>
+  </data>
+  <data name="ReminderOffHelp" xml:space="preserve">
+    <value>Use 0 to disable the animated reminder</value>
+  </data>
+  <data name="ReminderPresets" xml:space="preserve">
+    <value>Refresh reminder presets</value>
+  </data>
+  <data name="RemoveTagFilter" xml:space="preserve">
+    <value>Remove this tag filter</value>
+  </data>
+  <data name="Replay" xml:space="preserve">
+    <value>Replay</value>
+  </data>
+  <data name="ReplayFormatChanged" xml:space="preserve">
+    <value>The official match data format has changed.</value>
+  </data>
+  <data name="ReplayStructureChanged" xml:space="preserve">
+    <value>The official match data format changed. Sync stopped.</value>
+  </data>
+  <data name="RequestTimedOut" xml:space="preserve">
+    <value>Request timed out. Check your proxy or connection and try again.</value>
+  </data>
+  <data name="ResponseRetrying" xml:space="preserve">
+    <value>Response incomplete; retrying shortly</value>
+  </data>
+  <data name="Restore" xml:space="preserve">
+    <value>Restore</value>
+  </data>
+  <data name="Result" xml:space="preserve">
+    <value>Result</value>
+  </data>
+  <data name="RoundScore" xml:space="preserve">
+    <value>Score</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="Saved" xml:space="preserve">
+    <value>Saved</value>
+  </data>
+  <data name="SavingRecords" xml:space="preserve">
+    <value>Saving match records</value>
+  </data>
+  <data name="ScoreEstimateExplanation" xml:space="preserve">
+    <value>Estimated: no next ranked match with this character is available. The change uses the official current score saved during refresh and this match’s pre-match score; it may include unrecorded matches.</value>
+  </data>
+  <data name="ScoreNavigationTitle" xml:space="preserve">
+    <value>{0} - Scores - {1}</value>
+  </data>
+  <data name="ScoreType" xml:space="preserve">
+    <value>Score type</value>
+  </data>
+  <data name="Scores" xml:space="preserve">
+    <value>Scores</value>
+  </data>
+  <data name="ScoresReady" xml:space="preserve">
+    <value>Score records ready</value>
+  </data>
+  <data name="Search" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="SearchFailed" xml:space="preserve">
+    <value>Search failed. Check your connection and try again.</value>
+  </data>
+  <data name="SearchFavoritePlayers" xml:space="preserve">
+    <value>Search favorite players by nickname or UID</value>
+  </data>
+  <data name="SearchOpponentReplay" xml:space="preserve">
+    <value>Search opponent nickname, UID or replay ID</value>
+  </data>
+  <data name="SearchOrAddTags" xml:space="preserve">
+    <value>Search or add tags</value>
+  </data>
+  <data name="SearchPlayers" xml:space="preserve">
+    <value>Search players</value>
+  </data>
+  <data name="SearchSaveFailed" xml:space="preserve">
+    <value>Unable to save the result. Check data folder permissions.</value>
+  </data>
+  <data name="SearchTags" xml:space="preserve">
+    <value>Search tags</value>
+  </data>
+  <data name="Searching" xml:space="preserve">
+    <value>Searching…</value>
+  </data>
+  <data name="Season" xml:space="preserve">
+    <value>Season</value>
+  </data>
+  <data name="SeasonDataUnavailable" xml:space="preserve">
+    <value>This season’s data is temporarily unavailable.</value>
+  </data>
+  <data name="SeasonNumber" xml:space="preserve">
+    <value>Season {0}</value>
+  </data>
+  <data name="SecondsUnit" xml:space="preserve">
+    <value>s</value>
+  </data>
+  <data name="SelectDateRange" xml:space="preserve">
+    <value>Select a date range</value>
+  </data>
+  <data name="SelectEndDate" xml:space="preserve">
+    <value>Select the end date</value>
+  </data>
+  <data name="SelectedTagsCount" xml:space="preserve">
+    <value>Tags · {0} ▾</value>
+  </data>
+  <data name="SessionExpired" xml:space="preserve">
+    <value>Your session expired. Sign in again.</value>
+  </data>
+  <data name="SessionExpiredCloseWindow" xml:space="preserve">
+    <value>Your session expired. Close this window and sign in again.</value>
+  </data>
+  <data name="SessionSaved" xml:space="preserve">
+    <value>Session saved.</value>
+  </data>
+  <data name="SessionSavedImagesPending" xml:space="preserve">
+    <value>Session saved. Portraits will be retried on the next refresh.</value>
+  </data>
+  <data name="Settings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="SettingsSavedDirect" xml:space="preserve">
+    <value>Settings saved. Future sign-ins and syncs will connect directly.</value>
+  </data>
+  <data name="SettingsSavedProxy" xml:space="preserve">
+    <value>Settings saved. Future sign-ins and syncs will use the selected proxy.</value>
+  </data>
+  <data name="SettingsShortcut" xml:space="preserve">
+    <value>Settings · Ctrl+,</value>
+  </data>
+  <data name="SettlementUnknown" xml:space="preserve">
+    <value>Settlement unknown</value>
+  </data>
+  <data name="ShortIntervalWarning" xml:space="preserve">
+    <value>Short intervals may trigger rate limits. At least 5 seconds is recommended.</value>
+  </data>
+  <data name="SignIn" xml:space="preserve">
+    <value>Sign in</value>
+  </data>
+  <data name="SignInAgain" xml:space="preserve">
+    <value>Sign in again</value>
+  </data>
+  <data name="SignInBeforeSearch" xml:space="preserve">
+    <value>Sign in before searching for a player.</value>
+  </data>
+  <data name="SignInCancelled" xml:space="preserve">
+    <value>Sign-in cancelled.</value>
+  </data>
+  <data name="SignInCancelledLocal" xml:space="preserve">
+    <value>Sign-in cancelled. Local records are still available.</value>
+  </data>
+  <data name="SignInCapcom" xml:space="preserve">
+    <value>Sign in to CAPCOM ID</value>
+  </data>
+  <data name="SignInFirst" xml:space="preserve">
+    <value>Sign in first.</value>
+  </data>
+  <data name="SignOut" xml:space="preserve">
+    <value>Sign out</value>
+  </data>
+  <data name="SignOutAccount" xml:space="preserve">
+    <value>Sign out of account</value>
+  </data>
+  <data name="SignOutConfirmation" xml:space="preserve">
+    <value>Sign out of “{0}”?
+
+The saved sign-in will be removed from this device. Local match records will be kept.</value>
+  </data>
+  <data name="SignedOutLocalKept" xml:space="preserve">
+    <value>Signed out. Local records have been kept.</value>
+  </data>
+  <data name="StopDownload" xml:space="preserve">
+    <value>Stop download</value>
+  </data>
+  <data name="StopDownloadShortcut" xml:space="preserve">
+    <value>Stop download · Ctrl+R</value>
+  </data>
+  <data name="StoppedRecordsKept" xml:space="preserve">
+    <value>Stopped. Downloaded records have been kept.</value>
+  </data>
+  <data name="Stopping" xml:space="preserve">
+    <value>Stopping</value>
+  </data>
+  <data name="SyncBoundaryReached" xml:space="preserve">
+    <value>Reached the previous sync boundary</value>
+  </data>
+  <data name="SystemDefault" xml:space="preserve">
+    <value>System default</value>
+  </data>
+  <data name="TagFilter" xml:space="preserve">
+    <value>Filter tags</value>
+  </data>
+  <data name="TagNameEnterToAdd" xml:space="preserve">
+    <value>Enter a tag name; press Enter to add</value>
+  </data>
+  <data name="TagSaveFailed" xml:space="preserve">
+    <value>Unable to save tags. Try again.</value>
+  </data>
+  <data name="Tags" xml:space="preserve">
+    <value>Tags</value>
+  </data>
+  <data name="TagsDropdown" xml:space="preserve">
+    <value>Tags ▾</value>
+  </data>
+  <data name="TenMinutes" xml:space="preserve">
+    <value>10 min</value>
+  </data>
+  <data name="TenSeconds" xml:space="preserve">
+    <value>10 s</value>
+  </data>
+  <data name="Test" xml:space="preserve">
+    <value>Test</value>
+  </data>
+  <data name="Testing" xml:space="preserve">
+    <value>Testing…</value>
+  </data>
+  <data name="ThisMonth" xml:space="preserve">
+    <value>This month</value>
+  </data>
+  <data name="ThreeSeconds" xml:space="preserve">
+    <value>3 s</value>
+  </data>
+  <data name="Time" xml:space="preserve">
+    <value>Time</value>
+  </data>
+  <data name="TooManyRequests" xml:space="preserve">
+    <value>Too many requests. Try refreshing later.</value>
+  </data>
+  <data name="TwelveHours" xml:space="preserve">
+    <value>12 h</value>
+  </data>
+  <data name="TwentyMinutes" xml:space="preserve">
+    <value>20 min</value>
+  </data>
+  <data name="UnexpectedError" xml:space="preserve">
+    <value>An error occurred. Check the diagnostic log in the data folder.</value>
+  </data>
+  <data name="UnknownCategory" xml:space="preserve">
+    <value>Unknown match category.</value>
+  </data>
+  <data name="UnknownSummarySuffix" xml:space="preserve">
+    <value> · Pending: {0}</value>
+  </data>
+  <data name="UpdateFailed" xml:space="preserve">
+    <value>Unable to update. Check your connection and try again.</value>
+  </data>
+  <data name="UpdatedAtPrefix" xml:space="preserve">
+    <value>Updated </value>
+  </data>
+  <data name="UpdatingCharacterProfiles" xml:space="preserve">
+    <value>Updating character profiles</value>
+  </data>
+  <data name="UpdatingProfilesProgress" xml:space="preserve">
+    <value>Updating character profiles and portraits…</value>
+  </data>
+  <data name="UseProxy" xml:space="preserve">
+    <value>Use proxy</value>
+  </data>
+  <data name="VerificationRequired" xml:space="preserve">
+    <value>Open the sign-in window to complete verification.</value>
+  </data>
+  <data name="ViewMatches" xml:space="preserve">
+    <value>Matches</value>
+  </data>
+  <data name="ViewMatchesAndScores" xml:space="preserve">
+    <value>View matches and scores</value>
+  </data>
+  <data name="ViewedPlayer" xml:space="preserve">
+    <value>Currently viewed player</value>
+  </data>
+  <data name="WaitingForRefresh" xml:space="preserve">
+    <value>Waiting for refresh to finish</value>
+  </data>
+  <data name="WaitingForResponse" xml:space="preserve">
+    <value>Waiting for the official site</value>
+  </data>
+  <data name="WaitingForSignIn" xml:space="preserve">
+    <value>Waiting for sign-in</value>
+  </data>
+  <data name="WaitingToSend" xml:space="preserve">
+    <value>Waiting to send request</value>
+  </data>
+  <data name="WhenWindowCloses" xml:space="preserve">
+    <value>On close</value>
+  </data>
+  <data name="WinLossSummary" xml:space="preserve">
+    <value>W {0} / L {1}</value>
+  </data>
+  <data name="WinRateRounded" xml:space="preserve">
+    <value>Win rate {0:F0}%</value>
+  </data>
+  <data name="WinRateSuffix" xml:space="preserve">
+    <value> win rate</value>
+  </data>
+  <data name="WinRateValue" xml:space="preserve">
+    <value>Win rate {0}</value>
+  </data>
+  <data name="WrongOpponentProfile" xml:space="preserve">
+    <value>The profile does not match the selected opponent.</value>
+  </data>
+  <data name="WrongPlayerRecords" xml:space="preserve">
+    <value>The official site returned another player’s records. Sync stopped.</value>
+  </data>
+  <data name="Yesterday" xml:space="preserve">
+    <value>Yesterday</value>
+  </data>
+  <data name="YourCharacter" xml:space="preserve">
+    <value>Character</value>
+  </data>
+  <data name="CharacterNamesIncomplete" xml:space="preserve">
+    <value>The localized character list is incomplete. It will be retried on the next refresh.</value>
+  </data>
+  <data name="RankHistoryAction" xml:space="preserve">
+    <value>Ranks</value>
+  </data>
+  <data name="MatchSuffix" xml:space="preserve">
+    <value> match</value>
+  </data>
+  <data name="SavedLoadingCharacterNames" xml:space="preserve">
+    <value>Language saved. Loading character names…</value>
+  </data>
+  <data name="SavedWaitingCharacterNames" xml:space="preserve">
+    <value>Language saved. Waiting to load character names…</value>
+  </data>
+  <data name="SavedCharacterNamesReady" xml:space="preserve">
+    <value>Language and character names updated</value>
+  </data>
+  <data name="SavedCharacterNamesFailed" xml:space="preserve">
+    <value>Language saved. Couldn’t load character names. Try refreshing.</value>
+  </data>
+  <data name="SavedCharacterNamesSignIn" xml:space="preserve">
+    <value>Language saved. Sign in to load character names.</value>
+  </data>
+  <data name="SavedCharacterNamesCancelled" xml:space="preserve">
+    <value>Language saved. Character name loading stopped.</value>
+  </data>
+</root>

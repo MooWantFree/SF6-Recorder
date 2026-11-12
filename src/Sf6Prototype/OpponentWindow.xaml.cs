@@ -11,6 +11,7 @@ public partial class OpponentWindow : Window
 {
     private readonly string _opponent;
     private readonly string _signedInId;
+    private readonly string _initialName;
     private readonly BucklerClient _client;
     private readonly ProfileCache _portraits;
     private readonly RankQuerySession _session;
@@ -19,8 +20,9 @@ public partial class OpponentWindow : Window
     private IReadOnlyList<CharacterRank> _ranks=[];
     private bool _busy,_changing,_closing,_suspended;
     private int _lastLpSeason=-1, _lastMrSeason=-1;
-    public record SeasonChoice(int Id,int Current) { public override string ToString()=>Id==-1 ? "达到最高" : Id==Current ? $"赛季 {Id} · 当前" : $"赛季 {Id}"; }
-    public record RankRow(CharacterRank Rank,ImageSource? Image,bool Peak)
+    public bool QueryInProgress=>_busy;
+    public record SeasonChoice(int Id,int Current) { public override string ToString()=>Id==-1 ? Strings.HighestReached : Id==Current ? Localization.Format(Strings.CurrentSeason, Id) : Localization.Format(Strings.SeasonNumber, Id); }
+    public record RankRow(CharacterRank Rank,ImageSource? Image,bool Peak,string Name)
     { public string LpSuffix=>!Peak && Rank.Ranked && Rank.Lp>=0 ? $" ({Rank.Lp:0}lp)" : ""; }
     // The main sync shares the site's request budget, so queries pause while it runs.
     public bool Suspended
@@ -32,11 +34,12 @@ public partial class OpponentWindow : Window
             if(resume && IsLoaded && _profile==null && !_busy && !_closing) _=LoadAsync();
         }
     }
-    public OpponentWindow(Window owner,string opponent,string name,ConnectionSettings settings,SavedSession session,CookieVault vault,ProfileCache portraits)
+    public OpponentWindow(Window owner,string opponent,string name,ConnectionSettings settings,SavedSession session,CookieVault vault,ProfileCache portraits,Action<CharacterObservation>? observeCharacters=null)
     {
-        InitializeComponent(); Owner=owner; _opponent=opponent; _signedInId=session.AccountId; _client=new(settings,session,vault); _portraits=portraits;
+        InitializeComponent(); Owner=owner; _opponent=opponent; _signedInId=session.AccountId; _initialName=name; _client=new(settings,session,vault); _portraits=portraits;
+        _client.CharacterObserver=observeCharacters;
         _session=new(_client,opponent);
-        PlayerName.Text=new PlayerIdentity(opponent,name).DisplayNameFor(_signedInId); Title=$"{PlayerName.Text} · 历史段位"; UidText.Text=$"UID {opponent}";
+        PlayerName.Text=new PlayerIdentity(opponent,name).DisplayNameFor(_signedInId); Title=Localization.Format(Strings.PlayerRankHistory, PlayerName.Text); UidText.Text=$"UID {opponent}";
         Loaded+=async(_,_)=>await LoadAsync();
     }
     private void SetBusy(bool busy)
@@ -44,11 +47,11 @@ public partial class OpponentWindow : Window
         _busy=busy; RefreshButton.IsEnabled=!busy && !_suspended;
         SeasonPicker.IsEnabled=ModePicker.IsEnabled=!busy && !_suspended && _profile!=null;
         ShowUnranked.IsEnabled=!busy && _profile!=null;
-        RefreshLabel.Text=busy ? "查询中…" : "刷新";
+        RefreshLabel.Text=busy ? Strings.Searching : Strings.Refresh;
         var pending=_suspended && _profile==null;
         LoadingState.Visibility=busy || pending ? Visibility.Visible : Visibility.Collapsed;
         RankGrid.Visibility=busy || pending ? Visibility.Hidden : Visibility.Visible;
-        if(pending) Status.Text="等待刷新完成";
+        if(pending) Status.Text=Strings.WaitingForRefresh;
         if(busy) EmptyText.Visibility=Visibility.Collapsed;
     }
     private void SetSeasons(int selected)
@@ -70,17 +73,17 @@ public partial class OpponentWindow : Window
             if(_profile==null || refresh)
             {
                 _profile=await _session.LoadProfileAsync(_cancel.Token,refresh);
-                PlayerName.Text=new PlayerIdentity(_opponent,_profile.Name).DisplayNameFor(_signedInId); Title=$"{PlayerName.Text} · 历史段位";
+                PlayerName.Text=new PlayerIdentity(_opponent,_profile.Name).DisplayNameFor(_signedInId); Title=Localization.Format(Strings.PlayerRankHistory, PlayerName.Text);
                 SetSeasons(season);
             }
-            if(SeasonPicker.SelectedItem is not SeasonChoice choice) { EmptyText.Text="该赛季暂无 MR 数据"; EmptyText.Visibility=Visibility.Visible; return; }
+            if(SeasonPicker.SelectedItem is not SeasonChoice choice) { EmptyText.Text=Strings.NoSeasonMr; EmptyText.Visibility=Visibility.Visible; return; }
             var result=await _session.GetAsync(new(choice.Id,ModePicker.SelectedIndex==1),_cancel.Token);
             _ranks=result.Characters;
-            ShowRows(); Status.Text="更新于 "+result.FetchedAt.ToOffset(TimeSpan.FromHours(8)).ToString("HH:mm:ss");
+            ShowRows(); Status.Text=Strings.UpdatedAtPrefix+result.FetchedAt.ToOffset(TimeSpan.FromHours(8)).ToString("HH:mm:ss");
         }
         catch(OperationCanceledException) when(_cancel.IsCancellationRequested) { }
-        catch(LoginRequiredException) { Status.Text="登录已失效，请关闭此窗口后重新登录。"; }
-        catch(Exception) { Status.Text="暂时无法获取段位，请稍后重试。"; }
+        catch(LoginRequiredException) { Status.Text=Strings.SessionExpiredCloseWindow; }
+        catch(Exception) { Status.Text=Strings.RankLookupFailed; }
         finally { SetBusy(false); if(_closing) Close(); }
     }
     private void ShowRows()
@@ -89,8 +92,16 @@ public partial class OpponentWindow : Window
         MrColumn.Visibility=(SeasonPicker.SelectedItem as SeasonChoice)?.Id==-1 ? Visibility.Collapsed : Visibility.Visible;
         var rows=_ranks.Where(r=>ShowUnranked.IsChecked==true || (peak ? r.Mr>0 : r.Ranked))
             .OrderByDescending(r=>peak ? r.Mr : r.Lp).ThenBy(r=>r.CharacterId)
-            .Select(r=>new RankRow(r,Pictures.Load(_portraits.CharacterImage(r.CharacterId,r.Name)),peak)).ToList();
-        RankGrid.ItemsSource=rows; EmptyText.Text=peak ? "该赛季暂无 MR 数据" : "暂无段位记录"; EmptyText.Visibility=rows.Count==0 ? Visibility.Visible : Visibility.Collapsed;
+            .Select(r=>new RankRow(r,Pictures.Load(_portraits.CharacterImage(r.CharacterId,r.Name)),peak,_portraits.Names.Display(r.CharacterId,r.Name))).ToList();
+        RankGrid.ItemsSource=rows; EmptyText.Text=peak ? Strings.NoSeasonMr : Strings.NoRankRecords; EmptyText.Visibility=rows.Count==0 ? Visibility.Visible : Visibility.Collapsed;
+    }
+    public void RefreshCharacterNames()=>ShowRows();
+    public void RefreshLanguage()
+    {
+        PlayerName.Text=new PlayerIdentity(_opponent,_profile?.Name ?? _initialName).DisplayNameFor(_signedInId);
+        Title=Localization.Format(Strings.PlayerRankHistory,PlayerName.Text);
+        if(_profile!=null) SetSeasons((SeasonPicker.SelectedItem as SeasonChoice)?.Id ?? -1);
+        Status.Text=""; ShowRows(); SetBusy(_busy);
     }
     private async void Selection_Changed(object sender,SelectionChangedEventArgs e)
     {
@@ -131,9 +142,9 @@ public partial class OpponentWindow : Window
     private void Unranked_Changed(object sender,RoutedEventArgs e) { if(_profile!=null && !_busy) ShowRows(); }
     private async void CopyUid_Click(object sender,RoutedEventArgs e)
     {
-        if(UidText.Text=="已复制") return;
-        try { Clipboard.SetText(_opponent); UidText.Text="已复制"; await Task.Delay(1200); UidText.Text=$"UID {_opponent}"; }
-        catch(System.Runtime.InteropServices.ExternalException) { Status.Text="剪贴板暂时不可用，请重试。"; }
+        if(UidText.Text==Strings.Copied) return;
+        try { Clipboard.SetText(_opponent); UidText.Text=Strings.Copied; await Task.Delay(1200); UidText.Text=$"UID {_opponent}"; }
+        catch(System.Runtime.InteropServices.ExternalException) { Status.Text=Strings.ClipboardUnavailable; }
     }
     protected override void OnClosing(CancelEventArgs e)
     {

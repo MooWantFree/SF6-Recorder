@@ -3,9 +3,17 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net10.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
+    <RootNamespace>Sf6Prototype</RootNamespace>
+    <NeutralLanguage>en</NeutralLanguage>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="../../src/Sf6Prototype/Localization.cs" Link="Localization.cs"/>
+    <Compile Include="../../src/Sf6Prototype/CharacterNames.cs" Link="CharacterNames.cs"/>
+    <Compile Include="../../src/Sf6Prototype/CharacterNameUpdater.cs" Link="CharacterNameUpdater.cs"/>
+    <Compile Include="../../src/Sf6Prototype/Strings.g.cs" Link="Strings.g.cs"/>
+    <EmbeddedResource Include="../../src/Sf6Prototype/Resources/Strings*.resx" Link="Resources/%(Filename)%(Extension)"/>
+    <EmbeddedResource Include="../../src/Sf6Prototype/Resources/CharacterNames.json" LogicalName="Sf6Prototype.Resources.CharacterNames.json"/>
     <Compile Include="../../src/Sf6Prototype/BattleParser.cs" Link="BattleParser.cs"/>
     <Compile Include="../../src/Sf6Prototype/SessionEvidence.cs" Link="SessionEvidence.cs"/>
     <Compile Include="../../src/Sf6Prototype/Models.cs" Link="Models.cs"/>

@@ -11,11 +11,12 @@ namespace Sf6Prototype;
 public sealed class DateRangePicker : UserControl
 {
     private readonly Button _button = new() { Margin = new(0), Padding = new(10,5,10,5), HorizontalContentAlignment = HorizontalAlignment.Left };
-    private readonly TextBlock _label = new() { Text = "全部日期",FontSize=13,VerticalAlignment=VerticalAlignment.Center };
+    private readonly TextBlock _label = new() { Text = Strings.AllDates,FontSize=13,VerticalAlignment=VerticalAlignment.Center };
     private readonly Popup _popup = new() { AllowsTransparency = true, StaysOpen = false, Placement = PlacementMode.Bottom, HorizontalOffset=-8, VerticalOffset=-3 };
     private readonly TextBlock _title = new() { FontWeight = FontWeights.SemiBold, FontSize = 15, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
-    private readonly TextBlock _hint = new() { Text = "选择最后一天", Foreground = Brush("Ink3"), HorizontalAlignment = HorizontalAlignment.Center, Margin = new(0,8,0,0), Visibility = Visibility.Collapsed };
+    private readonly TextBlock _hint = new() { Text = Strings.SelectEndDate, Foreground = Brush("Ink3"), HorizontalAlignment = HorizontalAlignment.Center, Margin = new(0,8,0,0), Visibility = Visibility.Collapsed };
     private readonly UniformGrid _days = new() { Columns = 7 };
+    private readonly UniformGrid _week = new() { Columns = 7, Margin = new(0,0,0,5) };
     private readonly List<(Button Button,DateTime Date)> _dayButtons = [];
     private readonly Button _next = new() { Content = "\uE76C", FontFamily = new("Segoe Fluent Icons"),FontSize=15,Width = 32, Margin = new(0), BorderThickness = new(0) };
     private DateTime _month, _today;
@@ -29,23 +30,23 @@ public sealed class DateRangePicker : UserControl
         var label = new StackPanel { Orientation=Orientation.Horizontal };
         label.Children.Add(new TextBlock { Text="\uE787",FontFamily=new("Segoe Fluent Icons"),FontSize=12,Margin=new(0,0,8,0),VerticalAlignment=VerticalAlignment.Center,Foreground=Brush("Ink3") });
         label.Children.Add(_label); _button.Content = label; _popup.PlacementTarget = _button;
-        AutomationProperties.SetName(_button, "日期范围");
+        _button.SetResourceReference(AutomationProperties.NameProperty,"I18n.DateRange");
+        _hint.SetResourceReference(TextBlock.TextProperty,"I18n.SelectEndDate");
         var panel = new StackPanel();
         var presets = new StackPanel { Orientation = Orientation.Horizontal, Margin = new(0,0,0,12) };
-        foreach (var item in new[] { ("昨天","yesterday"),("本月","month"),("上个月","previous"),("90 天","90"),("全部","all") })
+        foreach (var item in new[] { (nameof(Strings.Yesterday),"yesterday"),(nameof(Strings.ThisMonth),"month"),(nameof(Strings.LastMonth),"previous"),(nameof(Strings.NinetyDays),"90"),(nameof(Strings.All),"all") })
         {
             var b = new Button { Content = item.Item1, Padding = new(8,5,8,5), Margin = new(0,0,5,0), BorderThickness = new(0), Background = Brush("SurfaceMuted") };
+            b.SetResourceReference(ContentControl.ContentProperty,"I18n."+item.Item1);
             b.Click += (_,_) => { var range = DateRanges.Preset(item.Item2,_today); SetRange(range.Start,range.End); _popup.IsOpen = false; }; presets.Children.Add(b);
         }
         panel.Children.Add(presets);
         var head = new Grid { Margin = new(0,6,0,10) }; head.Children.Add(_title);
         var previous = new Button { Content = "\uE76B", FontFamily=new("Segoe Fluent Icons"),FontSize=15,Width = 32, Margin = new(0), HorizontalAlignment = HorizontalAlignment.Left, BorderThickness = new(0), Foreground=Brush("Ink") };
-        previous.Click += (_,_) => { _month = _month.AddMonths(-1); DrawMonth(); }; AutomationProperties.SetName(previous,"上个月日历"); head.Children.Add(previous);
-        _next.HorizontalAlignment = HorizontalAlignment.Right; _next.Click += (_,_) => { _month = _month.AddMonths(1); DrawMonth(); }; AutomationProperties.SetName(_next,"下个月日历"); head.Children.Add(_next); panel.Children.Add(head);
-        var week = new UniformGrid { Columns = 7, Margin = new(0,0,0,5) };
-        foreach (var text in new[] { "一","二","三","四","五","六","日" }) week.Children.Add(new TextBlock { Text = text, Foreground = Brush("Ink3"), HorizontalAlignment = HorizontalAlignment.Center });
-        panel.Children.Add(week); panel.Children.Add(_days); panel.Children.Add(_hint);
-        _popup.Child = new ContentControl { Content = panel, Width = 344, Style=(Style)Application.Current.FindResource("PopupSurface"), Padding = new(12) };
+        previous.Click += (_,_) => { _month = _month.AddMonths(-1); DrawMonth(); }; previous.SetResourceReference(AutomationProperties.NameProperty,"I18n.PreviousMonth"); head.Children.Add(previous);
+        _next.HorizontalAlignment = HorizontalAlignment.Right; _next.Click += (_,_) => { _month = _month.AddMonths(1); DrawMonth(); }; _next.SetResourceReference(AutomationProperties.NameProperty,"I18n.NextMonth"); head.Children.Add(_next); panel.Children.Add(head);
+        panel.Children.Add(_week); panel.Children.Add(_days); panel.Children.Add(_hint);
+        _popup.Child = new ContentControl { Content = panel, MinWidth = 380, Style=(Style)Application.Current.FindResource("PopupSurface"), Padding = new(12) };
         _popup.Opened += (_,_) => UiCapture.SaveLater((FrameworkElement)_popup.Child,"ui-date-range.png");
         _popup.PreviewKeyDown += (_,e) => { if (e.Key == Key.Escape) { _popup.IsOpen = false; e.Handled = true; } };
         _button.Click += (_,_) =>
@@ -56,19 +57,32 @@ public sealed class DateRangePicker : UserControl
         };
     }
     private static Brush Brush(string key) => (Brush)Application.Current.FindResource(key);
+    public void RefreshLanguage()
+    {
+        _popup.IsOpen=false;
+        UpdateLabel();
+    }
     public void SetRange(DateTime? start, DateTime? end)
     {
         if (start.HasValue && end.HasValue) { var r = DateRanges.Normalize(start.Value,end.Value); Start = r.Start; End = r.End; }
         else Start = End = null;
-        _label.Text = Start == null ? "全部日期" : Start == End ? $"{Start:yyyy-MM-dd}" : $"{Start:MM/dd} — {End:MM/dd}";
-        _button.ToolTip = Start == null ? "选择日期范围" : $"{Start:yyyy-MM-dd} — {End:yyyy-MM-dd}";
+        UpdateLabel();
         RangeChanged?.Invoke(this,EventArgs.Empty);
+    }
+    private void UpdateLabel()
+    {
+        _label.Text = Start == null ? Strings.AllDates : Start == End ? Start.Value.ToString("d",Localization.Culture) : $"{Start.Value.ToString("d",Localization.Culture)} — {End!.Value.ToString("d",Localization.Culture)}";
+        _button.ToolTip = Start == null ? Strings.SelectDateRange : $"{Start:yyyy-MM-dd} — {End:yyyy-MM-dd}";
     }
     private void DrawMonth()
     {
-        _title.Text = _month.ToString("yyyy年M月",CultureInfo.InvariantCulture); _next.IsEnabled = _month.AddMonths(1) <= _today;
+        var culture=Localization.Culture;
+        _title.Text = _month.ToString("Y",culture); _next.IsEnabled = _month.AddMonths(1) <= _today;
+        _week.Children.Clear();
+        var firstDay=(int)culture.DateTimeFormat.FirstDayOfWeek;
+        for(var i=0;i<7;i++) _week.Children.Add(new TextBlock {Text=culture.DateTimeFormat.GetShortestDayName((DayOfWeek)((i+firstDay)%7)),Foreground=Brush("Ink3"),HorizontalAlignment=HorizontalAlignment.Center});
         _days.Children.Clear(); _dayButtons.Clear();
-        var beginning = _month.AddDays(-(((int)_month.DayOfWeek+6)%7));
+        var beginning = _month.AddDays(-(((int)_month.DayOfWeek-firstDay+7)%7));
         for (var i = 0; i < 42; i++)
         {
             var date = beginning.AddDays(i);

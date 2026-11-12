@@ -60,7 +60,7 @@ internal static class HistoryAlignmentChecks
             var scroll=Descendants<ScrollViewer>(list).First();
             Check(scroll.ComputedVerticalScrollBarVisibility==Visibility.Visible,"The long fixture includes a real vertical scrollbar");
             Aligned($"scrollbar, width {width}");
-            character.SelectedItem="隆";Layout(width);
+            character.SelectedItem=character.Items.OfType<HistoryView.CharacterChoice>().Single(c=>c.Key=="隆");Layout(width);
             Check(scroll.ComputedVerticalScrollBarVisibility==Visibility.Collapsed,"Filtering to three matches removes the scrollbar");
             Aligned($"no scrollbar, width {width}");
         }

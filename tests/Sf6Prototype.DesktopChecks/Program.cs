@@ -14,6 +14,7 @@ internal static class Program
         // A plain WPF host is essential when pumping bindings: the real App.OnStartup
         // would otherwise be dispatched and attempt to open the user's data directory.
         var app=new Application {ShutdownMode=ShutdownMode.OnExplicitShutdown};
+        LocalizationWpf.Apply("zh");
         app.Resources.MergedDictionaries.Add(new ResourceDictionary {Source=new Uri("pack://application:,,,/Sf6Prototype;component/Themes/Utility.xaml")});
         var main=new MainWindow();
         main.ApplyTemplate();main.Dispatcher.Invoke(()=>{},System.Windows.Threading.DispatcherPriority.ContextIdle);
@@ -135,6 +136,8 @@ internal static class Program
         count+=PresentationLayoutChecks.Run();
         count+=HistoryAlignmentChecks.Run();
         count+=TitleBarChecks.Run();
+        count+=LocalizationChecks.Run();
+        count+=ToastChecks.Run();
         Console.WriteLine($"Passed {count} headless desktop checks.");
     }
 }

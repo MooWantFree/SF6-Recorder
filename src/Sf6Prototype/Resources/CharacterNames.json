@@ -1,0 +1,335 @@
+{
+  "Version": 1,
+  "Characters": [
+    {
+      "Id": 1,
+      "ToolName": "ryu",
+      "Names": {
+        "en": "Ryu",
+        "zh-Hans": "隆",
+        "zh-Hant": "Ryu",
+        "ja": "リュウ"
+      }
+    },
+    {
+      "Id": 2,
+      "ToolName": "luke",
+      "Names": {
+        "en": "Luke",
+        "zh-Hans": "卢克",
+        "zh-Hant": "Luke",
+        "ja": "ルーク"
+      }
+    },
+    {
+      "Id": 3,
+      "ToolName": "kimberly",
+      "Names": {
+        "en": "Kimberly",
+        "zh-Hans": "金柏莉",
+        "zh-Hant": "Kimberly",
+        "ja": "キンバリー"
+      }
+    },
+    {
+      "Id": 4,
+      "ToolName": "chunli",
+      "Names": {
+        "en": "Chun-Li",
+        "zh-Hans": "春丽",
+        "zh-Hant": "Chun-Li",
+        "ja": "春麗"
+      }
+    },
+    {
+      "Id": 5,
+      "ToolName": "manon",
+      "Names": {
+        "en": "Manon",
+        "zh-Hans": "曼侬",
+        "zh-Hant": "Manon",
+        "ja": "マノン"
+      }
+    },
+    {
+      "Id": 6,
+      "ToolName": "zangief",
+      "Names": {
+        "en": "Zangief",
+        "zh-Hans": "桑吉尔夫",
+        "zh-Hant": "Zangief",
+        "ja": "ザンギエフ"
+      }
+    },
+    {
+      "Id": 7,
+      "ToolName": "jp",
+      "Names": {
+        "en": "JP",
+        "zh-Hans": "JP",
+        "zh-Hant": "JP",
+        "ja": "JP"
+      }
+    },
+    {
+      "Id": 8,
+      "ToolName": "dhalsim",
+      "Names": {
+        "en": "Dhalsim",
+        "zh-Hans": "达尔西姆",
+        "zh-Hant": "Dhalsim",
+        "ja": "ダルシム"
+      }
+    },
+    {
+      "Id": 9,
+      "ToolName": "cammy",
+      "Names": {
+        "en": "Cammy",
+        "zh-Hans": "嘉米",
+        "zh-Hant": "Cammy",
+        "ja": "キャミィ"
+      }
+    },
+    {
+      "Id": 10,
+      "ToolName": "ken",
+      "Names": {
+        "en": "Ken",
+        "zh-Hans": "肯",
+        "zh-Hant": "Ken",
+        "ja": "ケン"
+      }
+    },
+    {
+      "Id": 11,
+      "ToolName": "deejay",
+      "Names": {
+        "en": "Dee Jay",
+        "zh-Hans": "迪 · 杰",
+        "zh-Hant": "Dee Jay",
+        "ja": "ディージェイ"
+      }
+    },
+    {
+      "Id": 12,
+      "ToolName": "lily",
+      "Names": {
+        "en": "Lily",
+        "zh-Hans": "莉莉",
+        "zh-Hant": "Lily",
+        "ja": "リリー"
+      }
+    },
+    {
+      "Id": 13,
+      "ToolName": "aki",
+      "Names": {
+        "en": "A.K.I.",
+        "zh-Hans": "阿鬼",
+        "zh-Hant": "A.K.I.",
+        "ja": "A.K.I."
+      }
+    },
+    {
+      "Id": 14,
+      "ToolName": "rashid",
+      "Names": {
+        "en": "Rashid",
+        "zh-Hans": "拉希德",
+        "zh-Hant": "Rashid",
+        "ja": "ラシード"
+      }
+    },
+    {
+      "Id": 15,
+      "ToolName": "blanka",
+      "Names": {
+        "en": "Blanka",
+        "zh-Hans": "布兰卡",
+        "zh-Hant": "Blanka",
+        "ja": "ブランカ"
+      }
+    },
+    {
+      "Id": 16,
+      "ToolName": "juri",
+      "Names": {
+        "en": "Juri",
+        "zh-Hans": "韩蛛俐",
+        "zh-Hant": "Juri",
+        "ja": "ジュリ"
+      }
+    },
+    {
+      "Id": 17,
+      "ToolName": "marisa",
+      "Names": {
+        "en": "Marisa",
+        "zh-Hans": "玛丽莎",
+        "zh-Hant": "Marisa",
+        "ja": "マリーザ"
+      }
+    },
+    {
+      "Id": 18,
+      "ToolName": "guile",
+      "Names": {
+        "en": "Guile",
+        "zh-Hans": "古烈",
+        "zh-Hant": "Guile",
+        "ja": "ガイル"
+      }
+    },
+    {
+      "Id": 19,
+      "ToolName": "ed",
+      "Names": {
+        "en": "Ed",
+        "zh-Hans": "爱德",
+        "zh-Hant": "Ed",
+        "ja": "エド"
+      }
+    },
+    {
+      "Id": 20,
+      "ToolName": "honda",
+      "Names": {
+        "en": "Edmond Honda",
+        "zh-Hans": "埃德蒙 · 本田",
+        "zh-Hant": "Edmond Honda",
+        "ja": "エドモンド本田"
+      }
+    },
+    {
+      "Id": 21,
+      "ToolName": "jamie",
+      "Names": {
+        "en": "Jamie",
+        "zh-Hans": "杰米",
+        "zh-Hant": "Jamie",
+        "ja": "ジェイミー"
+      }
+    },
+    {
+      "Id": 22,
+      "ToolName": "gouki",
+      "Names": {
+        "en": "Akuma",
+        "zh-Hans": "豪鬼",
+        "zh-Hant": "Gouki",
+        "ja": "豪鬼"
+      }
+    },
+    {
+      "Id": 25,
+      "ToolName": "sagat",
+      "Names": {
+        "en": "Sagat",
+        "zh-Hans": "沙加特",
+        "zh-Hant": "Sagat",
+        "ja": "サガット"
+      }
+    },
+    {
+      "Id": 26,
+      "ToolName": "vega",
+      "Names": {
+        "en": "M. Bison",
+        "zh-Hans": "维加",
+        "zh-Hant": "Vega",
+        "ja": "ベガ"
+      }
+    },
+    {
+      "Id": 27,
+      "ToolName": "terry",
+      "Names": {
+        "en": "Terry",
+        "zh-Hans": "特瑞",
+        "zh-Hant": "Terry",
+        "ja": "テリー"
+      }
+    },
+    {
+      "Id": 28,
+      "ToolName": "mai",
+      "Names": {
+        "en": "Mai",
+        "zh-Hans": "舞",
+        "zh-Hant": "Mai",
+        "ja": "舞"
+      }
+    },
+    {
+      "Id": 29,
+      "ToolName": "elena",
+      "Names": {
+        "en": "Elena",
+        "zh-Hans": "艾琳娜",
+        "zh-Hant": "Elena",
+        "ja": "エレナ"
+      }
+    },
+    {
+      "Id": 30,
+      "ToolName": "cviper",
+      "Names": {
+        "en": "C. Viper",
+        "zh-Hans": "深红毒蛇",
+        "zh-Hant": "C. Viper",
+        "ja": "C.ヴァイパー"
+      }
+    },
+    {
+      "Id": 31,
+      "ToolName": "alex",
+      "Names": {
+        "en": "Alex",
+        "zh-Hans": "阿里克斯",
+        "zh-Hant": "Alex",
+        "ja": "アレックス"
+      }
+    },
+    {
+      "Id": 32,
+      "ToolName": "ingrid",
+      "Names": {
+        "en": "Ingrid",
+        "zh-Hans": "英格丽德",
+        "zh-Hant": "Ingrid",
+        "ja": "イングリッド"
+      }
+    },
+    {
+      "Id": 33,
+      "ToolName": "yasmine",
+      "Names": {
+        "en": "Yasmine",
+        "zh-Hans": "亚思敏",
+        "zh-Hant": "Yasmine",
+        "ja": "ヤスミン"
+      }
+    },
+    {
+      "Id": 34,
+      "ToolName": "arjun",
+      "Names": {
+        "en": "Arjun",
+        "zh-Hans": "阿俊",
+        "zh-Hant": "Arjun",
+        "ja": "アルジュン"
+      }
+    },
+    {
+      "Id": 254,
+      "ToolName": "random",
+      "Names": {
+        "en": "Random",
+        "zh-Hans": "随机",
+        "zh-Hant": "隨機",
+        "ja": "ランダム"
+      }
+    }
+  ]
+}

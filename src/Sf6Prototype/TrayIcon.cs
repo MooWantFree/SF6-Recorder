@@ -20,10 +20,11 @@ public sealed class TrayIcon : IDisposable
         _source=HwndSource.FromHwnd(new WindowInteropHelper(window).Handle);
         _menu=new ModernTrayMenu(()=>window.Dispatcher.BeginInvoke(show),()=>window.Dispatcher.BeginInvoke(exit));
         _menu.Opening+=(_,_)=>_menu.ApplyDpi((uint)_menu.DeviceDpi);
-        _tray=new Forms.NotifyIcon {Text="街霸 6 战绩",ContextMenuStrip=_menu};
+        _tray=new Forms.NotifyIcon {Text=Strings.AppTitle,ContextMenuStrip=_menu};
         _tray.MouseDoubleClick+=(_,e)=>{if(e.Button==Forms.MouseButtons.Left) window.Dispatcher.BeginInvoke(show);};
         UpdateIcons(); _tray.Visible=true; _source.AddHook(WindowMessage);
     }
+    public void RefreshLanguage() { _tray.Text=Strings.AppTitle; _menu.RefreshLanguage(); }
     private static Drawing.Icon LoadIcon(int size)
     {
         using var stream=Application.GetResourceStream(new Uri("pack://application:,,,/Sf6Prototype;component/Assets/app.ico")).Stream;

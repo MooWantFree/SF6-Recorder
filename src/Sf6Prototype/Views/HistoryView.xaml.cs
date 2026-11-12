@@ -118,6 +118,22 @@ public partial class HistoryView : UserControl
         return null;
     }
     public void Bind(Archive archive) => _archive = archive;
+    public void RefreshLanguage()
+    {
+        var state=CaptureState();
+        ClosePickers(); _tagPicker=null; _playerPicker=null;
+        _groups.Clear(); _rows.Clear();
+        _ready=false; DateRange.RefreshLanguage();
+        Reload(restore:state);
+    }
+    public sealed record OutcomeChoice(string Key)
+    {
+        public override string ToString()=>Key.Length==0 ? Strings.All : Localization.Outcome(Key);
+    }
+    public sealed record CharacterChoice(string Key,string Name)
+    {
+        public override string ToString()=>Name;
+    }
     public void FocusSearch() { SearchBox.Focus(); SearchBox.SelectAll(); }
     public void SetLoading(bool loading)
     {
@@ -130,7 +146,7 @@ public partial class HistoryView : UserControl
         var loading=_loading && !FavoritesOnly;
         InitialLoadingIndicator.Visibility=loading && !hasRows ? Visibility.Visible : Visibility.Collapsed;
         EmptyHint.Visibility=_ready && !loading && !hasRows ? Visibility.Visible : Visibility.Collapsed;
-        EmptyHint.Text=FavoritesOnly ? "没有符合条件的收藏" : _archive?.All.Count==0 ? "暂无战绩，点击「刷新」开始保存" : "没有符合条件的战绩";
+        EmptyHint.Text=FavoritesOnly ? Strings.NoMatchingFavorites : _archive?.All.Count==0 ? Strings.NoRecordsRefresh : Strings.NoMatchingRecords;
         var viewer=FindViewer(MatchesList);
         var atBottom=viewer!=null && viewer.ScrollableHeight-viewer.VerticalOffset<=1;
         LoadingIndicator.Visibility=loading && hasRows && _hasScrolled && atBottom ? Visibility.Visible : Visibility.Hidden;
@@ -158,11 +174,11 @@ public partial class HistoryView : UserControl
         var viewer=FindViewer(MatchesList);
         return new()
         {
-            Category=Category, Character=CharacterFilter.SelectedIndex>0 ? CharacterFilter.SelectedItem as string : null,
-            OpponentCharacter=OpponentCharacterFilter.SelectedIndex>0 ? OpponentCharacterFilter.SelectedItem as string : null,
+            Category=Category, Character=CharacterFilter.SelectedIndex>0 ? (CharacterFilter.SelectedItem as CharacterChoice)?.Key : null,
+            OpponentCharacter=OpponentCharacterFilter.SelectedIndex>0 ? (OpponentCharacterFilter.SelectedItem as CharacterChoice)?.Key : null,
             FavoritesOnly=FavoritesOnly,Tags=_filterTags.ToArray(),MatchAllTags=_matchAllTags,
             FavoritePlayer=FavoritePlayer,
-            Outcome=OutcomeFilter.SelectedIndex>0 ? OutcomeFilter.SelectedItem as string : null,
+            Outcome=OutcomeFilter.SelectedIndex>0 ? (OutcomeFilter.SelectedItem as OutcomeChoice)?.Key : null,
             Search=SearchBox.Text, Start=DateRange.Start, End=DateRange.End,
             SelectedReplay=Selected?.Battle.ReplayId, Anchor=CaptureAnchor(viewer), ScrollOffset=viewer?.VerticalOffset ?? 0,
             VisibleReplays=_rows.Select(r=>r.Battle.ReplayId).ToArray()
@@ -182,9 +198,9 @@ public partial class HistoryView : UserControl
         _ready = false;
         if(restore!=null) {FavoritesOnly=restore.FavoritesOnly;FavoritePlayer=restore.FavoritePlayer;_filterTags=restore.Tags.ToArray();_matchAllTags=restore.MatchAllTags;}
         var oldCategory = FavoritesOnly ? "favorites" : restore?.Category ?? Category;
-        var oldCharacter = restore!=null ? restore.Character : CharacterFilter.SelectedItem as string;
-        var oldOpponentCharacter=restore!=null ? restore.OpponentCharacter : OpponentCharacterFilter.SelectedItem as string;
-        var oldOutcome = restore!=null ? restore.Outcome : OutcomeFilter.SelectedItem as string;
+        var oldCharacter = restore!=null ? restore.Character : (CharacterFilter.SelectedItem as CharacterChoice)?.Key;
+        var oldOpponentCharacter=restore!=null ? restore.OpponentCharacter : (OpponentCharacterFilter.SelectedItem as CharacterChoice)?.Key;
+        var oldOutcome = restore!=null ? restore.Outcome : (OutcomeFilter.SelectedItem as OutcomeChoice)?.Key;
         _favoriteRecords=a.Store.FavoriteRecords();
         var defaultPlayer=DefaultFavoritePlayer ?? new PlayerIdentity(a.SignedInId ?? a.Owner,a.All.FirstOrDefault(b=>b.OwnerId==(a.SignedInId ?? a.Owner))?.PlayerName ?? "");
         FavoritePlayer ??=defaultPlayer;
@@ -196,19 +212,19 @@ public partial class HistoryView : UserControl
             _playerFavorites=_favoriteArchive.LoadFavorites(FavoritePlayer.Id,_favoriteRecords);
         }
         var categories = BattleCategory.All.Select(c => new CategoryChoice(c.Key, c.ShortName, a.All.Count(b => b.Category == c.Key)))
-            .Prepend(new CategoryChoice("", "全部", a.All.Count)).Append(new CategoryChoice("favorites","收藏",Favorites.ForPlayer(_favoriteRecords,FavoritePlayer.Id).Count)).ToList();
+            .Prepend(new CategoryChoice("", Strings.All, a.All.Count)).Append(new CategoryChoice("favorites",Strings.Favorites,Favorites.ForPlayer(_favoriteRecords,FavoritePlayer.Id).Count)).ToList();
         CategoryFilter.ItemsSource = categories;
         CategoryFilter.SelectedItem = categories.FirstOrDefault(c => c.Key == oldCategory) ?? categories[0];
         var filterRows=FavoritesOnly ? _playerFavorites.Select(r=>r.Battle).ToList() : a.All;
-        var characters = filterRows.Select(b => b.Character).Distinct().Order().Prepend("己方角色").ToList();
+        var characters = filterRows.DistinctBy(b=>b.Character).Select(b=>new CharacterChoice(b.Character,a.Profiles.Names.Display(b.CharacterId,b.Character))).OrderBy(c=>c.Name).Prepend(new CharacterChoice("",Strings.YourCharacter)).ToList();
         CharacterFilter.ItemsSource = characters;
-        CharacterFilter.SelectedItem = oldCharacter != null && characters.Contains(oldCharacter) ? oldCharacter : characters[0];
-        var otherCharacters=filterRows.Select(b=>b.OpponentCharacter).Distinct().Order().Prepend("对手角色").ToList();
+        CharacterFilter.SelectedItem = characters.FirstOrDefault(c=>c.Key==oldCharacter) ?? characters[0];
+        var otherCharacters=filterRows.DistinctBy(b=>b.OpponentCharacter).Select(b=>new CharacterChoice(b.OpponentCharacter,a.Profiles.Names.Display(b.OpponentCharacterId,b.OpponentCharacter))).OrderBy(c=>c.Name).Prepend(new CharacterChoice("",Strings.OpponentCharacter)).ToList();
         OpponentCharacterFilter.ItemsSource=otherCharacters;
-        OpponentCharacterFilter.SelectedItem=oldOpponentCharacter!=null && otherCharacters.Contains(oldOpponentCharacter) ? oldOpponentCharacter : otherCharacters[0];
-        var outcomes = new[] { "全部", "胜", "负" }.Concat(new[] { "平", "待确认" }.Where(o => filterRows.Any(b => b.Outcome == o))).ToList();
+        OpponentCharacterFilter.SelectedItem=otherCharacters.FirstOrDefault(c=>c.Key==oldOpponentCharacter) ?? otherCharacters[0];
+        var outcomes = new[] { "", "胜", "负" }.Concat(new[] { "平", "待确认" }.Where(o => filterRows.Any(b => b.Outcome == o))).Select(o=>new OutcomeChoice(o)).ToList();
         OutcomeFilter.ItemsSource = outcomes;
-        OutcomeFilter.SelectedItem = oldOutcome != null && outcomes.Contains(oldOutcome) ? oldOutcome : outcomes[0];
+        OutcomeFilter.SelectedItem = outcomes.FirstOrDefault(o=>o.Key==oldOutcome) ?? outcomes[0];
         if(restore!=null) { DateRange.SetRange(restore.Start,restore.End); SearchBox.Text=restore.Search; _searchTimer.Stop(); }
         RefreshTagFilter();
         _ready = true; ApplyFilter(preserveViewport);
@@ -237,23 +253,24 @@ public partial class HistoryView : UserControl
         var version=++_layoutVersion; var inputVersion=_inputVersion;
         static long? Epoch(DateTime? value) => value == null ? null : new DateTimeOffset(DateTime.SpecifyKind(value.Value.Date, DateTimeKind.Unspecified), TimeSpan.FromHours(8)).ToUnixTimeSeconds();
         var category = Category;
-        var character = CharacterFilter.SelectedIndex > 0 ? CharacterFilter.SelectedItem as string : null;
-        var opponentCharacter=OpponentCharacterFilter.SelectedIndex>0 ? OpponentCharacterFilter.SelectedItem as string : null;
-        var outcome = OutcomeFilter.SelectedIndex > 0 ? OutcomeFilter.SelectedItem as string : null;
+        var character = CharacterFilter.SelectedIndex > 0 ? (CharacterFilter.SelectedItem as CharacterChoice)?.Key : null;
+        var opponentCharacter=OpponentCharacterFilter.SelectedIndex>0 ? (OpponentCharacterFilter.SelectedItem as CharacterChoice)?.Key : null;
+        var outcome = OutcomeFilter.SelectedIndex > 0 ? (OutcomeFilter.SelectedItem as OutcomeChoice)?.Key : null;
         var filter=new BattleFilter(a.Owner,string.IsNullOrEmpty(category) ? null : category,character,outcome,SearchBox.Text,
             Epoch(DateRange.Start),Epoch(DateRange.End?.AddDays(1)),opponentCharacter,FavoritesOnly,FavoritesOnly ? _filterTags : [],_matchAllTags);
         var filtered=FavoritesOnly ? Favorites.Filter(_playerFavorites,filter) : a.Store.Query(filter);
 
         var wins = filtered.Count(b => b.Outcome == "胜"); var losses = filtered.Count(b => b.Outcome == "负"); var draws = filtered.Count(b => b.Outcome == "平");
         TotalMetric.Text = filtered.Count.ToString("N0");
+        TotalMetricUnit.Text = filtered.Count==1 ? Strings.MatchSuffix : Strings.MatchesSuffix;
         WinRateMetric.Text = wins + losses + draws == 0 ? "—" : $"{100d * wins / (wins + losses + draws):F1}%";
-        ResultsMetric.Text = $"{wins} 胜  {losses} 负" + (draws > 0 ? $"  {draws} 平" : "");
-        var recent = filtered.Take(20).Reverse().Select(b => new OutcomeDot(Kinds.Of(b.Outcome), $"{BattleDateDisplay.Timestamp(b.Time)}  {b.Outcome}  {b.Opponent}")).ToList();
-        RecentDots.ItemsSource = recent; RecentLabel.Text = $"近 {recent.Count} 场";
+        ResultsMetric.Text = Localization.Format(Strings.WinLossSummary, wins, losses) + (draws > 0 ? Localization.Format(Strings.DrawCountSuffix, draws) : "");
+        var recent = filtered.Take(20).Reverse().Select(b => new OutcomeDot(Kinds.Of(b.Outcome), $"{BattleDateDisplay.Timestamp(b.Time)}  {Localization.Outcome(b.Outcome)}  {b.Opponent}")).ToList();
+        RecentDots.ItemsSource = recent; RecentLabel.Text = Localization.Format(Strings.RecentCount, recent.Count);
         RecentPanel.Visibility = recent.Count >= 2 ? Visibility.Visible : Visibility.Collapsed;
         // Column geometry follows the user's filter, not whichever page arrived first.
         ShowModeColumn=string.IsNullOrEmpty(category);
-        ModeColumnWidth=new GridLength(ShowModeColumn ? 56 : 0);
+        ModeColumnWidth=new GridLength(ShowModeColumn ? Localization.Culture.Name=="ja" ? 68 : 56 : 0);
         ShowScoreColumns = category=="rank" || string.IsNullOrEmpty(category);
         ScoreColumnWidth = new GridLength(ShowScoreColumns ? 148 : 0);
         HasTags=filtered.Any(b=>a.Tags.GetValueOrDefault(b.ReplayId)?.Count>0);
@@ -309,20 +326,20 @@ public partial class HistoryView : UserControl
     }
     private List<MatchListRow> BuildRows(Archive a, List<Battle> battles)
     {
-        var zh = CultureInfo.GetCultureInfo("zh-CN"); var year = BattleDateDisplay.CurrentYear;
+        var culture = Localization.Culture; var year = BattleDateDisplay.CurrentYear;
         var rows = new List<MatchListRow>(battles.Count);
         foreach (var day in battles.GroupBy(b => b.Time[..10]))
         {
             var items = day.Select(a.Row).ToList();
             var date = DateTime.ParseExact(day.Key, "yyyy-MM-dd", CultureInfo.InvariantCulture);
-            var summary = $"{items.Count} 场 · {items.Count(r => r.Kind == "win")} 胜 {items.Count(r => r.Kind == "loss")} 负";
+            var summary = Localization.Format(Strings.MatchSummary, items.Count, items.Count(r => r.Kind == "win"), items.Count(r => r.Kind == "loss"));
             var settled = items.Where(r => r.Delta != null).ToList();
             // Summing points is only meaningful for one character on one scale.
             if (settled.Count > 0 && settled.Select(r => (r.Battle.CharacterId, r.RatingUnit)).Distinct().Count() == 1)
                 summary += $" · {settled.Sum(r => r.Delta):+0;−0;0} {settled[0].RatingUnit}";
-            if(!_groups.TryGetValue(day.Key,out var group)) _groups[day.Key]=group=new(date.ToString(date.Year == year ? "M月d日  dddd" : "yyyy年M月d日  dddd", zh));
+            if(!_groups.TryGetValue(day.Key,out var group)) _groups[day.Key]=group=new(date.ToString(date.Year == year ? Strings.DayGroupDate : Strings.DayGroupDateYear, culture));
             group.Summary=summary;
-            rows.AddRange(items.Select(r => new MatchListRow(r.Battle,r.OwnImage,r.OpponentImage,r.Point,r.SignedInId,r.SettledRank) {Group=group,Tags=r.Tags}));
+            rows.AddRange(items.Select(r => new MatchListRow(r.Battle,r.OwnImage,r.OpponentImage,r.Point,r.SignedInId,r.SettledRank,r.Character,r.OpponentCharacter) {Group=group,Tags=r.Tags}));
         }
         return rows;
     }
@@ -358,10 +375,10 @@ public partial class HistoryView : UserControl
     private void RefreshTagFilter()
     {
         FavoritesButton.Visibility=FavoriteUserButton.Visibility=FavoritesOnly ? Visibility.Visible : Visibility.Collapsed;
-        FavoritesButton.Content=_filterTags.Count>0 ? $"标签 · {_filterTags.Count} ▾" : "全部标签 ▾";
+        FavoritesButton.Content=_filterTags.Count>0 ? Localization.Format(Strings.SelectedTagsCount, _filterTags.Count) : Strings.AllTagsDropdown;
         FavoritesButton.SetResourceReference(Control.ForegroundProperty,_filterTags.Count>0 ? "AccentText" : "Ink2");
-        FavoritesButton.ToolTip=_matchAllTags ? "同时包含所选标签" : "包含任一所选标签";
-        FavoriteUserButton.Content=new TextBlock {Text=(FavoritePlayer?.DisplayNameFor(_archive?.SignedInId) ?? "用户")+" ▾",TextTrimming=TextTrimming.CharacterEllipsis};
+        FavoritesButton.ToolTip=_matchAllTags ? Strings.MatchAllSelectedTags : Strings.MatchAnySelectedTags;
+        FavoriteUserButton.Content=new TextBlock {Text=(FavoritePlayer?.DisplayNameFor(_archive?.SignedInId) ?? Strings.Player)+" ▾",TextTrimming=TextTrimming.CharacterEllipsis};
         FavoriteUserButton.ToolTip=FavoritePlayer?.Id;
         SelectedTags.ItemsSource=_archive?.Store.AllTags().Where(t=>_filterTags.Contains(t.Name,StringComparer.OrdinalIgnoreCase)).ToArray();
         SelectedTags.Visibility=FavoritesOnly && _filterTags.Count>0 ? Visibility.Visible : Visibility.Collapsed;

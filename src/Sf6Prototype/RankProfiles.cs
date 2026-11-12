@@ -32,7 +32,7 @@ public record CharacterRank(int CharacterId,string Name,int? Lp,int? Mr,int? Lea
     {
         get
         {
-            if(!Ranked) return Lp<0 ? ScoreDisplay.NewChallenger : LeagueRank==null ? "—" : "未定级";
+            if(!Ranked) return Lp<0 ? ScoreDisplay.NewChallenger : LeagueRank==null ? "—" : "Unranked";
             if(ResolvedLeagueRank>=36 || Mr>0) return MasterTier switch {37=>"Legend",40=>"High Master",41=>"Grand Master",42=>"Ultimate Master",_=>"Master"};
             var tiers=new[]{"Rookie","Iron","Bronze","Silver","Gold","Platinum","Diamond"};
             var stars=new[]{"I","II","III","IV","V"};
@@ -49,7 +49,7 @@ public static class RankProfiles
         if(root.TryGetProperty("props",out var props)) root=props;
         var page=root.GetProperty("pageProps");
         var identity=page.GetProperty("fighter_banner_info").GetProperty("personal_info");
-        if(MatchParser.Id(identity,"short_id")!=expectedOwner) throw new InvalidDataException("玩家资料与所选对手不一致。");
+        if(MatchParser.Id(identity,"short_id")!=expectedOwner) throw new InvalidDataException(Strings.WrongOpponentProfile);
         var play=page.GetProperty("play"); var season=play.GetProperty("current_season_id").GetInt32();
         var seasons=play.GetProperty("season_ids").EnumerateArray().Select(s=>s.GetInt32()).Append(season).Where(s=>s>=0).Distinct().OrderDescending().ToList();
         return new(expectedOwner,MatchParser.Text(identity,"fighter_id"),season,seasons,ParseRows(play.GetProperty("character_league_infos")));
@@ -58,12 +58,12 @@ public static class RankProfiles
     {
         using var doc=JsonDocument.Parse(json);
         if(!doc.RootElement.TryGetProperty("response",out var response) || response.ValueKind!=JsonValueKind.Object || !response.TryGetProperty("character_league_infos",out var rows))
-            throw new InvalidDataException("该赛季的数据暂时无法读取。");
+            throw new InvalidDataException(Strings.SeasonDataUnavailable);
         return ParseRows(rows);
     }
     private static List<CharacterRank> ParseRows(JsonElement rows)
     {
-        if(rows.ValueKind!=JsonValueKind.Array) throw new InvalidDataException("官网段位数据格式已改变。");
+        if(rows.ValueKind!=JsonValueKind.Array) throw new InvalidDataException(Strings.RankFormatChanged);
         return rows.EnumerateArray().Select(c=>
         {
             var info=c.GetProperty("league_info");

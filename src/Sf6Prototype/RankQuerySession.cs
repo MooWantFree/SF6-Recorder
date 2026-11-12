@@ -11,7 +11,7 @@ public readonly record struct RankQuery(int Season, bool PeakMr = false)
     public bool HighestLp => Season == -1 && !PeakMr;
     public void Validate()
     {
-        if (Season < -1 || PeakMr && Season <= 0) throw new ArgumentException("无效的赛季筛选。");
+        if (Season < -1 || PeakMr && Season <= 0) throw new ArgumentException(Strings.InvalidSeasonFilter);
     }
 }
 

@@ -115,10 +115,10 @@ public sealed class BattlePager
                 var estimate=(int)Math.Ceiling(Math.Max(0,range.Count-matches)*pages/(double)(matches-initialMatches));
                 remaining=window.TotalPages is { } limit ? Math.Min(Math.Max(0,limit-window.NextPage+1),estimate) : estimate;
             }
-            var detail=range.Count>0 ? $"已准备 {Math.Min(matches,range.Count)} / {range.Count} 场" : $"已准备 {matches} 场";
-            detail+=$" · 已读取 {pages} 页";
-            if(finished && range.Count>0 && matches<range.Count) detail+=" · 已到可查范围";
-            ProgressChanged?.Invoke(new(finished ? "分数记录已准备" : $"读取排位 · 第 {window.NextPage} 页",fraction,pages,finished ? 0 : remaining,detail));
+            var detail=range.Count>0 ? Localization.Format(Strings.MatchesPreparedOfTotal, Math.Min(matches,range.Count), range.Count) : Localization.Format(Strings.MatchesPrepared, matches);
+            detail+=Localization.Format(Strings.PagesReadSuffix, pages);
+            if(finished && range.Count>0 && matches<range.Count) detail+=Strings.AvailableRangeReached;
+            ProgressChanged?.Invoke(new(finished ? Strings.ScoresReady : Localization.Format(Strings.ReadingRankedPage, window.NextPage),fraction,pages,finished ? 0 : remaining,detail));
         }
         try
         {
@@ -153,19 +153,19 @@ public sealed class BattlePager
             void Report(string stage)
             {
                 var completed=done.Values.Sum();var total=pending.Length*2;
-                ProgressChanged?.Invoke(new(stage,total==0 ? 1 : (double)completed/total,pages,total-completed,$"已读取 {pages} 页 · {done.Count(p=>p.Value==2)} / {pending.Length} 类完成"));
+                ProgressChanged?.Invoke(new(stage,total==0 ? 1 : (double)completed/total,pages,total-completed,Localization.Format(Strings.CategoriesRead, pages, done.Count(p=>p.Value==2), pending.Length)));
             }
             // Discover all stream heads first, then fetch their second pages.
             for(var i=0;i<2;i++) foreach(var key in pending)
             {
                 var window=_windows[key];
                 if(window.Complete) continue;
-                Report($"读取{BattleCategory.All.Single(c=>c.Key==key).Name} · 第 {window.NextPage} 页");
+                Report(Localization.Format(Strings.ReadingCategoryPage, BattleCategory.All.Single(c=>c.Key==key).Name, window.NextPage));
                 if(i==0) window.Boundary=_store.Frontier(Owner,key);
                 added+=await FetchOneAsync(source,key,token,pageSaved); pages++;
                 done[key]=window.Complete ? 2 : done[key]+1;
             }
-            token.ThrowIfCancellationRequested();Report("战绩已保存");
+            token.ThrowIfCancellationRequested();Report(Strings.MatchesSaved);
             _store.FinishRun(run,_windows.Values.All(w=>w.Complete) ? "completed" : "paged",source.Requests,added,$"{pages} pages");
             return new(added,pages,source.Requests);
         }
@@ -178,7 +178,7 @@ public sealed class BattlePager
         var window=_windows[key];
         if(LocalPageAvailable(Ordered(filtered,key),window))
         { window.Limit+=10; await pageSaved(); return new(0,0,0); }
-        if(source==null) throw new InvalidOperationException("需要登录后继续加载。");
+        if(source==null) throw new InvalidOperationException(Strings.LoginToLoad);
         var run=_store.BeginRun(Owner); var added=0;
         try
         {
@@ -193,10 +193,10 @@ public sealed class BattlePager
     {
         var window=_windows[category]; var page=await source.FetchPageAsync(Owner,category,window.NextPage,token);
         token.ThrowIfCancellationRequested();
-        if(page.CurrentPage!=window.NextPage) throw new InvalidDataException("官网返回了重复页码。");
-        if(page.Battles.Any(b=>b.OwnerId!=Owner || b.Category!=category)) throw new InvalidDataException("战绩与所选玩家或分类不一致。");
+        if(page.CurrentPage!=window.NextPage) throw new InvalidDataException(Strings.DuplicatePage);
+        if(page.Battles.Any(b=>b.OwnerId!=Owner || b.Category!=category)) throw new InvalidDataException(Strings.MismatchedRecords);
         var signature=string.Join('|',page.Battles.Select(b=>b.ReplayId));
-        if(page.Battles.Count>0 && !window.Signatures.Add(signature)) throw new InvalidDataException("官网返回了重复内容。");
+        if(page.Battles.Count>0 && !window.Signatures.Add(signature)) throw new InvalidDataException(Strings.DuplicateContent);
         if(window.NextPage==1) window.Head=page.Battles.FirstOrDefault()?.ReplayId;
         if(category=="rank" && window.NextPage==1) RankHeadFetched=true;
         var added=_store.SavePage(page.Battles);

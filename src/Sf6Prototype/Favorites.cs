@@ -9,7 +9,7 @@ public static class Favorites
     public static Battle FromPlayer(Battle battle,string player)
     {
         if(battle.OwnerId==player) return battle;
-        if(battle.OpponentId!=player) throw new ArgumentException("玩家不属于这场对局。");
+        if(battle.OpponentId!=player) throw new ArgumentException(Strings.PlayerNotInMatch);
         return battle with
         {
             OwnerId=battle.OpponentId,PlayerName=battle.Opponent,OpponentId=battle.OwnerId,Opponent=battle.PlayerName,
@@ -60,7 +60,7 @@ public sealed partial class BattleStore
     {
         name=TagNames.Normalize(name);
         var sources=FavoriteRecords().Where(r=>r.Battle.ReplayId==replay && (r.Battle.OwnerId==player || r.Battle.OpponentId==player)).ToArray();
-        if(sources.Length==0) throw new ArgumentException("这条收藏已被移除。");
+        if(sources.Length==0) throw new ArgumentException(Strings.FavoriteRemoved);
         if(selected) {AddTag(sources[0].Battle.OwnerId,replay,name);return;}
         using var db=Open();using var tx=db.BeginTransaction();using var cmd=db.CreateCommand();cmd.Transaction=tx;
         cmd.CommandText="DELETE FROM battle_tags WHERE owner_id=$owner AND replay_id=$replay AND tag_name=$name";

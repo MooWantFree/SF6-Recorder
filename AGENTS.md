@@ -16,5 +16,5 @@
 - Do not trigger refresh, login or opponent-rank queries during verification: they send requests to the official site with the user's session.
 
 ## Conventions
-- UI copy is Chinese and minimal; colors/styles come from `Themes/Tokens.xaml` and `Themes/Utility.xaml` (no hard-coded colors in views).
+- UI copy is minimal and localized through `Resources/Strings*.resx` (English fallback, Simplified Chinese, Traditional Chinese and Japanese). C# uses generated `Strings` properties; XAML uses `DynamicResource I18n.<key>`. Regenerate accessors with `pwsh -File scripts/Generate-Strings.ps1` after adding keys. Keep persisted values, rank names and user content independent of UI language. Display character names through the official ID-keyed CharacterNames cache; never translate or overwrite the stored raw names. Colors/styles come from `Themes/Tokens.xaml` and `Themes/Utility.xaml` (no hard-coded colors in views).
 - Replay LP/MR are pre-match values; a ranked match's settlement is the next same-character ranked record minus this one (`BattleStore.Scores`).

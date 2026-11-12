@@ -32,6 +32,12 @@ public partial class ScoresView : UserControl
         ScoreFilters.Margin=compact ? new Thickness(0,12,0,0) : new Thickness(24,0,0,0);
     }
     public void Bind(Archive archive) => _archive = archive;
+    public void RefreshLanguage()
+    {
+        var state=CaptureState();
+        _ready=false; ScoreDates.RefreshLanguage();
+        Reload(state);
+    }
     public void ResetSelection()
     {
         _ready = false; Selected = null; CharacterList.SelectedIndex = -1;
@@ -62,8 +68,8 @@ public partial class ScoresView : UserControl
         var now = a.Current?.Characters.FirstOrDefault(c => c.CharacterId == last.CharacterId && c.Ranked);
         var rank = now ?? new CharacterRank(last.CharacterId, last.Character, lp, last.Mr, last.LeagueRank, last.MasterLeague,last.MasterRatingRanking);
         var wins = games.Count(b => b.Outcome == "胜"); var decided = games.Count(b => b.Outcome is "胜" or "负" or "平");
-        var detail = string.Join(" · ", new[] { $"{games.Count} 场", decided == 0 ? null : $"胜率 {100d * wins / decided:F0}%" }.OfType<string>());
-        return new(last.CharacterId, last.Character, a.Image(last.CharacterId, last.Character), rating, detail, rank);
+        var detail = string.Join(" · ", new[] { Localization.Format(Strings.MatchCount, games.Count), decided == 0 ? null : Localization.Format(Strings.WinRateRounded, 100d * wins / decided) }.OfType<string>());
+        return new(last.CharacterId, a.Profiles.Names.Display(last.CharacterId,last.Character), a.Image(last.CharacterId, last.Character), rating, detail, rank);
     }
     private void Update(string? selectedReplay=null)
     {
@@ -83,9 +89,9 @@ public partial class ScoresView : UserControl
             double? value = showMr ? p.MrAfter ?? (p.Mr > 0 ? p.Mr : null) : p.LpAfter ?? p.Lp;
             if (value == null || value<0) { previousSettled = false; continue; }
             var delta = showMr ? p.MrDelta : p.LpDelta;
-            var change = delta == null ? "本场结算未知" : $"{delta:+0;−0;0}";
+            var change = delta == null ? Strings.SettlementUnknown : $"{delta:+0;−0;0}";
             var estimate = delta!=null && p.Estimated ? "\n"+ScoreDisplay.EstimateExplanation : "";
-            chart.Add(new(p.ReplayId, p.Time[..16], value.Value, settled && previousSettled, settled, Kinds.Of(b.Outcome), $"{b.Outcome} {b.Score}  ·  {change}  ·  {b.Opponent}{estimate}"));
+            chart.Add(new(p.ReplayId, p.Time[..16], value.Value, settled && previousSettled, settled, Kinds.Of(b.Outcome), $"{Localization.Outcome(b.Outcome)} {b.Score}  ·  {change}  ·  {b.Opponent}{estimate}"));
             previousSettled = settled;
         }
         var last = recent.LastOrDefault();
@@ -103,7 +109,7 @@ public partial class ScoresView : UserControl
 
         var keep = selectedReplay ?? Selected?.Battle.ReplayId;
         Chart.Unit = showMr ? "MR" : "LP";
-        Chart.EmptyText = card == null ? "暂无排位记录" : showMr ? "这些对局没有 MR" : "暂无可显示的分数";
+        Chart.EmptyText = card == null ? Strings.NoRankedRecords : showMr ? Strings.NoMrForMatches : Strings.NoScores;
         Chart.Points = chart;
         Select(chart.FirstOrDefault(p => p.ReplayId == keep) ?? chart.LastOrDefault());
         UpdateLoading();

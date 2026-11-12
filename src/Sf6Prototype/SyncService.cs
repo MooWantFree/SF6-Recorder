@@ -21,17 +21,17 @@ public sealed class SyncService(BattleStore store, IBattleSource source)
                 {
                     token.ThrowIfCancellationRequested();
                     var data = await source.FetchPageAsync(owner, category.Key, page, token); pages++;
-                    if (data.CurrentPage != page) throw new InvalidDataException("官网返回了重复页码，已停止以避免重复请求。");
+                    if (data.CurrentPage != page) throw new InvalidDataException(Strings.DuplicatePageStopped);
                     if (page == 1) head = data.Battles.FirstOrDefault()?.ReplayId;
                     var signature = string.Join('|', data.Battles.Select(b => b.ReplayId));
-                    if (data.Battles.Count > 0 && !signatures.Add(signature)) throw new InvalidDataException("官网分页内容重复，已停止同步。");
+                    if (data.Battles.Count > 0 && !signatures.Add(signature)) throw new InvalidDataException(Strings.DuplicateContentStopped);
                     // Commit the entire boundary page. Advance the checkpoint only when this category finishes.
                     var added = store.SavePage(data.Battles); inserted += added;
                     if (category.Key == "rank") store.SaveRankLinks(owner, data.Battles, newer);
                     // Await the page notification so the first page can be rendered before fetching more.
                     if (pageSaved != null && added > 0) await pageSaved(added);
                     var reached = frontier != null && data.Battles.Any(b => b.ReplayId == frontier);
-                    progress?.Report(new(category.Name, page, data.TotalPages, inserted, reached ? "已到上次同步边界" : "正在保存战绩"));
+                    progress?.Report(new(category.Name, page, data.TotalPages, inserted, reached ? Strings.SyncBoundaryReached : Strings.SavingRecords));
                     if (reached || data.Battles.Count == 0 || page >= data.TotalPages) break;
                 }
                 store.CompleteCategory(owner, category.Key, head);

@@ -9,7 +9,7 @@ public static class TagNames
     public static string Normalize(string value)
     {
         var name=value.Trim().Normalize(NormalizationForm.FormC);
-        if(name.Length is 0 or >32 || name.Any(char.IsControl)) throw new ArgumentException("标签名称须为 1–32 个字符。");
+        if(name.Length is 0 or >32 || name.Any(char.IsControl)) throw new ArgumentException(Strings.InvalidTagName);
         return name;
     }
     public static IReadOnlyList<MatchTag> Suggest(IEnumerable<MatchTag> tags,string prefix) => tags

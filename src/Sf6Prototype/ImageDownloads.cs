@@ -39,7 +39,7 @@ public sealed class ImageClient : IImageSource, IDisposable
     public async Task DownloadAsync(ImageDownload image, CancellationToken token)
     {
         if (!image.UrlPath.StartsWith("/6/buckler/assets/images/material/", StringComparison.Ordinal) || image.UrlPath.Contains(".."))
-            throw new ArgumentException("无效的官网图片地址。");
+            throw new ArgumentException(Strings.InvalidImageUrl);
         await RequestGate.Shared.RunAsync(async () =>
         {
             using var request = new HttpRequestMessage(HttpMethod.Get, BucklerClient.Origin + image.UrlPath);
@@ -47,14 +47,14 @@ public sealed class ImageClient : IImageSource, IDisposable
             using var response = await _http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token);
             response.EnsureSuccessStatusCode();
             if (response.Content.Headers.ContentType?.MediaType?.StartsWith("image/", StringComparison.Ordinal) != true)
-                throw new InvalidDataException("官网头像格式无效。");
-            if (response.Content.Headers.ContentLength > 5_000_000) throw new InvalidDataException("头像文件过大。");
+                throw new InvalidDataException(Strings.InvalidImageFormat);
+            if (response.Content.Headers.ContentLength > 5_000_000) throw new InvalidDataException(Strings.ImageTooLarge);
             await using var input = await response.Content.ReadAsStreamAsync(token);
             using var bytes = new MemoryStream();
             var buffer = new byte[81920]; int read;
             while ((read = await input.ReadAsync(buffer, token)) != 0)
             {
-                if (bytes.Length + read > 5_000_000) throw new InvalidDataException("头像文件过大。");
+                if (bytes.Length + read > 5_000_000) throw new InvalidDataException(Strings.ImageTooLarge);
                 bytes.Write(buffer, 0, read);
             }
             Directory.CreateDirectory(Path.GetDirectoryName(image.Destination)!);

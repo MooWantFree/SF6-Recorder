@@ -17,9 +17,9 @@ public sealed class ModernTrayMenu : Forms.ContextMenuStrip
         AutoSize=false;ShowImageMargin=false; ShowCheckMargin=false;
         BackColor=Color("Surface"); ForeColor=Color("Ink"); DropShadowEnabled=true;
         Renderer=new FlatRenderer(this,Color("Surface"),Color("SurfaceSelected"),Color("Line"),Color("Ink"),Color("Ink3"));
-        Items.Add(new Forms.ToolStripMenuItem("打开主面板",null,(_,_)=>show()) {Tag="home"});
+        Items.Add(new Forms.ToolStripMenuItem(Strings.OpenMainPanel,null,(_,_)=>show()) {Tag="home"});
         Items.Add(new Forms.ToolStripSeparator());
-        Items.Add(new Forms.ToolStripMenuItem("退出",null,(_,_)=>exit()) {Tag="exit"});
+        Items.Add(new Forms.ToolStripMenuItem(Strings.Exit,null,(_,_)=>exit()) {Tag="exit"});
         ApplyDpi(96);
         Opened+=(_,_)=>
         {
@@ -28,11 +28,17 @@ public sealed class ModernTrayMenu : Forms.ContextMenuStrip
             DwmSetWindowAttribute(Handle,33,ref rounded,sizeof(int));
         };
     }
+    public void RefreshLanguage()
+    {
+        foreach(var item in Items.OfType<Forms.ToolStripMenuItem>())
+            item.Text=item.Tag as string=="home" ? Strings.OpenMainPanel : Strings.Exit;
+        ApplyDpi((uint)DeviceDpi);
+    }
     public void ApplyDpi(uint dpi)
     {
         _scale=Math.Max(96,dpi)/96f;
         var previous=_labelFont;
-        _labelFont=new Drawing.Font("Microsoft YaHei UI",13*_scale,Drawing.FontStyle.Regular,Drawing.GraphicsUnit.Pixel);
+        _labelFont=new Drawing.Font(Localization.Culture.Name switch { "ja"=>"Yu Gothic UI", "zh-Hans"=>"Microsoft YaHei UI", "zh-Hant"=>"Microsoft JhengHei UI", _=>"Segoe UI" },13*_scale,Drawing.FontStyle.Regular,Drawing.GraphicsUnit.Pixel);
         SuspendLayout();Font=_labelFont;
         Padding=new Forms.Padding(Px(5));
         var textWidth=Items.OfType<Forms.ToolStripMenuItem>().Select(i=>Forms.TextRenderer.MeasureText(i.Text,_labelFont,Drawing.Size.Empty,TextFlags).Width).DefaultIfEmpty().Max();
