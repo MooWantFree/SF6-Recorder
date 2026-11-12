@@ -3,6 +3,15 @@
   <BooleanToVisibilityConverter x:Key="VisibleWhenTrue"/>
   <local:RankColorConverter x:Key="RankColor"/>
   <local:TagBrushConverter x:Key="TagBrush"/>
+  <Style x:Key="TagAddGlyph" TargetType="Border">
+    <Setter Property="Width" Value="18"/><Setter Property="Height" Value="18"/><Setter Property="CornerRadius" Value="9"/>
+    <Setter Property="Background" Value="{StaticResource TagAddFill}"/><Setter Property="VerticalAlignment" Value="Center"/>
+    <Setter Property="IsHitTestVisible" Value="False"/>
+    <Style.Triggers>
+      <DataTrigger Binding="{Binding IsMouseOver,RelativeSource={RelativeSource AncestorType=Button}}" Value="True"><Setter Property="Background" Value="{StaticResource TagAddHover}"/></DataTrigger>
+      <DataTrigger Binding="{Binding IsKeyboardFocused,RelativeSource={RelativeSource AncestorType=Button}}" Value="True"><Setter Property="Background" Value="{StaticResource TagAddHover}"/></DataTrigger>
+    </Style.Triggers>
+  </Style>
   <DataTemplate x:Key="TagPill">
     <Border CornerRadius="10" Padding="7,2" Margin="0,2,4,2" Background="{Binding Color,Converter={StaticResource TagBrush}}" ToolTip="{Binding Name}">
       <TextBlock Text="{Binding Name}" Foreground="{Binding Color,Converter={StaticResource TagBrush},ConverterParameter=Text}" FontSize="11" MaxWidth="116" TextTrimming="CharacterEllipsis"/>
@@ -41,11 +50,33 @@
     </ControlTemplate></Setter.Value></Setter>
   </Style>
 
+  <ControlTemplate x:Key="LoadingButtonTemplate" TargetType="Button">
+    <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="5" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True">
+      <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+    </Border>
+  </ControlTemplate>
   <Style x:Key="FocusRing"><Setter Property="Control.Template"><Setter.Value><ControlTemplate><Border Margin="-2" BorderBrush="{StaticResource Accent}" BorderThickness="1.5" CornerRadius="6" SnapsToDevicePixels="True"/></ControlTemplate></Setter.Value></Setter></Style>
   <Style x:Key="Number" TargetType="TextBlock"><Setter Property="FontFamily" Value="Segoe UI"/><Setter Property="Typography.NumeralAlignment" Value="Tabular"/></Style>
   <Style x:Key="MatchScoreBadge" TargetType="Border">
     <Setter Property="Background" Value="{StaticResource Neutral}"/><Setter Property="CornerRadius" Value="4"/>
     <Setter Property="Padding" Value="8,3"/><Setter Property="SnapsToDevicePixels" Value="True"/>
+  </Style>
+  <Style x:Key="ListScoreBadge" TargetType="Border" BasedOn="{StaticResource MatchScoreBadge}">
+    <Setter Property="Background" Value="{StaticResource NeutralSoft}"/>
+    <Setter Property="TextElement.Foreground" Value="{StaticResource Neutral}"/>
+    <Style.Triggers>
+      <DataTrigger Binding="{Binding Kind}" Value="win"><Setter Property="Background" Value="{StaticResource WinSoft}"/><Setter Property="TextElement.Foreground" Value="{StaticResource Win}"/></DataTrigger>
+      <DataTrigger Binding="{Binding Kind}" Value="loss"><Setter Property="Background" Value="{StaticResource LossSoft}"/><Setter Property="TextElement.Foreground" Value="{StaticResource Loss}"/></DataTrigger>
+    </Style.Triggers>
+  </Style>
+  <Style x:Key="ScoreChange" TargetType="TextBlock" BasedOn="{StaticResource Number}">
+    <Setter Property="FontSize" Value="11"/><Setter Property="Foreground" Value="{StaticResource Ink3}"/>
+    <Setter Property="Margin" Value="6,0,0,0"/><Setter Property="ToolTip" Value="{Binding ChangeTip}"/>
+    <Style.Triggers>
+      <DataTrigger Binding="{Binding Text,RelativeSource={RelativeSource Self}}" Value=""><Setter Property="Visibility" Value="Collapsed"/></DataTrigger>
+      <DataTrigger Binding="{Binding ChangeKind}" Value="up"><Setter Property="Foreground" Value="{StaticResource Win}"/></DataTrigger>
+      <DataTrigger Binding="{Binding ChangeKind}" Value="down"><Setter Property="Foreground" Value="{StaticResource Loss}"/></DataTrigger>
+    </Style.Triggers>
   </Style>
   <Style x:Key="Caption" TargetType="TextBlock"><Setter Property="FontSize" Value="12"/><Setter Property="Foreground" Value="{StaticResource Ink3}"/></Style>
   <Style x:Key="ColumnLabel" TargetType="TextBlock"><Setter Property="FontSize" Value="11"/><Setter Property="Foreground" Value="{StaticResource Ink3}"/><Setter Property="VerticalAlignment" Value="Center"/></Style>

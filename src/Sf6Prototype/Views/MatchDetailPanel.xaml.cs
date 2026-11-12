@@ -10,6 +10,12 @@ namespace Sf6Prototype;
 
 public partial class MatchDetailPanel : UserControl
 {
+    public static readonly DependencyProperty CurrentPlayerIdProperty=DependencyProperty.Register(nameof(CurrentPlayerId),typeof(string),typeof(MatchDetailPanel),new PropertyMetadata(""));
+    public static readonly DependencyProperty IsFavoritesViewProperty=DependencyProperty.Register(nameof(IsFavoritesView),typeof(bool),typeof(MatchDetailPanel),new PropertyMetadata(false));
+    public static readonly DependencyProperty PendingPlayerIdProperty=DependencyProperty.Register(nameof(PendingPlayerId),typeof(string),typeof(MatchDetailPanel),new PropertyMetadata(""));
+    public string CurrentPlayerId { get=>(string)GetValue(CurrentPlayerIdProperty); set=>SetValue(CurrentPlayerIdProperty,value); }
+    public bool IsFavoritesView { get=>(bool)GetValue(IsFavoritesViewProperty); set=>SetValue(IsFavoritesViewProperty,value); }
+    public string PendingPlayerId { get=>(string)GetValue(PendingPlayerIdProperty); set=>SetValue(PendingPlayerIdProperty,value); }
     public event Action<PlayerIdentity>? RanksRequested;
     public event Action<PlayerIdentity>? PlayerRequested;
     public event Action<string>? Notice;
@@ -129,6 +135,6 @@ public partial class MatchDetailPanel : UserControl
     }
     private void Player_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is Button { Tag: PlayerIdentity player }) PlayerRequested?.Invoke(player);
+        if (sender is Button { Tag: PlayerIdentity player } && player.Id!=PendingPlayerId && (player.Id!=CurrentPlayerId || IsFavoritesView)) PlayerRequested?.Invoke(player);
     }
 }

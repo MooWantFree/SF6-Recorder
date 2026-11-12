@@ -10,7 +10,15 @@ namespace Sf6Prototype;
 
 public partial class HistoryView : UserControl
 {
-    public static readonly DependencyProperty ScoreColumnWidthProperty = DependencyProperty.Register(nameof(ScoreColumnWidth), typeof(GridLength), typeof(HistoryView), new(new GridLength(180)));
+    public static readonly DependencyProperty ScoreColumnWidthProperty = DependencyProperty.Register(nameof(ScoreColumnWidth), typeof(GridLength), typeof(HistoryView), new(new GridLength(148)));
+    public static readonly DependencyProperty TagColumnWidthProperty = DependencyProperty.Register(nameof(TagColumnWidth), typeof(GridLength), typeof(HistoryView), new(new GridLength(52)));
+    public static readonly DependencyProperty ModeColumnWidthProperty = DependencyProperty.Register(nameof(ModeColumnWidth), typeof(GridLength), typeof(HistoryView), new(new GridLength(56)));
+    public static readonly DependencyProperty ShowModeColumnProperty = DependencyProperty.Register(nameof(ShowModeColumn), typeof(bool), typeof(HistoryView), new(true));
+    public GridLength ModeColumnWidth { get => (GridLength)GetValue(ModeColumnWidthProperty); private set => SetValue(ModeColumnWidthProperty,value); }
+    public bool ShowModeColumn { get => (bool)GetValue(ShowModeColumnProperty); private set => SetValue(ShowModeColumnProperty,value); }
+    public static readonly DependencyProperty HasTagsProperty = DependencyProperty.Register(nameof(HasTags), typeof(bool), typeof(HistoryView), new(false));
+    public GridLength TagColumnWidth { get => (GridLength)GetValue(TagColumnWidthProperty); private set => SetValue(TagColumnWidthProperty,value); }
+    public bool HasTags { get => (bool)GetValue(HasTagsProperty); private set => SetValue(HasTagsProperty,value); }
     public static readonly DependencyProperty ShowScoreColumnsProperty = DependencyProperty.Register(nameof(ShowScoreColumns), typeof(bool), typeof(HistoryView), new(true));
     public GridLength ScoreColumnWidth { get => (GridLength)GetValue(ScoreColumnWidthProperty); set => SetValue(ScoreColumnWidthProperty,value); }
     public bool ShowScoreColumns { get => (bool)GetValue(ShowScoreColumnsProperty); set => SetValue(ShowScoreColumnsProperty,value); }
@@ -69,7 +77,7 @@ public partial class HistoryView : UserControl
         MatchesList.AddHandler(ScrollViewer.ScrollChangedEvent, new ScrollChangedEventHandler((_,e) =>
         {
             if(e.OriginalSource is not ScrollViewer viewer) return;
-            UpdateScrollGutter(viewer);
+            UpdateColumnHeaderBounds(viewer);
             UpdateLoadingIndicator();
             if(!_rebuilding)
             {
@@ -81,13 +89,24 @@ public partial class HistoryView : UserControl
                 else if(!NearEnd(viewer)) _scrollDemand=false;
             }
         }));
-        MatchesList.Loaded += (_,_) => { UpdateScrollGutter(FindViewer(MatchesList)); UpdateLoadingIndicator(); if(_ready && _pendingRestore!=null) ApplyFilter(preserveViewport:true); };
+        MatchesList.Loaded += (_,_) => { UpdateColumnHeaderBounds(FindViewer(MatchesList)); UpdateLoadingIndicator(); if(_ready && _pendingRestore!=null) ApplyFilter(preserveViewport:true); };
+        MatchesList.SizeChanged += (_,_) => UpdateColumnHeaderBounds(FindViewer(MatchesList));
+        ColumnHeaderHost.SizeChanged += (_,_) => UpdateColumnHeaderBounds(FindViewer(MatchesList));
         _searchTimer.Tick += (_, _) => { _searchTimer.Stop(); ApplyFilter(); };
         Unloaded += (_, _) => {_searchTimer.Stop();ClosePickers();};
         IsVisibleChanged += (_,_) => { if(IsVisible && _ready && _pendingRestore!=null) ApplyFilter(preserveViewport:true); };
     }
-    private void UpdateScrollGutter(ScrollViewer? viewer) => ColumnHeaders.Margin = new Thickness(0,0,
-        viewer?.ComputedVerticalScrollBarVisibility==Visibility.Visible ? (double)FindResource("ScrollBarWidth") : 0,0);
+    private void UpdateColumnHeaderBounds(ScrollViewer? viewer)
+    {
+        if(viewer?.Template?.FindName("PART_ScrollContentPresenter",viewer) is not ScrollContentPresenter viewport ||
+            viewport.ActualWidth<=0 || ColumnHeaderHost.ActualWidth<=0) return;
+        // Use the actual viewport, including the native theme's scrollbar minimum and list insets.
+        var left=viewport.TranslatePoint(new Point(),ColumnHeaderHost).X;
+        var right=viewport.TranslatePoint(new Point(viewport.ActualWidth,0),ColumnHeaderHost).X;
+        var margin=new Thickness(Math.Max(0,left),0,Math.Max(0,ColumnHeaderHost.ActualWidth-right),0);
+        if(Math.Abs(ColumnHeaders.Margin.Left-margin.Left)>.01 || Math.Abs(ColumnHeaders.Margin.Right-margin.Right)>.01)
+            ColumnHeaders.Margin=margin;
+    }
     private static ScrollViewer? FindViewer(DependencyObject parent)
     {
         for(var i=0;i<VisualTreeHelper.GetChildrenCount(parent);i++)
@@ -229,12 +248,16 @@ public partial class HistoryView : UserControl
         TotalMetric.Text = filtered.Count.ToString("N0");
         WinRateMetric.Text = wins + losses + draws == 0 ? "—" : $"{100d * wins / (wins + losses + draws):F1}%";
         ResultsMetric.Text = $"{wins} 胜  {losses} 负" + (draws > 0 ? $"  {draws} 平" : "");
-        var recent = filtered.Take(20).Reverse().Select(b => new OutcomeDot(Kinds.Of(b.Outcome), $"{b.Time[5..16]}  {b.Outcome}  {b.Opponent}")).ToList();
+        var recent = filtered.Take(20).Reverse().Select(b => new OutcomeDot(Kinds.Of(b.Outcome), $"{BattleDateDisplay.Timestamp(b.Time)}  {b.Outcome}  {b.Opponent}")).ToList();
         RecentDots.ItemsSource = recent; RecentLabel.Text = $"近 {recent.Count} 场";
         RecentPanel.Visibility = recent.Count >= 2 ? Visibility.Visible : Visibility.Collapsed;
         // Column geometry follows the user's filter, not whichever page arrived first.
+        ShowModeColumn=string.IsNullOrEmpty(category);
+        ModeColumnWidth=new GridLength(ShowModeColumn ? 56 : 0);
         ShowScoreColumns = category=="rank" || string.IsNullOrEmpty(category);
-        ScoreColumnWidth = new GridLength(ShowScoreColumns ? 180 : 0);
+        ScoreColumnWidth = new GridLength(ShowScoreColumns ? 148 : 0);
+        HasTags=filtered.Any(b=>a.Tags.GetValueOrDefault(b.ReplayId)?.Count>0);
+        TagColumnWidth=new GridLength(HasTags ? 112 : 52);
         ResetButton.Visibility = character != null || opponentCharacter!=null || FavoritesOnly && _filterTags.Count>0 || outcome != null || DateRange.Start != null || !string.IsNullOrWhiteSpace(SearchBox.Text) ? Visibility.Visible : Visibility.Collapsed;
 
         var previous = restore!=null ? restore.SelectedReplay : Selected?.Battle.ReplayId;
@@ -286,7 +309,7 @@ public partial class HistoryView : UserControl
     }
     private List<MatchListRow> BuildRows(Archive a, List<Battle> battles)
     {
-        var zh = CultureInfo.GetCultureInfo("zh-CN"); var year = DateTime.Today.Year;
+        var zh = CultureInfo.GetCultureInfo("zh-CN"); var year = BattleDateDisplay.CurrentYear;
         var rows = new List<MatchListRow>(battles.Count);
         foreach (var day in battles.GroupBy(b => b.Time[..10]))
         {

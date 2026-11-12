@@ -30,6 +30,7 @@ public partial class MainWindow : Window
     private Task? _imageTask;
     private Task _foregroundTask = Task.CompletedTask;
     private int _navigationVersion;
+    private int _pendingPlayerVersion;
     private int _viewLoadVersion;
     private bool _stoppingRefresh,_loadingInBackground;
     private bool _silentCancellation;
@@ -691,32 +692,46 @@ public partial class MainWindow : Window
         _navigation.UpdateName(_profiles.Profile(_navigation.Current.Id)?.Name ?? _archive.All.FirstOrDefault()?.PlayerName);
         var viewed=PageTabs.SelectedIndex==0 && History.FavoritesOnly ? History.FavoritePlayer ?? _navigation.Current : _navigation.Current;
         var signedInId=_vault.Load()?.AccountId;
-        ViewedPlayerName.Text = viewed.DisplayNameFor(signedInId);
+        ViewedPlayerName.Text = viewed.Id==signedInId ? "我的战绩" : viewed.DisplayName;
         ViewedPlayerName.ToolTip = $"{viewed.DisplayName}\nUID {viewed.Id}";
+        Detail.CurrentPlayerId=_navigation.Current.Id;
+        Detail.IsFavoritesView=History.FavoritesOnly;
         BackButton.IsEnabled=_navigation.CanGoBack;
         ForwardButton.IsEnabled=_navigation.CanGoForward;
         HomeButton.IsEnabled=!_navigation.IsHome || History.FavoritesOnly;
         var lastUpdated = _store.LastSuccessfulLoad(viewed.Id);
         _viewingActiveAccount=viewed.Id==signedInId;
         _lastViewedUpdate=lastUpdated; UpdateRefreshReminder();
-        UpdatedLabel.Text = lastUpdated == null ? "" : "更新于 " + lastUpdated.Value.ToOffset(TimeSpan.FromHours(8)).ToString("MM-dd HH:mm");
+        UpdatedLabel.Text = lastUpdated == null ? "" : "更新于 " + BattleDateDisplay.Timestamp(lastUpdated.Value.ToOffset(TimeSpan.FromHours(8)).ToString("yyyy-MM-dd HH:mm"));
     }
     private async Task ViewPlayerAsync(PlayerIdentity player)
     {
         if (!_ready || _exitRequested) return;
         if (!player.IsValid) { ShowNotice("没有可用的玩家 UID。"); return; }
         if(player.Id==_navigation.Current.Id && !History.FavoritesOnly) return;
+        if(Detail.PendingPlayerId==player.Id) return;
+        var version=++_navigationVersion;
+        _pendingPlayerVersion=version; Detail.PendingPlayerId=player.Id;
         try
         {
-            var version=++_navigationVersion; await CancelDownloadsAsync(); if(version!=_navigationVersion) return;
+            // Paint click feedback before cancellation or local archive work can delay the UI.
+            await Dispatcher.Yield(DispatcherPriority.Background);
+            if(version!=_navigationVersion || _exitRequested) return;
+            await CancelDownloadsAsync(); if(version!=_navigationVersion || _exitRequested) return;
             RememberCurrentView();
             if (!_navigation.Visit(player) && !History.FavoritesOnly) return;
+            // The destination list owns further loading; never transfer feedback to its detail buttons.
+            Detail.PendingPlayerId="";
             HideNotice(); History.ResetFilters(); Scores.ResetSelection(); ReloadLocal();
             // A successful empty history is cached too. A failed/partial first load is retried on the next visit.
             if(PageTabs.SelectedIndex==1) await BeginLoadAsync(scoreRange:true);
             else if(Pager.NeedsInitial(History.Category)) await BeginLoadAsync();
         }
         catch (Exception ex) { ReportError(ex); }
+        finally
+        {
+            if(_pendingPlayerVersion==version) {Detail.PendingPlayerId="";_pendingPlayerVersion=0;}
+        }
     }
     private Task GoBackAsync(int steps=1) => TraverseHistoryAsync(false,steps);
     private Task GoForwardAsync(int steps=1) => TraverseHistoryAsync(true,steps);

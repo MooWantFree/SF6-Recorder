@@ -94,6 +94,9 @@ public sealed class MatchListRow(Battle battle, ImageSource? ownImage, ImageSour
     public string? SignedInId { get; private set; }=signedInId;
     public CharacterRank? SettledRank { get; private set; }=settledRank;
     public IReadOnlyList<MatchTag> Tags { get; internal set; }=[];
+    public MatchTag? FirstTag => Tags.FirstOrDefault();
+    public string MoreTags => Tags.Count>1 ? $"+{Tags.Count-1}" : "";
+    public string TagsTip => Tags.Count==0 ? "添加标签" : string.Join("、",Tags.Select(t=>t.Name));
     public event PropertyChangedEventHandler? PropertyChanged;
     public void Update(MatchListRow row)
     {
@@ -111,8 +114,8 @@ public sealed class MatchListRow(Battle battle, ImageSource? ownImage, ImageSour
     public string Kind => Kinds.Of(Battle.Outcome);
     public string Result => Battle.Outcome;
     public string Clock => Battle.Time.Substring(11, 5);
-    public string FullTime => Battle.Time[..16].Replace(' ','-').Replace(':','-');
-    public string DetailTime => Battle.Time[5..16];
+    public string FullTime => Battle.Time[..16];
+    public string DetailTime => BattleDateDisplay.Timestamp(Battle.Time);
     public string Category => BattleCategory.All.FirstOrDefault(c => c.Key == Battle.Category)?.ShortName ?? Battle.Mode;
     public bool IsRanked => Point != null;
     // Prefer MR, unless its settlement is unknown while LP's is known.
@@ -128,9 +131,12 @@ public sealed class MatchListRow(Battle battle, ImageSource? ownImage, ImageSour
     public CharacterRank RatingRank => SettledRank ?? OwnRank;
     private int? DisplayLp => Point?.LpAfter ?? Battle.Lp;
     public string RankLabel => DisplayLp<0 ? ScoreDisplay.NewChallenger : RatingRank.RankName=="—" ? "" : RatingRank.RankName;
-    public string LpSuffix => DisplayLp<0 ? "" : $"{(RankLabel.Length>0 ? " " : "")}({DisplayLp?.ToString("0") ?? "—"}lp)";
+    public string LpSuffix => DisplayLp<0 ? "" : $"{(RankLabel.Length>0 ? " " : "")}({ScoreDisplay.WithUnit(DisplayLp,"LP")})";
     public string RankScore => RankLabel+LpSuffix;
-    public string MasterScore => Battle.Mr>0 ? $"{Point?.MrAfter ?? Battle.Mr:0}mr" : "";
+    public string ListLp => DisplayLp<0 ? "" : ScoreDisplay.WithUnit(DisplayLp,"LP");
+    public string LpChange => !UsesMr ? ChangeLine : "";
+    public string MrChange => UsesMr ? ChangeLine : "";
+    public string MasterScore => Battle.Mr>0 ? ScoreDisplay.WithUnit(Point?.MrAfter ?? Battle.Mr,"MR") : "";
     public string RankScoreTip => string.Join("\n",new[]{RankScore,MasterScore,
         Point!=null && Point.LpDelta==null ? "LP 为赛前分数，本场结算未知" : null,
         Point!=null && Battle.Mr>0 && Point.MrDelta==null ? "MR 为赛前分数，本场结算未知" : null,ChangeTip}.Where(s=>!string.IsNullOrEmpty(s)));
@@ -183,7 +189,7 @@ public sealed class HistoryMatchRow(Battle battle, bool isCurrent) : INotifyProp
     public Battle Battle { get; private set; } = battle;
     public bool IsCurrent { get; private set; } = isCurrent;
     public string SelectionStatus => IsCurrent ? "当前对局" : "";
-    public string Date => Battle.Time.Substring(5,11).Replace('-','/');
+    public string Date => BattleDateDisplay.Timestamp(Battle.Time);
     public string Character => Battle.Character;
     public string OpponentCharacter => Battle.OpponentCharacter;
     public string Score => Battle.Score;

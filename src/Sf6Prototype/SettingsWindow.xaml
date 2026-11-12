@@ -1,5 +1,5 @@
 <Window x:Class="Sf6Prototype.SettingsWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="设置" Icon="{StaticResource AppIcon}" Width="580" SizeToContent="Height" ResizeMode="NoResize" WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
+        Title="设置" Icon="{StaticResource AppIcon}" Width="640" SizeToContent="Height" ResizeMode="NoResize" WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
         Background="{StaticResource Canvas}" Foreground="{StaticResource Ink}" FontFamily="Microsoft YaHei UI" FontSize="13" TextOptions.TextFormattingMode="Display">
   <Border Background="{StaticResource Canvas}" Padding="24,20">
   <StackPanel>
@@ -28,14 +28,14 @@
       <StackPanel>
         <StackPanel Margin="16,12">
           <Grid MinHeight="30"><Grid.ColumnDefinitions><ColumnDefinition Width="120"/><ColumnDefinition Width="88"/><ColumnDefinition Width="Auto"/><ColumnDefinition/></Grid.ColumnDefinitions>
-            <TextBlock Text="卡普空请求间隔" VerticalAlignment="Center"/>
-            <TextBox x:Name="ApiIntervalBox" Grid.Column="1" TextChanged="ApiInterval_Changed" MaxLength="8" VerticalContentAlignment="Center" AutomationProperties.Name="卡普空请求间隔，单位秒" ToolTip="两次官网请求开始之间的最短间隔；数据和头像请求共用，登录网页与 Google 测试不受影响。"/>
+            <TextBlock Text="CAPCOM 请求间隔" VerticalAlignment="Center"/>
+            <TextBox x:Name="ApiIntervalBox" Grid.Column="1" TextChanged="ApiInterval_Changed" MaxLength="8" VerticalContentAlignment="Center" AutomationProperties.Name="CAPCOM 请求间隔，单位秒" ToolTip="两次官网请求开始之间的最短间隔；数据和头像请求共用，登录网页与 Google 测试不受影响。"/>
             <TextBlock Grid.Column="2" Text="秒" Foreground="{StaticResource Ink3}" VerticalAlignment="Center" Margin="6,0,10,0"/>
-            <ListBox x:Name="ApiIntervalPresets" Grid.Column="3" Style="{StaticResource Segmented}" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Center" SelectionChanged="ApiIntervalPreset_Changed" AutomationProperties.Name="卡普空请求间隔预设">
-              <ListBoxItem Content="1s" Tag="1" Width="55" Padding="4,4"/><ListBoxItem Content="3s" Tag="3" Width="55" Padding="4,4"/><ListBoxItem Content="5s" Tag="5" Width="55" Padding="4,4"/><ListBoxItem Content="10s" Tag="10" Width="55" Padding="4,4"/>
+            <ListBox x:Name="ApiIntervalPresets" Grid.Column="3" Style="{StaticResource Segmented}" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Center" SelectionChanged="ApiIntervalPreset_Changed" AutomationProperties.Name="CAPCOM 请求间隔预设">
+              <ListBoxItem Content="1秒" Tag="1" Width="70" Padding="4,4"/><ListBoxItem Content="3秒" Tag="3" Width="70" Padding="4,4"/><ListBoxItem Content="5秒" Tag="5" Width="70" Padding="4,4"/><ListBoxItem Content="10秒" Tag="10" Width="70" Padding="4,4"/>
             </ListBox>
           </Grid>
-          <TextBlock x:Name="ApiIntervalWarning" Text="间隔过短可能触发官网风控；建议至少 5 秒。" Foreground="{StaticResource RankGold}" TextWrapping="Wrap" Margin="120,6,0,0" FontSize="12" Visibility="Collapsed"/>
+          <TextBlock x:Name="ApiIntervalWarning" Text="间隔过短可能触发官网风控；建议至少 5 秒。" Foreground="{StaticResource Warning}" TextWrapping="Wrap" Margin="120,6,0,0" FontSize="12" Visibility="Collapsed"/>
         </StackPanel>
         <Border BorderBrush="{StaticResource LineSubtle}" BorderThickness="0,1,0,0" Margin="16,0"/>
         <Grid Margin="16,12" MinHeight="30"><Grid.ColumnDefinitions><ColumnDefinition Width="120"/><ColumnDefinition Width="88"/><ColumnDefinition Width="Auto"/><ColumnDefinition/></Grid.ColumnDefinitions>
@@ -43,7 +43,7 @@
           <TextBox x:Name="ReminderSecondsBox" Grid.Column="1" TextChanged="ReminderSeconds_Changed" MaxLength="10" VerticalContentAlignment="Center" ToolTip="0 表示不再晃动提醒" AutomationProperties.Name="更新提醒间隔，单位秒，0 关闭"/>
           <TextBlock Grid.Column="2" Text="秒" Foreground="{StaticResource Ink3}" VerticalAlignment="Center" Margin="6,0,10,0"/>
           <ListBox x:Name="ReminderPresets" Grid.Column="3" Style="{StaticResource Segmented}" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Center" SelectionChanged="ReminderPreset_Changed" AutomationProperties.Name="更新提醒快捷间隔">
-            <ListBoxItem Content="关闭" Tag="0" Width="44" Padding="4,4"/><ListBoxItem Content="1天" Tag="86400" Width="44" Padding="4,4"/><ListBoxItem Content="12h" Tag="43200" Width="44" Padding="4,4"/><ListBoxItem Content="1h" Tag="3600" Width="44" Padding="4,4"/><ListBoxItem Content="10min" Tag="600" Width="44" Padding="4,4"/>
+            <ListBoxItem Content="关闭" Tag="0" Width="56" Padding="4,4"/><ListBoxItem Content="1天" Tag="86400" Width="56" Padding="4,4"/><ListBoxItem Content="12小时" Tag="43200" Width="56" Padding="4,4"/><ListBoxItem Content="1小时" Tag="3600" Width="56" Padding="4,4"/><ListBoxItem Content="10分钟" Tag="600" Width="56" Padding="4,4"/>
           </ListBox>
         </Grid>
         <Border BorderBrush="{StaticResource LineSubtle}" BorderThickness="0,1,0,0" Margin="16,0">
@@ -52,7 +52,7 @@
             <TextBox x:Name="AutoRefreshSecondsBox" Grid.Column="1" TextChanged="AutoRefreshSeconds_Changed" MaxLength="10" VerticalContentAlignment="Center" ToolTip="0 表示关闭；仅刷新当前登录账号" AutomationProperties.Name="自动刷新间隔，单位秒，0 关闭"/>
             <TextBlock Grid.Column="2" Text="秒" Foreground="{StaticResource Ink3}" VerticalAlignment="Center" Margin="6,0,10,0"/>
             <ListBox x:Name="AutoRefreshPresets" Grid.Column="3" Style="{StaticResource Segmented}" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Center" SelectionChanged="AutoRefreshPreset_Changed" AutomationProperties.Name="自动刷新快捷间隔">
-              <ListBoxItem Content="关闭" Tag="0" Width="55" Padding="4,4"/><ListBoxItem Content="5分钟" Tag="300" Width="55" Padding="4,4"/><ListBoxItem Content="20分钟" Tag="1200" Width="55" Padding="4,4"/><ListBoxItem Content="1小时" Tag="3600" Width="55" Padding="4,4"/>
+              <ListBoxItem Content="关闭" Tag="0" Width="70" Padding="4,4"/><ListBoxItem Content="5分钟" Tag="300" Width="70" Padding="4,4"/><ListBoxItem Content="20分钟" Tag="1200" Width="70" Padding="4,4"/><ListBoxItem Content="1小时" Tag="3600" Width="70" Padding="4,4"/>
             </ListBox>
           </Grid>
         </Border>

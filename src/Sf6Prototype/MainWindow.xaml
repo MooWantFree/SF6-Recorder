@@ -28,20 +28,20 @@
         </StackPanel>
         <StackPanel Grid.Column="1" Margin="16,0" MaxWidth="360" VerticalAlignment="Center">
           <TextBlock x:Name="ViewedPlayerName" Text="我的战绩" FontSize="16" FontWeight="SemiBold" TextAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,2" AutomationProperties.Name="当前查看玩家"/>
-          <TextBlock x:Name="UpdatedLabel" FontSize="10" Foreground="{StaticResource Ink3}" Height="14" TextAlignment="Center"/>
+          <TextBlock x:Name="UpdatedLabel" FontSize="11" Foreground="{StaticResource Ink3}" Height="16" TextAlignment="Center"/>
         </StackPanel>
         <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
           <Grid Margin="0,0,12,0" VerticalAlignment="Center">
             <Border x:Name="PlayerSearchField" Width="240" Height="34" BorderThickness="1" CornerRadius="5" LostKeyboardFocus="PlayerSearch_LostKeyboardFocus">
               <Border.Style><Style TargetType="Border">
-                <Setter Property="Background" Value="{StaticResource SearchSurface}"/><Setter Property="BorderBrush" Value="{StaticResource SearchSurface}"/>
+                <Setter Property="Background" Value="{StaticResource Surface}"/><Setter Property="BorderBrush" Value="{StaticResource Line}"/>
                 <Style.Triggers><DataTrigger Binding="{Binding IsPlayerSearchActive,RelativeSource={RelativeSource AncestorType={x:Type Window}}}" Value="True"><Setter Property="Background" Value="{StaticResource Surface}"/><Setter Property="BorderBrush" Value="{StaticResource Accent}"/></DataTrigger></Style.Triggers>
               </Style></Border.Style>
               <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="30"/><ColumnDefinition/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                <Button x:Name="FindPlayerButton" Style="{StaticResource IconButton}" Width="28" Height="30" FontSize="13" Content="&#xE721;" Click="FindPlayer_Click" ToolTip="查找玩家 · Ctrl+K" AutomationProperties.Name="激活玩家搜索"/>
+                <Button x:Name="FindPlayerButton" Style="{StaticResource IconButton}" Width="28" Height="30" FontSize="13" Content="&#xE77B;" Click="FindPlayer_Click" ToolTip="查找玩家 · Ctrl+K" AutomationProperties.Name="激活玩家搜索"/>
                 <Grid Grid.Column="1">
                   <TextBox x:Name="PlayerUidBox" MaxLength="32" KeyDown="PlayerUid_KeyDown" TextChanged="PlayerUid_Changed" GotKeyboardFocus="PlayerUid_Focused" BorderThickness="0" Background="Transparent" Padding="2,0" MinHeight="0" VerticalContentAlignment="Center" AutomationProperties.Name="玩家 UID，按回车查询"/>
-                  <TextBlock Text="搜索玩家 UID" Foreground="{StaticResource Ink3}" Margin="4,0" VerticalAlignment="Center" IsHitTestVisible="False">
+                  <TextBlock Text="输入玩家 UID" Foreground="{StaticResource Ink3}" Margin="4,0" VerticalAlignment="Center" IsHitTestVisible="False">
                     <TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding Text,ElementName=PlayerUidBox}" Value=""><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></TextBlock.Style>
                   </TextBlock>
                 </Grid>

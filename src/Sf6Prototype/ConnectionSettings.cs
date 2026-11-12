@@ -69,7 +69,7 @@ public record ConnectionSettings
     public static double ParseApiIntervalSeconds(string value)
     {
         if(!double.TryParse(value.Trim(),NumberStyles.AllowDecimalPoint,CultureInfo.InvariantCulture,out var seconds) || !ValidApiInterval(seconds))
-            throw new ArgumentException("卡普空请求间隔请输入 0.1–3600 秒，可用小数。");
+            throw new ArgumentException("CAPCOM 请求间隔请输入 0.1–3600 秒，可用小数。");
         return seconds;
     }
     private static int ParseIntervalSeconds(string value,string name)
@@ -82,7 +82,7 @@ public record ConnectionSettings
     {
         if(RefreshReminderSeconds<0) throw new ArgumentException("更新提醒请输入非负整数秒数，0 表示关闭。");
         if(AutoRefreshSeconds<0) throw new ArgumentException("自动刷新请输入非负整数秒数，0 表示关闭。");
-        if(!ValidApiInterval(ApiIntervalSeconds)) throw new ArgumentException("卡普空请求间隔请输入 0.1–3600 秒，可用小数。");
+        if(!ValidApiInterval(ApiIntervalSeconds)) throw new ArgumentException("CAPCOM 请求间隔请输入 0.1–3600 秒，可用小数。");
         if(!Enum.IsDefined(WindowCloseAction)) throw new ArgumentException("请选择关闭窗口时的操作。");
         if (UseProxy) ValidateProxy();
         File.WriteAllText(Path.Combine(directory, "settings.json"), JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true }));

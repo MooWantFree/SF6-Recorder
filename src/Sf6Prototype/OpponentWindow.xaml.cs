@@ -36,7 +36,7 @@ public partial class OpponentWindow : Window
     {
         InitializeComponent(); Owner=owner; _opponent=opponent; _signedInId=session.AccountId; _client=new(settings,session,vault); _portraits=portraits;
         _session=new(_client,opponent);
-        PlayerName.Text=new PlayerIdentity(opponent,name).DisplayNameFor(_signedInId); Title=$"{PlayerName.Text} · 角色段位"; UidText.Text=$"UID {opponent}";
+        PlayerName.Text=new PlayerIdentity(opponent,name).DisplayNameFor(_signedInId); Title=$"{PlayerName.Text} · 历史段位"; UidText.Text=$"UID {opponent}";
         Loaded+=async(_,_)=>await LoadAsync();
     }
     private void SetBusy(bool busy)
@@ -70,7 +70,7 @@ public partial class OpponentWindow : Window
             if(_profile==null || refresh)
             {
                 _profile=await _session.LoadProfileAsync(_cancel.Token,refresh);
-                PlayerName.Text=new PlayerIdentity(_opponent,_profile.Name).DisplayNameFor(_signedInId); Title=$"{PlayerName.Text} · 角色段位";
+                PlayerName.Text=new PlayerIdentity(_opponent,_profile.Name).DisplayNameFor(_signedInId); Title=$"{PlayerName.Text} · 历史段位";
                 SetSeasons(season);
             }
             if(SeasonPicker.SelectedItem is not SeasonChoice choice) { EmptyText.Text="该赛季暂无 MR 数据"; EmptyText.Visibility=Visibility.Visible; return; }

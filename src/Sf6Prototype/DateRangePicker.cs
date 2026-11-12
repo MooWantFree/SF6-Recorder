@@ -17,7 +17,7 @@ public sealed class DateRangePicker : UserControl
     private readonly TextBlock _hint = new() { Text = "选择最后一天", Foreground = Brush("Ink3"), HorizontalAlignment = HorizontalAlignment.Center, Margin = new(0,8,0,0), Visibility = Visibility.Collapsed };
     private readonly UniformGrid _days = new() { Columns = 7 };
     private readonly List<(Button Button,DateTime Date)> _dayButtons = [];
-    private readonly Button _next = new() { Content = "\uE76C", FontFamily = new("Segoe Fluent Icons"),FontSize=11,Width = 30, Margin = new(0), BorderThickness = new(0) };
+    private readonly Button _next = new() { Content = "\uE76C", FontFamily = new("Segoe Fluent Icons"),FontSize=15,Width = 32, Margin = new(0), BorderThickness = new(0) };
     private DateTime _month, _today;
     private DateTime? _anchor, _preview;
     public DateTime? Start { get; private set; }
@@ -39,7 +39,7 @@ public sealed class DateRangePicker : UserControl
         }
         panel.Children.Add(presets);
         var head = new Grid { Margin = new(0,6,0,10) }; head.Children.Add(_title);
-        var previous = new Button { Content = "\uE76B", FontFamily=new("Segoe Fluent Icons"),FontSize=11,Width = 30, Margin = new(0), HorizontalAlignment = HorizontalAlignment.Left, BorderThickness = new(0) };
+        var previous = new Button { Content = "\uE76B", FontFamily=new("Segoe Fluent Icons"),FontSize=15,Width = 32, Margin = new(0), HorizontalAlignment = HorizontalAlignment.Left, BorderThickness = new(0), Foreground=Brush("Ink") };
         previous.Click += (_,_) => { _month = _month.AddMonths(-1); DrawMonth(); }; AutomationProperties.SetName(previous,"上个月日历"); head.Children.Add(previous);
         _next.HorizontalAlignment = HorizontalAlignment.Right; _next.Click += (_,_) => { _month = _month.AddMonths(1); DrawMonth(); }; AutomationProperties.SetName(_next,"下个月日历"); head.Children.Add(_next); panel.Children.Add(head);
         var week = new UniformGrid { Columns = 7, Margin = new(0,0,0,5) };

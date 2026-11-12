@@ -45,7 +45,7 @@ internal static class Program
         Check(history.Filtered.Select(b=>b.ReplayId).SequenceEqual(["R1"]) && history.Selected?.Tags.Count==2,"Compiled history combines opponent and all-tag filters and exposes persisted capsules");
         Check(history.CaptureState() is {OpponentCharacter:"肯",FavoritesOnly:true,MatchAllTags:true} && ((ItemsControl)history.FindName("SelectedTags")).Items.Count==2,"The selected tag strip and navigation state retain multi-selection");
         var rowGrid=new HistoryTableGrid();
-        Check(rowGrid.ColumnDefinitions.Count==8 && rowGrid.ColumnDefinitions[7].Width.Value==140,"The shared header and row grid includes an aligned tag column");
+        Check(rowGrid.ColumnDefinitions.Count==8 && rowGrid.ColumnDefinitions[7].Width==rowGrid.TagWidth,"The shared header and row grid includes an aligned tag column");
         var picker=new TagPicker();
         Check(!picker.IsOpen && picker.Child is ContentControl,"Tag picker styles construct without opening a popup");
         Check(picker.HorizontalOffset==0 && picker.VerticalOffset==4 && ((ContentControl)picker.Child).Margin==new Thickness(0),"Tag popups use a positive gap and no negative margin compensation");
@@ -119,7 +119,7 @@ internal static class Program
         api.Text="";
         Check(((ConnectionSettings)draft.Invoke(settings,[false])!).ApiIntervalSeconds==5,"A partially edited API interval does not block the independent Google proxy test");
         apiPresets.SelectedIndex=2;
-        var settingsContent=(FrameworkElement)settings.Content;settingsContent.Measure(new Size(564,double.PositiveInfinity));settingsContent.Arrange(new Rect(settingsContent.DesiredSize));
+        var settingsContent=(FrameworkElement)settings.Content;settingsContent.Measure(new Size(settings.Width-16,double.PositiveInfinity));settingsContent.Arrange(new Rect(settingsContent.DesiredSize));
         Check(settingsContent.DesiredSize.Height<680 && api.TranslatePoint(new Point(api.ActualWidth,0),settingsContent).X<=apiPresets.TranslatePoint(new Point(0,0),settingsContent).X,"The new settings row fits the compact dialog without overlapping its preset group");
         var choice=new CloseChoiceWindow(null!);
         Check(choice.Choice==CloseAction.Ask && !choice.Remember,"Dismissed close choices cannot silently become a remembered action");
@@ -132,6 +132,8 @@ internal static class Program
         Check(App.DataDirectory=="" && !main.IsVisible && !settings.IsVisible && !choice.IsVisible && new System.Windows.Interop.WindowInteropHelper(main).Handle==IntPtr.Zero && new System.Windows.Interop.WindowInteropHelper(settings).Handle==IntPtr.Zero && new System.Windows.Interop.WindowInteropHelper(choice).Handle==IntPtr.Zero,"Desktop checks never start the application, create native windows or use user data");
         count+=CancellationChecks.Run();
         count+=RefreshReminderChecks.Run();
+        count+=PresentationLayoutChecks.Run();
+        count+=HistoryAlignmentChecks.Run();
         Console.WriteLine($"Passed {count} headless desktop checks.");
     }
 }

@@ -1,5 +1,5 @@
 <Window x:Class="Sf6Prototype.OpponentWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="角色段位" Icon="{StaticResource AppIcon}" Width="740" Height="580" MinWidth="660" MinHeight="380" WindowStartupLocation="CenterOwner"
+        Title="历史段位" Icon="{StaticResource AppIcon}" Width="740" Height="580" MinWidth="660" MinHeight="380" WindowStartupLocation="CenterOwner"
         Background="{StaticResource Canvas}" Foreground="{StaticResource Ink}" FontFamily="Microsoft YaHei UI" FontSize="13" TextOptions.TextFormattingMode="Display">
   <Grid Margin="24,20"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
     <DockPanel Margin="0,0,0,16">

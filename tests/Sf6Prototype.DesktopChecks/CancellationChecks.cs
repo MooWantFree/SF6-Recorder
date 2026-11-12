@@ -40,11 +40,11 @@ internal static class CancellationChecks
         Set("_ready",true);Call(main,"ReloadLocal",false,true,null,false);
         var ring=(RefreshProgressGlyph)main.FindName("SyncRing");var sync=(Button)main.FindName("SyncButton");
         var tokens=new List<CancellationTokenSource>();
-        (CancellationTokenSource Token,TaskCompletionSource Work) Download()
+        (CancellationTokenSource Token,TaskCompletionSource Work) Download(bool delayed=false)
         {
             var token=new CancellationTokenSource();tokens.Add(token);var work=new TaskCompletionSource();
             Set("_cancellation",token);Set("_foregroundTask",work.Task);
-            token.Token.Register(()=>{Busy(false);work.TrySetResult();});Busy(true);
+            if(!delayed) token.Token.Register(()=>{Busy(false);work.TrySetResult();});Busy(true);
             return (token,work);
         }
         try
@@ -83,8 +83,17 @@ internal static class CancellationChecks
             var same=Download();Complete((Task)Call(main,"ViewPlayerAsync",home)!);
             Complete((Task)Call(main,"SearchPlayerAsync",home.Id)!);
             Check(!same.Token.IsCancellationRequested,"Viewing or submitting the already displayed player does not interrupt that player's download");
+            var destinationSeen=false;var destinationHadButtonFeedback=false;
+            void ObserveDestination(object sender,DependencyPropertyChangedEventArgs e)
+            {
+                if(e.NewValue is MatchListRow row && row.Battle.OwnerId==other.Id)
+                {destinationSeen=true;destinationHadButtonFeedback|=detail.PendingPlayerId.Length>0;}
+            }
+            detail.DataContextChanged+=ObserveDestination;
             Complete((Task)Call(main,"ViewPlayerAsync",other)!);
+            detail.DataContextChanged-=ObserveDestination;
             Check(same.Token.IsCancellationRequested && navigation.Current.Id==other.Id,"Switching players cancels the old download before changing the archive");
+            Check(destinationSeen && !destinationHadButtonFeedback,"Cached destination details never inherit the clicked player's loading feedback, even during ReloadLocal");
             var back=Download();MouseDown(main,MouseButton.XButton1);Pump();
             Check(back.Token.IsCancellationRequested && navigation.Current.Id==home.Id,"Mouse-side back cancels the active player's download and restores history");
             var forward=Download();Complete((Task)Call(main,"GoForwardAsync",1)!);
@@ -93,6 +102,28 @@ internal static class CancellationChecks
             Check(next.Token.IsCancellationRequested && navigation.Current.Id==third.Id,"A new player keeps normal navigation after repeated cancellations");
             var explicitStop=Download();Complete((Task)Call(main,"ToggleRefreshAsync")!);
             Check(explicitStop.Token.IsCancellationRequested && !Get<bool>("_busy"),"The shared button and Ctrl+R action stops rather than cancels-and-restarts");
+            var slow=Download(delayed:true);var pending=(Task)Call(main,"ViewPlayerAsync",home)!;
+            var pendingVersion=Get<int>("_navigationVersion");
+            Check(detail.PendingPlayerId==home.Id && !pending.IsCompleted && navigation.Current.Id==third.Id,"A player click exposes loading synchronously before waiting for cancellation or reading another archive");
+            var duplicate=(Task)Call(main,"ViewPlayerAsync",home)!;
+            Check(duplicate.IsCompleted && Get<int>("_navigationVersion")==pendingVersion,"Repeated clicks for the pending player do not start or invalidate another navigation");
+            Pump();Check(slow.Token.IsCancellationRequested && !pending.IsCompleted && detail.PendingPlayerId==home.Id,"Loading feedback stays visible while cancellation is still in progress");
+            var replacement=Download(delayed:true);var newer=(Task)Call(main,"ViewPlayerAsync",other)!;Pump();
+            slow.Work.SetResult();Complete(pending);
+            Check(detail.PendingPlayerId==other.Id && !newer.IsCompleted && navigation.Current.Id==third.Id,"A superseded request cannot clear newer loading feedback or change the current player");
+            Busy(false);replacement.Work.SetResult();Complete(newer);
+            Check(detail.PendingPlayerId=="" && navigation.Current.Id==other.Id,"Completing the latest navigation clears its feedback and opens the requested player");
+            var exitRequest=(Task)Call(main,"ViewPlayerAsync",home)!;Set("_exitRequested",true);Complete(exitRequest);Set("_exitRequested",false);
+            Check(detail.PendingPlayerId=="" && navigation.Current.Id==other.Id,"Exiting before the deferred navigation starts clears its feedback without switching archives");
+            var dataDirectory=typeof(App).GetProperty(nameof(App.DataDirectory))!;
+            dataDirectory.SetValue(null,root);
+            try
+            {
+                var failed=Download(delayed:true);var failedRequest=(Task)Call(main,"ViewPlayerAsync",home)!;Pump();
+                Busy(false);failed.Work.SetException(new System.IO.IOException("Synthetic cancellation failure"));Complete(failedRequest);
+                Check(detail.PendingPlayerId=="" && navigation.Current.Id==other.Id && ((FrameworkElement)main.FindName("NoticeBar")).Visibility==Visibility.Visible,"A failed switch reports its error and clears loading so the action can be retried");
+            }
+            finally {dataDirectory.SetValue(null,"");}
             Check(App.DataDirectory=="" && !main.IsVisible && new System.Windows.Interop.WindowInteropHelper(main).Handle==IntPtr.Zero,"Cancellation regression checks never show a window or access real user data");
         }
         finally

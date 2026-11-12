@@ -2,16 +2,15 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:Sf6Prototype">
   <UserControl.Resources>
     <DataTemplate x:Key="MatchRow">
-      <local:HistoryTableGrid MinHeight="56" ScoreWidth="{Binding ScoreColumnWidth,RelativeSource={RelativeSource AncestorType=local:HistoryView}}" SnapsToDevicePixels="True">
-        <Border x:Name="ResultBadge" Style="{StaticResource MatchScoreBadge}" HorizontalAlignment="Center" VerticalAlignment="Center" ToolTip="{Binding Result}">
-          <TextBlock Text="{Binding Battle.Score}" Style="{StaticResource Number}" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource OnAccent}"/>
+      <local:HistoryTableGrid MinHeight="56" ModeWidth="{Binding ModeColumnWidth,RelativeSource={RelativeSource AncestorType=local:HistoryView}}" ScoreWidth="{Binding ScoreColumnWidth,RelativeSource={RelativeSource AncestorType=local:HistoryView}}" TagWidth="{Binding TagColumnWidth,RelativeSource={RelativeSource AncestorType=local:HistoryView}}" SnapsToDevicePixels="True">
+        <Border Style="{StaticResource ListScoreBadge}" HorizontalAlignment="Center" VerticalAlignment="Center" ToolTip="{Binding Result}">
+          <TextBlock Text="{Binding Battle.Score}" Style="{StaticResource Number}" FontSize="13" FontWeight="SemiBold"/>
         </Border>
         <Grid Grid.Column="1" Margin="8,0,8,0" VerticalAlignment="Center">
           <Grid.ColumnDefinitions><ColumnDefinition Width="32"/><ColumnDefinition/></Grid.ColumnDefinitions>
           <ContentControl Content="{Binding OwnImage}" Style="{StaticResource Portrait}" Width="32" Height="32"/>
           <StackPanel Grid.Column="1" Margin="8,0,0,0" VerticalAlignment="Center">
             <TextBlock Text="{Binding Battle.Character}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Battle.Character}"/>
-            <TextBlock Text="{Binding PlayerName}" Style="{StaticResource Caption}" FontSize="11" TextTrimming="CharacterEllipsis" ToolTip="{Binding PlayerName}" Margin="0,2,0,0"/>
           </StackPanel>
         </Grid>
         <Grid Grid.Column="3" Margin="8,0,8,0" VerticalAlignment="Center">
@@ -22,29 +21,38 @@
             <TextBlock Text="{Binding OpponentName}" Style="{StaticResource Caption}" FontSize="11" TextTrimming="CharacterEllipsis" ToolTip="{Binding OpponentName}" Margin="0,2,0,0"/>
           </StackPanel>
         </Grid>
-        <TextBlock Grid.Column="4" Text="{Binding Category}" Foreground="{StaticResource Ink2}" Margin="8,0,8,0" VerticalAlignment="Center"/>
+        <TextBlock Grid.Column="4" Text="{Binding Category}" FontSize="12" Foreground="{StaticResource Ink2}" Margin="4,0,4,0" VerticalAlignment="Center" Visibility="{Binding ShowModeColumn,RelativeSource={RelativeSource AncestorType=local:HistoryView},Converter={StaticResource VisibleWhenTrue}}"/>
         <StackPanel Grid.Column="5" Margin="8,0,8,0" VerticalAlignment="Center" ClipToBounds="True" ToolTip="{Binding RankScoreTip}" Visibility="{Binding ShowScoreColumns,RelativeSource={RelativeSource AncestorType=local:HistoryView},Converter={StaticResource VisibleWhenTrue}}">
-            <TextBlock Style="{StaticResource Number}" FontSize="12" TextAlignment="Right" TextTrimming="CharacterEllipsis" Foreground="{StaticResource Ink}"><Run Text="{Binding RankLabel,Mode=OneWay}" Foreground="{Binding RatingRank,Converter={StaticResource RankColor}}"/><Run Text="{Binding LpSuffix,Mode=OneWay}"/></TextBlock>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,2,0,0">
-              <TextBlock Text="{Binding MasterScore}" Style="{StaticResource Number}" Foreground="{StaticResource Ink3}" FontSize="11"/>
-              <TextBlock x:Name="ChangeText" Text="{Binding ChangeLine}" Style="{StaticResource Number}" Foreground="{StaticResource Ink3}" FontSize="11" Margin="6,0,0,0" ToolTip="{Binding ChangeTip}"/>
+            <TextBlock x:Name="RankText" Text="{Binding RankLabel}" Style="{StaticResource Number}" FontSize="12" TextAlignment="Right" TextTrimming="CharacterEllipsis" Foreground="{Binding RatingRank,Converter={StaticResource RankColor}}"/>
+            <StackPanel x:Name="LpLine" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,2,0,0">
+              <TextBlock Text="{Binding ListLp}" Style="{StaticResource Number}" Foreground="{StaticResource Ink2}" FontSize="11"/>
+              <TextBlock Text="{Binding LpChange}" Style="{StaticResource ScoreChange}"/>
+            </StackPanel>
+            <StackPanel x:Name="MrLine" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,2,0,0">
+              <TextBlock Text="{Binding MasterScore}" Style="{StaticResource Number}" Foreground="{StaticResource Ink2}" FontSize="11"/>
+              <TextBlock Text="{Binding MrChange}" Style="{StaticResource ScoreChange}"/>
             </StackPanel>
         </StackPanel>
         <TextBlock Grid.Column="6" Text="{Binding Clock}" Style="{StaticResource Number}" Foreground="{StaticResource Ink3}" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,14,0" ToolTip="{Binding FullTime}"/>
-        <Button x:Name="TagCell" Grid.Column="7" Style="{StaticResource GhostButton}" Padding="4,4,8,4" HorizontalContentAlignment="Stretch" VerticalAlignment="Stretch" Click="EditTags_Click" ToolTip="编辑标签" AutomationProperties.Name="编辑此局标签">
-          <Grid>
-            <ItemsControl ItemsSource="{Binding Tags}" ItemTemplate="{StaticResource TagPill}" VerticalAlignment="Center"><ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel></ItemsControl>
-            <TextBlock x:Name="AddTagHint" Text="+" FontSize="16" Foreground="{StaticResource Ink3}" VerticalAlignment="Center" Margin="8,0,0,0" Visibility="Collapsed"/>
+        <Button x:Name="TagCell" Grid.Column="7" Style="{StaticResource GhostButton}" Padding="4,4,8,4" HorizontalContentAlignment="Left" VerticalAlignment="Stretch" Click="EditTags_Click" ToolTip="{Binding TagsTip}" AutomationProperties.Name="编辑此局标签" AutomationProperties.HelpText="{Binding TagsTip}">
+          <Grid VerticalAlignment="Center">
+            <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+              <Border x:Name="TagSummary" Background="{Binding FirstTag.Color,Converter={StaticResource TagBrush}}" CornerRadius="10" Padding="7,2">
+                <TextBlock Text="{Binding FirstTag.Name}" FontSize="11" TextTrimming="CharacterEllipsis" Foreground="{Binding FirstTag.Color,Converter={StaticResource TagBrush},ConverterParameter=Text}"/>
+              </Border>
+              <TextBlock x:Name="MoreTags" Grid.Column="1" Text="{Binding MoreTags}" Style="{StaticResource Number}" FontSize="11" Foreground="{StaticResource Ink2}" VerticalAlignment="Center" Margin="4,0,0,0"/>
+              <Border x:Name="AddTagHint" Grid.Column="2" Style="{StaticResource TagAddGlyph}" Margin="4,0,0,0">
+                <Path Data="M 4,9 H 14 M 9,4 V 14" Stroke="{StaticResource OnAccent}" StrokeThickness="1.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+              </Border>
           </Grid>
         </Button>
       </local:HistoryTableGrid>
       <DataTemplate.Triggers>
-        <DataTrigger Binding="{Binding Kind}" Value="win"><Setter TargetName="ResultBadge" Property="Background" Value="{StaticResource Win}"/></DataTrigger>
-        <DataTrigger Binding="{Binding Kind}" Value="loss"><Setter TargetName="ResultBadge" Property="Background" Value="{StaticResource Loss}"/></DataTrigger>
-        <DataTrigger Binding="{Binding ChangeKind}" Value="up"><Setter TargetName="ChangeText" Property="Foreground" Value="{StaticResource Win}"/></DataTrigger>
-        <DataTrigger Binding="{Binding ChangeKind}" Value="down"><Setter TargetName="ChangeText" Property="Foreground" Value="{StaticResource Loss}"/></DataTrigger>
-        <MultiDataTrigger><MultiDataTrigger.Conditions><Condition Binding="{Binding Tags.Count}" Value="0"/><Condition Binding="{Binding IsMouseOver,ElementName=TagCell}" Value="True"/></MultiDataTrigger.Conditions><Setter TargetName="AddTagHint" Property="Visibility" Value="Visible"/></MultiDataTrigger>
-        <MultiDataTrigger><MultiDataTrigger.Conditions><Condition Binding="{Binding Tags.Count}" Value="0"/><Condition Binding="{Binding IsKeyboardFocused,ElementName=TagCell}" Value="True"/></MultiDataTrigger.Conditions><Setter TargetName="AddTagHint" Property="Visibility" Value="Visible"/></MultiDataTrigger>
+        <DataTrigger Binding="{Binding RankLabel}" Value=""><Setter TargetName="RankText" Property="Visibility" Value="Collapsed"/></DataTrigger>
+        <DataTrigger Binding="{Binding ListLp}" Value=""><Setter TargetName="LpLine" Property="Visibility" Value="Collapsed"/></DataTrigger>
+        <DataTrigger Binding="{Binding MasterScore}" Value=""><Setter TargetName="MrLine" Property="Visibility" Value="Collapsed"/></DataTrigger>
+        <DataTrigger Binding="{Binding Tags.Count}" Value="0"><Setter TargetName="TagSummary" Property="Visibility" Value="Collapsed"/><Setter TargetName="AddTagHint" Property="Margin" Value="7,0,0,0"/></DataTrigger>
+        <DataTrigger Binding="{Binding MoreTags}" Value=""><Setter TargetName="MoreTags" Property="Visibility" Value="Collapsed"/></DataTrigger>
       </DataTemplate.Triggers>
     </DataTemplate>
     <DataTemplate x:Key="OutcomeDotTemplate">
@@ -71,16 +79,16 @@
       <WrapPanel>
         <Button x:Name="FavoriteUserButton" Content="用户 ▾" Click="FavoriteUser_Click" Width="170" Margin="0,0,8,6" Visibility="Collapsed" HorizontalContentAlignment="Left" AutomationProperties.Name="收藏用户"/>
         <Button x:Name="FavoritesButton" Content="标签 ▾" Click="Favorites_Click" Margin="0,0,8,6" Visibility="Collapsed" AutomationProperties.Name="标签筛选"/>
-        <Grid Width="210" VerticalAlignment="Center" Margin="0,0,8,6">
+        <Grid Width="176" VerticalAlignment="Center" Margin="0,0,8,6">
           <TextBox x:Name="SearchBox" Padding="28,5,8,5" TextChanged="Search_Changed" AutomationProperties.Name="搜索对手昵称、UID 或回放 ID" ToolTip="Ctrl+F"/>
           <TextBlock Text="&#xE721;" FontFamily="Segoe Fluent Icons" FontSize="12" Margin="10,0,0,0" Foreground="{StaticResource Ink3}" VerticalAlignment="Center" IsHitTestVisible="False"/>
-          <TextBlock Text="对手昵称 / UID / 回放 ID" Margin="31,0,0,0" Foreground="{StaticResource Ink3}" FontSize="12" VerticalAlignment="Center" IsHitTestVisible="False">
+          <TextBlock Text="筛选对手 / UID / 回放" Margin="31,0,0,0" Foreground="{StaticResource Ink3}" FontSize="12" VerticalAlignment="Center" IsHitTestVisible="False">
             <TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding Text,ElementName=SearchBox}" Value=""><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></TextBlock.Style>
           </TextBlock>
         </Grid>
-      <ComboBox x:Name="CharacterFilter" Width="120" SelectionChanged="Filter_Changed" AutomationProperties.Name="己方角色" Margin="0,0,8,6"/>
-      <ComboBox x:Name="OpponentCharacterFilter" Width="120" SelectionChanged="Filter_Changed" AutomationProperties.Name="对手角色" Margin="0,0,8,6"/>
-      <local:DateRangePicker x:Name="DateRange" Width="176" RangeChanged="Date_Changed" Margin="0,0,8,6"/>
+      <ComboBox x:Name="CharacterFilter" Width="112" SelectionChanged="Filter_Changed" AutomationProperties.Name="己方角色" Margin="0,0,8,6"/>
+      <ComboBox x:Name="OpponentCharacterFilter" Width="112" SelectionChanged="Filter_Changed" AutomationProperties.Name="对手角色" Margin="0,0,8,6"/>
+      <local:DateRangePicker x:Name="DateRange" Width="144" RangeChanged="Date_Changed" Margin="0,0,8,6"/>
       <ListBox x:Name="OutcomeFilter" Style="{StaticResource Segmented}" SelectionChanged="Filter_Changed" AutomationProperties.Name="结果" VerticalAlignment="Center"/>
       <Button x:Name="ResetButton" Content="清除筛选" Click="Reset_Click" Style="{StaticResource GhostButton}" Foreground="{StaticResource AccentText}" Margin="6,0,0,0" Visibility="Collapsed"/>
       </WrapPanel>
@@ -109,15 +117,15 @@
     <Border Grid.Row="3" Style="{StaticResource Card}">
       <Grid>
         <Grid.RowDefinitions><RowDefinition Height="32"/><RowDefinition/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-        <Border BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1">
-          <local:HistoryTableGrid x:Name="ColumnHeaders" ScoreWidth="{Binding ScoreColumnWidth,RelativeSource={RelativeSource AncestorType=local:HistoryView}}" SnapsToDevicePixels="True">
+        <Border x:Name="ColumnHeaderHost" BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1">
+          <local:HistoryTableGrid x:Name="ColumnHeaders" ModeWidth="{Binding ModeColumnWidth,RelativeSource={RelativeSource AncestorType=local:HistoryView}}" ScoreWidth="{Binding ScoreColumnWidth,RelativeSource={RelativeSource AncestorType=local:HistoryView}}" TagWidth="{Binding TagColumnWidth,RelativeSource={RelativeSource AncestorType=local:HistoryView}}" SnapsToDevicePixels="True">
             <TextBlock Text="比分" Style="{StaticResource ColumnLabel}" HorizontalAlignment="Center"/>
             <TextBlock Grid.Column="1" Text="己方角色" Style="{StaticResource ColumnLabel}" Margin="48,0,8,0"/>
             <TextBlock Grid.Column="3" Text="对手角色" Style="{StaticResource ColumnLabel}" Margin="48,0,8,0"/>
-            <TextBlock Grid.Column="4" Text="模式" Style="{StaticResource ColumnLabel}" Margin="8,0,8,0"/>
+            <TextBlock Grid.Column="4" Text="模式" Style="{StaticResource ColumnLabel}" Margin="4,0,4,0" Visibility="{Binding ShowModeColumn,RelativeSource={RelativeSource AncestorType=local:HistoryView},Converter={StaticResource VisibleWhenTrue}}"/>
             <TextBlock Grid.Column="5" Text="赛后分数" Style="{StaticResource ColumnLabel}" HorizontalAlignment="Right" Margin="8,0,8,0" Visibility="{Binding ShowScoreColumns,RelativeSource={RelativeSource AncestorType=local:HistoryView},Converter={StaticResource VisibleWhenTrue}}"/>
             <TextBlock Grid.Column="6" Text="时间" Style="{StaticResource ColumnLabel}" HorizontalAlignment="Right" Margin="0,0,14,0"/>
-            <TextBlock Grid.Column="7" Text="标签" Style="{StaticResource ColumnLabel}" Margin="10,0,10,0"/>
+            <TextBlock Grid.Column="7" Text="标签" Style="{StaticResource ColumnLabel}" Margin="11,0,8,0"/>
           </local:HistoryTableGrid>
         </Border>
         <ListBox x:Name="MatchesList" Grid.Row="1" Padding="0" BorderThickness="0" Background="Transparent" HorizontalContentAlignment="Stretch" ItemContainerStyle="{StaticResource MatchItem}" ItemTemplate="{StaticResource MatchRow}"

@@ -23,6 +23,14 @@ public partial class ScoresView : UserControl
         Chart.Visibility=_loading && Chart.Points.Count==0 ? Visibility.Hidden : Visibility.Visible;
     }
     public ScoresView() => InitializeComponent();
+    private void Summary_SizeChanged(object sender,SizeChangedEventArgs e)
+    {
+        var compact=e.NewSize.Width<840;
+        Grid.SetRow(ScoreFilters,compact ? 1 : 0);
+        Grid.SetColumn(ScoreFilters,compact ? 0 : 1);
+        Grid.SetColumnSpan(ScoreFilters,compact ? 2 : 1);
+        ScoreFilters.Margin=compact ? new Thickness(0,12,0,0) : new Thickness(24,0,0,0);
+    }
     public void Bind(Archive archive) => _archive = archive;
     public void ResetSelection()
     {

@@ -27,8 +27,11 @@
   <SolidColorBrush x:Key="WinSoft" Color="#E5F3EA"/>
   <SolidColorBrush x:Key="Loss" Color="#C0392B"/>
   <SolidColorBrush x:Key="LossSoft" Color="#FBE9E7"/>
+  <SolidColorBrush x:Key="Warning" Color="#896207"/>
   <SolidColorBrush x:Key="Neutral" Color="#74747F"/>
   <SolidColorBrush x:Key="NeutralSoft" Color="#EFEFF3"/>
+  <SolidColorBrush x:Key="TagAddFill" Color="#BDBDC9"/>
+  <SolidColorBrush x:Key="TagAddHover" Color="#9696A7"/>
   <!-- Official badge hues, darkened for readable text on the light surfaces. -->
   <SolidColorBrush x:Key="RankRookie" Color="#50505B"/>
   <SolidColorBrush x:Key="RankIron" Color="#6D6C68"/>

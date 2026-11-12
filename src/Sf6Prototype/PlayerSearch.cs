@@ -49,6 +49,13 @@ public sealed class PlayerSearchHistory
     {
         if(!player.IsValid || string.IsNullOrWhiteSpace(player.Name)) throw new ArgumentException("没有可保存的玩家资料。");
         var next=Clean(new[]{player}.Concat(Entries));
-        File.WriteAllText(_path+".tmp",JsonSerializer.Serialize(next)); File.Move(_path+".tmp",_path,true); Entries=next;
+        File.WriteAllText(_path+".tmp",JsonSerializer.Serialize(next));
+        for(var attempt=0;;attempt++)
+        {
+            try { File.Move(_path+".tmp",_path,true); break; }
+            // Windows can briefly deny replacement immediately after the previous rename.
+            catch(UnauthorizedAccessException) when(attempt<2) { Thread.Sleep(50*(attempt+1)); }
+        }
+        Entries=next;
     }
 }

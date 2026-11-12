@@ -33,6 +33,16 @@ public static class PlayerSearchChecks
         Check(reopened.Entries.Count==2 && reopened.Entries[0]==player with {Name="新昵称"},"Search history persists both UID and nickname, deduplicates and moves repeated searches to the front");
         for(var i=0;i<25;i++) history.Remember(new((2000000000L+i).ToString(),"玩家"+i));
         Check(new PlayerSearchHistory(root).Entries.Count==20,"Search history keeps a bounded recent list");
+        var historyPath=Path.Combine(root,"player-search.json");
+        var savedEntries=history.Entries.ToArray();
+        var originalAttributes=File.GetAttributes(historyPath);
+        try
+        {
+            File.SetAttributes(historyPath,originalAttributes|FileAttributes.ReadOnly);
+            await Fails<UnauthorizedAccessException>(()=>{history.Remember(player);return Task.CompletedTask;},"Persistent replacement failures still surface after bounded retries");
+            Check(history.Entries.SequenceEqual(savedEntries) && new PlayerSearchHistory(root).Entries.SequenceEqual(savedEntries),"A failed replacement preserves both in-memory and saved search history");
+        }
+        finally {File.SetAttributes(historyPath,originalAttributes);}
         source.Response="{\"notFound\":true}";
         await Fails<InvalidDataException>(()=>PlayerLookup.FindAsync(source,id,CancellationToken.None),"An unavailable profile is not treated as an empty valid player");
         source.Failure=new HttpRequestException("missing",null,HttpStatusCode.NotFound);

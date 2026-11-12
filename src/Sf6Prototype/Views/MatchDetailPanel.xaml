@@ -1,6 +1,22 @@
 <UserControl x:Class="Sf6Prototype.MatchDetailPanel" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:Sf6Prototype">
   <UserControl.Resources>
+    <local:PlayerHistoryEnabledConverter x:Key="PlayerHistoryEnabled"/>
+    <local:PlayerHistoryLoadingConverter x:Key="PlayerHistoryLoading"/>
+    <DataTemplate x:Key="PlayerHistoryLoadingContent">
+      <StackPanel Orientation="Horizontal">
+        <Viewbox Width="12" Height="12" Margin="0,0,4,0"><ContentControl Style="{StaticResource LoadingSpinner}"/></Viewbox>
+        <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+      </StackPanel>
+    </DataTemplate>
+    <Style x:Key="CopyGlyph" TargetType="TextBlock">
+      <Setter Property="Text" Value="&#xE8C8;"/><Setter Property="FontFamily" Value="Segoe Fluent Icons"/><Setter Property="FontSize" Value="11"/>
+      <Setter Property="Foreground" Value="{StaticResource Ink3}"/><Setter Property="VerticalAlignment" Value="Center"/><Setter Property="Opacity" Value="0"/>
+      <Style.Triggers>
+        <DataTrigger Binding="{Binding IsMouseOver,RelativeSource={RelativeSource AncestorType=Button}}" Value="True"><Setter Property="Opacity" Value="1"/></DataTrigger>
+        <DataTrigger Binding="{Binding IsKeyboardFocusWithin,RelativeSource={RelativeSource AncestorType=Button}}" Value="True"><Setter Property="Opacity" Value="1"/></DataTrigger>
+      </Style.Triggers>
+    </Style>
     <Style x:Key="CopyButton" TargetType="Button" BasedOn="{StaticResource GhostButton}">
       <Setter Property="Padding" Value="4,3"/><Setter Property="MinHeight" Value="24"/><Setter Property="FontSize" Value="11"/>
     </Style>
@@ -11,21 +27,37 @@
     <DataTemplate x:Key="PlayerDetailTemplate">
       <Grid>
         <Grid.RowDefinitions><RowDefinition Height="Auto" SharedSizeGroup="PlayerName"/><RowDefinition Height="Auto" SharedSizeGroup="PlayerUid"/><RowDefinition Height="Auto" SharedSizeGroup="PlayerPortrait"/><RowDefinition Height="Auto" SharedSizeGroup="PlayerCharacter"/><RowDefinition Height="Auto" SharedSizeGroup="PlayerRankScore"/><RowDefinition Height="Auto" SharedSizeGroup="PlayerMr"/><RowDefinition Height="Auto" SharedSizeGroup="PlayerChange"/><RowDefinition Height="Auto" SharedSizeGroup="PlayerActions"/></Grid.RowDefinitions>
-        <Grid Grid.Row="0"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-          <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextAlignment="Center" TextTrimming="CharacterEllipsis" ToolTip="{Binding Name}" VerticalAlignment="Center"/>
-          <Button Grid.Column="1" Style="{StaticResource CopyButton}" Tag="{Binding Player.Name}" Click="CopyName_Click" Width="22" Padding="2" Margin="3,0,0,0" ToolTip="复制昵称" AutomationProperties.Name="复制昵称"><TextBlock Text="&#xE8C8;" FontFamily="Segoe Fluent Icons" FontSize="10" Foreground="{StaticResource Ink3}"/></Button>
-        </Grid>
+        <Button Grid.Row="0" Style="{StaticResource CopyButton}" Tag="{Binding Player.Name}" Click="CopyName_Click" Padding="0" HorizontalContentAlignment="Stretch" ToolTip="复制昵称" AutomationProperties.Name="复制昵称">
+          <Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+            <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="SemiBold" TextAlignment="Center" TextTrimming="CharacterEllipsis" ToolTip="{Binding Name}" VerticalAlignment="Center"/>
+            <TextBlock Grid.Column="1" Style="{StaticResource CopyGlyph}" Margin="4,0,0,0"/>
+          </Grid>
+        </Button>
         <Button Grid.Row="1" Style="{StaticResource CopyButton}" Tag="{Binding Player.Id}" Click="Copy_Click" HorizontalAlignment="Center" Margin="0,4,0,0" ToolTip="复制 UID" AutomationProperties.Name="{Binding Uid}">
-          <StackPanel Orientation="Horizontal"><TextBlock Text="{Binding Uid}" FontSize="10.5" Style="{StaticResource Number}"/><TextBlock Text="&#xE8C8;" FontFamily="Segoe Fluent Icons" FontSize="10" Foreground="{StaticResource Ink3}" Margin="5,0,0,0" VerticalAlignment="Center"/></StackPanel>
+          <StackPanel Orientation="Horizontal"><TextBlock Text="{Binding Uid}" FontSize="11" Style="{StaticResource Number}"/><TextBlock Style="{StaticResource CopyGlyph}" Margin="5,0,0,0"/></StackPanel>
         </Button>
         <ContentControl Grid.Row="2" Content="{Binding Image}" Style="{StaticResource Portrait}" Width="44" Height="44" HorizontalAlignment="Center" Margin="0,8,0,0"/>
         <TextBlock Grid.Row="3" Text="{Binding Character}" FontSize="12" TextAlignment="Center" Margin="0,4,0,0"/>
         <TextBlock Grid.Row="4" Style="{StaticResource Number}" FontSize="12" TextAlignment="Center" TextWrapping="Wrap" Margin="0,6,0,0" Foreground="{StaticResource Ink}" ToolTip="{Binding ScoreTip}"><Run Text="{Binding RankLabel,Mode=OneWay}" Foreground="{Binding Rank,Converter={StaticResource RankColor}}"/><Run Text="{Binding LpSuffix,Mode=OneWay}"/></TextBlock>
-        <TextBlock Grid.Row="5" x:Name="Mr" Text="{Binding Mr}" Style="{StaticResource Number}" FontSize="11" Foreground="{StaticResource Ink2}" TextAlignment="Center" Margin="0,2,0,0" ToolTip="{Binding ScoreTip}"/>
-        <TextBlock Grid.Row="6" x:Name="Change" Text="{Binding Change}" Style="{StaticResource Number}" FontSize="11" TextAlignment="Center" Margin="0,4,0,0" Foreground="{StaticResource Ink3}" ToolTip="{Binding ScoreTip}"/>
+        <TextBlock Grid.Row="5" x:Name="Mr" Text="{Binding Mr}" Style="{StaticResource Number}" FontSize="12" Foreground="{StaticResource Ink2}" TextAlignment="Center" Margin="0,2,0,0" ToolTip="{Binding ScoreTip}"/>
+        <TextBlock Grid.Row="6" x:Name="Change" Text="{Binding Change}" Style="{StaticResource Number}" FontSize="12" TextAlignment="Center" Margin="0,4,0,0" Foreground="{StaticResource Ink3}" ToolTip="{Binding ScoreTip}"/>
         <Border Grid.Row="7" BorderBrush="{StaticResource LineSubtle}" BorderThickness="0,1,0,0" Margin="0,8,0,0" Padding="0,6,0,0">
           <UniformGrid Columns="2">
-            <Button Content="查看战绩" Style="{StaticResource PlayerAction}" Tag="{Binding Player}" Click="Player_Click" Margin="0,0,3,0"/>
+            <Button x:Name="ViewHistoryButton" Tag="{Binding Player}" Click="Player_Click" Margin="0,0,3,0">
+              <Button.Style><Style TargetType="Button" BasedOn="{StaticResource PlayerAction}">
+                <Setter Property="Content" Value="查看战绩"/><Setter Property="AutomationProperties.Name" Value="查看战绩"/>
+                <Style.Triggers><DataTrigger Value="True">
+                  <DataTrigger.Binding><MultiBinding Converter="{StaticResource PlayerHistoryLoading}">
+                    <Binding Path="Player.Id"/><Binding Path="PendingPlayerId" RelativeSource="{RelativeSource AncestorType=local:MatchDetailPanel}"/>
+                  </MultiBinding></DataTrigger.Binding>
+                  <Setter Property="Content" Value="加载中"/><Setter Property="ContentTemplate" Value="{StaticResource PlayerHistoryLoadingContent}"/>
+                  <Setter Property="Template" Value="{StaticResource LoadingButtonTemplate}"/><Setter Property="AutomationProperties.Name" Value="正在加载战绩"/>
+                </DataTrigger></Style.Triggers>
+              </Style></Button.Style>
+              <Button.IsEnabled><MultiBinding Converter="{StaticResource PlayerHistoryEnabled}">
+                <Binding Path="Player.Id"/><Binding Path="CurrentPlayerId" RelativeSource="{RelativeSource AncestorType=local:MatchDetailPanel}"/><Binding Path="IsFavoritesView" RelativeSource="{RelativeSource AncestorType=local:MatchDetailPanel}"/><Binding Path="PendingPlayerId" RelativeSource="{RelativeSource AncestorType=local:MatchDetailPanel}"/>
+              </MultiBinding></Button.IsEnabled>
+            </Button>
             <Button Content="历史段位" Style="{StaticResource PlayerAction}" Tag="{Binding Player}" Click="Ranks_Click" Margin="3,0,0,0"/>
           </UniformGrid>
         </Border>
@@ -47,16 +79,16 @@
           <Grid Margin="0,0,0,16">
             <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/><ColumnDefinition/></Grid.ColumnDefinitions>
             <StackPanel VerticalAlignment="Center" Margin="0,0,6,0">
-              <TextBlock Text="{Binding DetailTime}" Style="{StaticResource Number}" FontSize="11" Foreground="{StaticResource Ink2}" ToolTip="{Binding Battle.Time}"/>
-              <TextBlock Text="{Binding Battle.Mode}" Style="{StaticResource Caption}" FontSize="11" Margin="0,4,0,0" TextTrimming="CharacterEllipsis" ToolTip="{Binding Battle.Mode}"/>
+              <TextBlock Text="{Binding DetailTime}" Style="{StaticResource Number}" FontSize="12" Foreground="{StaticResource Ink2}" TextWrapping="Wrap" ToolTip="{Binding Battle.Time}"/>
+              <TextBlock Text="{Binding Battle.Mode}" Style="{StaticResource Caption}" FontSize="12" Margin="0,4,0,0" TextTrimming="CharacterEllipsis" ToolTip="{Binding Battle.Mode}"/>
             </StackPanel>
             <Border Grid.Column="1" x:Name="ResultBadge" Style="{StaticResource MatchScoreBadge}" VerticalAlignment="Center" Padding="10,3" ToolTip="{Binding Result}">
               <TextBlock Text="{Binding Battle.Score}" Style="{StaticResource Number}" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource OnAccent}"/>
             </Border>
             <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="6,0,0,0">
-              <TextBlock Text="回放" Style="{StaticResource Caption}" FontSize="11" HorizontalAlignment="Right"/>
+              <TextBlock Text="回放" Style="{StaticResource Caption}" FontSize="12" HorizontalAlignment="Right"/>
               <Button Style="{StaticResource CopyButton}" Tag="{Binding Battle.ReplayId}" Click="Copy_Click" HorizontalAlignment="Right" Margin="0,1,-4,0" ToolTip="复制回放 ID" AutomationProperties.Name="复制回放 ID">
-                <StackPanel Orientation="Horizontal"><TextBlock Text="{Binding Battle.ReplayId}" FontSize="10.5" Style="{StaticResource Number}"/><TextBlock Text="&#xE8C8;" FontFamily="Segoe Fluent Icons" FontSize="10" Foreground="{StaticResource Ink3}" Margin="4,0,0,0" VerticalAlignment="Center"/></StackPanel>
+                <StackPanel Orientation="Horizontal"><TextBlock Text="{Binding Battle.ReplayId}" FontSize="11" Style="{StaticResource Number}"/><TextBlock Style="{StaticResource CopyGlyph}" Margin="4,0,0,0"/></StackPanel>
               </Button>
             </StackPanel>
           </Grid>
@@ -72,18 +104,14 @@
               <DockPanel><TextBlock x:Name="HistoryWinRate" DockPanel.Dock="Right" Style="{StaticResource Caption}" HorizontalAlignment="Right"/><TextBlock Text="历史交手" FontWeight="SemiBold"/></DockPanel>
               <TextBlock x:Name="HistorySummary" Grid.Row="1" Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,6,0,10"/>
               <ScrollViewer x:Name="HistoryScroll" Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" CanContentScroll="False" SizeChanged="HistoryScroll_SizeChanged" PreviewMouseWheel="HistoryScroll_MouseWheel" PreviewMouseDown="HistoryScroll_MouseDown">
-              <ItemsControl x:Name="RecentMatches"><ItemsControl.ItemTemplate><DataTemplate>
+              <ItemsControl x:Name="RecentMatches" Grid.IsSharedSizeScope="True"><ItemsControl.ItemTemplate><DataTemplate>
                 <Button Style="{StaticResource HistoryMatchButton}" Tag="{Binding Battle}" Click="HistoryMatch_Click" ToolTip="{Binding Description}" AutomationProperties.Name="{Binding Description}" AutomationProperties.ItemStatus="{Binding SelectionStatus}">
-                <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="78"/><ColumnDefinition/><ColumnDefinition Width="48"/></Grid.ColumnDefinitions>
-                  <TextBlock Text="{Binding Date}" FontSize="11" Foreground="{StaticResource Ink3}" VerticalAlignment="Center"/>
-                  <TextBlock Grid.Column="1" FontSize="11" TextTrimming="CharacterEllipsis" Foreground="{StaticResource Ink2}" VerticalAlignment="Center" Margin="4,0"><Run Text="{Binding Character,Mode=OneWay}" Foreground="{StaticResource AccentText}"/><Run Text=" vs "/><Run Text="{Binding OpponentCharacter,Mode=OneWay}"/></TextBlock>
-                  <Border x:Name="RecentBadge" Grid.Column="2" Style="{StaticResource MatchScoreBadge}" Padding="6,2" HorizontalAlignment="Right" VerticalAlignment="Center"><TextBlock Text="{Binding Score}" Style="{StaticResource Number}" FontSize="11" Foreground="{StaticResource OnAccent}"/></Border>
+                <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="HistoryDate"/><ColumnDefinition/><ColumnDefinition Width="44"/></Grid.ColumnDefinitions>
+                  <TextBlock Text="{Binding Date}" Style="{StaticResource Number}" FontSize="12" Foreground="{StaticResource Ink3}" VerticalAlignment="Center"/>
+                  <TextBlock Grid.Column="1" FontSize="12" TextTrimming="CharacterEllipsis" Foreground="{StaticResource Ink2}" VerticalAlignment="Center" Margin="8,0,4,0"><Run Text="{Binding Character,Mode=OneWay}" Foreground="{StaticResource AccentText}"/><Run Text=" vs "/><Run Text="{Binding OpponentCharacter,Mode=OneWay}"/></TextBlock>
+                  <Border Grid.Column="2" Style="{StaticResource ListScoreBadge}" Padding="6,2" HorizontalAlignment="Right" VerticalAlignment="Center"><TextBlock Text="{Binding Score}" Style="{StaticResource Number}" FontSize="11"/></Border>
                 </Grid>
                 </Button>
-                <DataTemplate.Triggers>
-                  <DataTrigger Binding="{Binding Kind}" Value="win"><Setter TargetName="RecentBadge" Property="Background" Value="{StaticResource Win}"/></DataTrigger>
-                  <DataTrigger Binding="{Binding Kind}" Value="loss"><Setter TargetName="RecentBadge" Property="Background" Value="{StaticResource Loss}"/></DataTrigger>
-                </DataTemplate.Triggers>
               </DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
               </ScrollViewer>
             </Grid>
