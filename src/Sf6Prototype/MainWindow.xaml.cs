@@ -456,8 +456,7 @@ public partial class MainWindow : Window
     private void UpdateSearchEmptyState()
     {
         if(PlayerSearchEmpty==null || PlayerSearchHistoryList==null) return;
-        PlayerSearchEmpty.Visibility=PlayerSearchHistoryList.Items.Count==0 && !_searchingPlayer && PlayerSearchError.Visibility!=Visibility.Visible ? Visibility.Visible : Visibility.Collapsed;
-        PlayerSearchEmpty.Text=string.IsNullOrWhiteSpace(PlayerUidBox.Text) ? Strings.NoSearchHistory : Strings.NoMatchingHistory;
+        PlayerSearchEmpty.Visibility=string.IsNullOrWhiteSpace(PlayerUidBox.Text) && PlayerSearchHistoryList.Items.Count==0 && !_searchingPlayer && PlayerSearchError.Visibility!=Visibility.Visible ? Visibility.Visible : Visibility.Collapsed;
     }
     private void UpdateSearchHistory()
     {

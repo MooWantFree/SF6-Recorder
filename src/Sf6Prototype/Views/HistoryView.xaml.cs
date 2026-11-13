@@ -216,10 +216,10 @@ public partial class HistoryView : UserControl
         CategoryFilter.ItemsSource = categories;
         CategoryFilter.SelectedItem = categories.FirstOrDefault(c => c.Key == oldCategory) ?? categories[0];
         var filterRows=FavoritesOnly ? _playerFavorites.Select(r=>r.Battle).ToList() : a.All;
-        var characters = filterRows.DistinctBy(b=>b.Character).Select(b=>new CharacterChoice(b.Character,a.Profiles.Names.Display(b.CharacterId,b.Character))).OrderBy(c=>c.Name).Prepend(new CharacterChoice("",Strings.YourCharacter)).ToList();
+        var characters = filterRows.DistinctBy(b=>b.Character).Select(b=>new CharacterChoice(b.Character,a.Profiles.Names.Display(b.CharacterId,b.Character))).OrderBy(c=>c.Name).Prepend(new CharacterChoice("",Strings.AllCharacters)).ToList();
         CharacterFilter.ItemsSource = characters;
         CharacterFilter.SelectedItem = characters.FirstOrDefault(c=>c.Key==oldCharacter) ?? characters[0];
-        var otherCharacters=filterRows.DistinctBy(b=>b.OpponentCharacter).Select(b=>new CharacterChoice(b.OpponentCharacter,a.Profiles.Names.Display(b.OpponentCharacterId,b.OpponentCharacter))).OrderBy(c=>c.Name).Prepend(new CharacterChoice("",Strings.OpponentCharacter)).ToList();
+        var otherCharacters=filterRows.DistinctBy(b=>b.OpponentCharacter).Select(b=>new CharacterChoice(b.OpponentCharacter,a.Profiles.Names.Display(b.OpponentCharacterId,b.OpponentCharacter))).OrderBy(c=>c.Name).Prepend(new CharacterChoice("",Strings.AnyOpponent)).ToList();
         OpponentCharacterFilter.ItemsSource=otherCharacters;
         OpponentCharacterFilter.SelectedItem=otherCharacters.FirstOrDefault(c=>c.Key==oldOpponentCharacter) ?? otherCharacters[0];
         var outcomes = new[] { "", "胜", "负" }.Concat(new[] { "平", "待确认" }.Where(o => filterRows.Any(b => b.Outcome == o))).Select(o=>new OutcomeChoice(o)).ToList();

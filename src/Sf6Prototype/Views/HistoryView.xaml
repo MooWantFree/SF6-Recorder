@@ -87,7 +87,7 @@
           </TextBlock>
         </Grid>
       <ComboBox x:Name="CharacterFilter" Width="112" SelectionChanged="Filter_Changed" AutomationProperties.Name="{DynamicResource I18n.YourCharacter}" Margin="0,0,8,6"/>
-      <ComboBox x:Name="OpponentCharacterFilter" Width="112" SelectionChanged="Filter_Changed" AutomationProperties.Name="{DynamicResource I18n.OpponentCharacter}" Margin="0,0,8,6"/>
+      <ComboBox x:Name="OpponentCharacterFilter" Width="120" SelectionChanged="Filter_Changed" AutomationProperties.Name="{DynamicResource I18n.OpponentCharacter}" Margin="0,0,8,6"/>
       <local:DateRangePicker x:Name="DateRange" MinWidth="144" RangeChanged="Date_Changed" Margin="0,0,8,6"/>
       <ListBox x:Name="OutcomeFilter" Style="{StaticResource Segmented}" SelectionChanged="Filter_Changed" AutomationProperties.Name="{DynamicResource I18n.Result}" VerticalAlignment="Center"/>
       <Button x:Name="ResetButton" Content="{DynamicResource I18n.ClearFilters}" Click="Reset_Click" Style="{StaticResource GhostButton}" Foreground="{StaticResource AccentText}" Margin="6,0,0,0" Visibility="Collapsed"/>

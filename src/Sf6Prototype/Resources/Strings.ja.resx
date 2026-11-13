@@ -42,6 +42,9 @@
   <data name="All" xml:space="preserve">
     <value>すべて</value>
   </data>
+  <data name="AllCharacters" xml:space="preserve">
+    <value>全キャラ</value>
+  </data>
   <data name="AllDates" xml:space="preserve">
     <value>全期間</value>
   </data>
@@ -53,6 +56,9 @@
   </data>
   <data name="AnyTag" xml:space="preserve">
     <value>いずれかのタグ</value>
+  </data>
+  <data name="AnyOpponent" xml:space="preserve">
+    <value>相手全キャラ</value>
   </data>
   <data name="ApiInterval" xml:space="preserve">
     <value>CAPCOM リクエスト間隔</value>
@@ -318,7 +324,7 @@
     <value>すべて表示しました</value>
   </data>
   <data name="EnterPlayerUid" xml:space="preserve">
-    <value>プレイヤーの UID を入力</value>
+    <value>UIDを入力</value>
   </data>
   <data name="EnterTagName" xml:space="preserve">
     <value>タグ名を入力</value>

@@ -42,6 +42,9 @@
   <data name="All" xml:space="preserve">
     <value>全部</value>
   </data>
+  <data name="AllCharacters" xml:space="preserve">
+    <value>全部角色</value>
+  </data>
   <data name="AllDates" xml:space="preserve">
     <value>全部日期</value>
   </data>
@@ -53,6 +56,9 @@
   </data>
   <data name="AnyTag" xml:space="preserve">
     <value>任一标签</value>
+  </data>
+  <data name="AnyOpponent" xml:space="preserve">
+    <value>任意对手</value>
   </data>
   <data name="ApiInterval" xml:space="preserve">
     <value>CAPCOM 请求间隔</value>

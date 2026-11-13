@@ -42,6 +42,9 @@
   <data name="All" xml:space="preserve">
     <value>All</value>
   </data>
+  <data name="AllCharacters" xml:space="preserve">
+    <value>All characters</value>
+  </data>
   <data name="AllDates" xml:space="preserve">
     <value>All dates</value>
   </data>
@@ -53,6 +56,9 @@
   </data>
   <data name="AnyTag" xml:space="preserve">
     <value>Any tag</value>
+  </data>
+  <data name="AnyOpponent" xml:space="preserve">
+    <value>Any opponent</value>
   </data>
   <data name="ApiInterval" xml:space="preserve">
     <value>CAPCOM interval</value>
@@ -770,10 +776,10 @@ Backup before import: {1}</value>
     <value>Query type</value>
   </data>
   <data name="RangeChange" xml:space="preserve">
-    <value>Change</value>
+    <value>Range change</value>
   </data>
   <data name="RangeWinRate" xml:space="preserve">
-    <value>Win rate</value>
+    <value>Range win rate</value>
   </data>
   <data name="RankAndPoints" xml:space="preserve">
     <value>Rank / Points</value>

@@ -14,9 +14,11 @@ public static class Strings
     public static string AddTags => Localization.Get(nameof(AddTags));
     public static string AfterMatch => Localization.Get(nameof(AfterMatch));
     public static string All => Localization.Get(nameof(All));
+    public static string AllCharacters => Localization.Get(nameof(AllCharacters));
     public static string AllDates => Localization.Get(nameof(AllDates));
     public static string AllTagsDropdown => Localization.Get(nameof(AllTagsDropdown));
     public static string AllTagsMatch => Localization.Get(nameof(AllTagsMatch));
+    public static string AnyOpponent => Localization.Get(nameof(AnyOpponent));
     public static string AnyTag => Localization.Get(nameof(AnyTag));
     public static string ApiInterval => Localization.Get(nameof(ApiInterval));
     public static string ApiIntervalAccessible => Localization.Get(nameof(ApiIntervalAccessible));
