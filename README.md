@@ -116,7 +116,15 @@ CAPCOM 官网战绩接口记录的 LP 和 MR 均为开赛前的分数, 单条回
 
 ## 设置与数据备份
 
-点击右上角齿轮按钮 (`Ctrl+,`) 打开设置窗口.
+点击右上角齿轮按钮 (`Ctrl+,`)，或从托盘右键菜单选择“设置”，打开设置窗口。
+
+底部的“检查更新”从 GitHub 最新正式 Release 的附件读取 Velopack 更新清单，检查和下载均沿用当前设置中的代理。检查结果以 toast 提示；发现新版本后，点击“立即更新”即可下载、校验并重启。下载期间可取消，关闭设置也会取消下载；“检查更新”始终可用于重新查询。右侧显示当前版本，旁边的 GitHub 链接打开项目主页。检查仅在手动点击时进行，不使用 GitHub REST API。
+
+发布新版本时，修改 `src/Sf6Prototype/Sf6Prototype.csproj` 中的 `Version`，并使用相同版本号创建正式 GitHub Release（例如 `v0.0.3`），将其设为 Latest。发布工作流会检查、打包，先上传 `.nupkg` 和便携 ZIP，再上传 `releases.win.json`。旧 Release 如果没有该清单，会提示“尚未发布自动更新包”。草稿、预发布版本和只有 tag 的提交不会作为正式更新提供。
+
+手动打包命令为 `pwsh -File scripts/Publish-Update.ps1`，文件生成在 `artifacts/releases`。更新包默认自带 .NET 运行时；`Publish-Packages.ps1` 仍生成带运行时和不带运行时两种便携 ZIP，两者都支持后续自动更新。更新工具版本与项目中的 Velopack 版本固定一致。
+
+新版便携目录包含根目录启动器、`Update.exe`、`current` 和外层 `Data`。从旧便携版升级时，先退出软件，将新版 ZIP 解压到旧软件目录，保留原有 `Data`，然后运行根目录的 `SF6 Recorder.exe`。后续自动更新只替换程序目录；战绩数据库、设置、加密登录文件和 WebView2 状态继续使用外层 `Data`。`--data-dir` 指定的目录也会在更新重启时保留。
 
 代理支持无认证的 `http://`, `https://` 和 `socks5://` 代理, 保存后对后续登录和同步生效.
 

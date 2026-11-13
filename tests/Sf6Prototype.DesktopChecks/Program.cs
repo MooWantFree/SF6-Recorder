@@ -94,18 +94,34 @@ internal static class Program
         setBusy.Invoke(main,[true,true,false]);
         Check(ring.Visibility==Visibility.Visible && ring.Indeterminate && sync.ToolTip is TextBlock,"Pagination and implicit history loads expose the same progress and stop action");
         setBusy.Invoke(main,[false,false,false]);
-        var opened=0;var exited=0;
-        using(var menu=new ModernTrayMenu(()=>opened++,()=>exited++))
+        var opened=0;var exited=0;var settingsOpened=0;
+        using(var menu=new ModernTrayMenu(()=>opened++,()=>settingsOpened++,()=>exited++))
         {
             Check(!menu.ShowImageMargin && !menu.ShowCheckMargin && !menu.IsHandleCreated,"Modern tray menus remove native gutters without opening a test menu");
-            menu.Items[0].PerformClick();menu.Items[2].PerformClick();
-            Check(opened==1 && exited==1,"Restyled tray commands still invoke open and exit independently");
+            var initialMenuSize=menu.Size;
+            menu.ApplyDpi((uint)menu.DeviceDpi);
+            Check(menu.Size==initialMenuSize,"The first tray menu already has its display-DPI size before WinForms calculates its cursor anchor");
+            menu.Items[0].PerformClick();menu.Items[1].PerformClick();menu.Items[3].PerformClick();
+            Check(opened==1 && settingsOpened==1 && exited==1,"Tray commands invoke open, settings and exit independently");
             menu.ApplyDpi(192);var tall=menu.Items[0].Height;menu.ApplyDpi(96);
             Check(tall==64 && menu.Items[0].Height==32,"Menu dimensions adapt to DPI without compounding repeated scaling");
             foreach(var dpi in new uint[]{96,120,144,192,240,288,96})
             {
                 menu.ApplyDpi(dpi);
                 Check(menu.Items.OfType<System.Windows.Forms.ToolStripMenuItem>().All(item=>menu.TextBounds(item).Width>=menu.MeasureLabel(item).Width && item.Height>=menu.MeasureLabel(item).Height && menu.Width>=item.Bounds.Right+menu.Padding.Right),$"Menu text and items fit the measured surface at {dpi} DPI");
+                var inset=(int)Math.Round(5*dpi/96d);
+                var bounds=menu.Items.Cast<System.Windows.Forms.ToolStripItem>().Select(item=>item.Bounds).ToArray();
+                // Native separators have a full-width, non-selectable surface;
+                // the action rows define the visible hover and content insets.
+                var rows=menu.Items.OfType<System.Windows.Forms.ToolStripMenuItem>().Select(item=>item.Bounds).ToArray();
+                Check(rows.All(b=>b.Left==inset && menu.ClientSize.Width-b.Right==inset) && rows[0].Top==inset &&
+                    menu.ClientSize.Height-rows[^1].Bottom==inset,$"Tray content has equal outer insets at {dpi} DPI (client={menu.ClientSize}, rows={string.Join("; ",rows)})");
+                menu.Items[0].Select();menu.PerformLayout();menu.Items[3].Select();menu.PerformLayout();
+                Check(menu.Items.Cast<System.Windows.Forms.ToolStripItem>().Select(item=>item.Bounds).SequenceEqual(bounds),
+                    $"Hover selection and repeated layout preserve the aligned item bounds at {dpi} DPI");
+                Check(menu.GetItemAt(new System.Drawing.Point(inset-1,bounds[0].Top+bounds[0].Height/2))==null &&
+                    menu.GetItemAt(new System.Drawing.Point(bounds[0].Left+1,bounds[0].Top+bounds[0].Height/2))==menu.Items[0],
+                    $"The hover hit area follows the inset content instead of covering the outer gutter at {dpi} DPI");
             }
         }
         var settings=new SettingsWindow(null!,new ConnectionSettings());
@@ -166,6 +182,7 @@ internal static class Program
         count+=AuxiliaryChromeChecks.Run();
         count+=LocalizationChecks.Run();
         count+=ToastChecks.Run();
+        count+=UpdateUiChecks.Run();
         Console.WriteLine($"Passed {count} headless desktop checks.");
     }
 }

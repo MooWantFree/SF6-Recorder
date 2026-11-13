@@ -1,0 +1,43 @@
+name: Publish automatic update packages
+on:
+  release:
+    types: [published]
+permissions:
+  contents: write
+jobs:
+  publish:
+    if: ${{ !github.event.release.prerelease }}
+    runs-on: windows-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.release.tag_name }}
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+      - name: Validate release version
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          [xml]$project=Get-Content src/Sf6Prototype/Sf6Prototype.csproj
+          if ($env:RELEASE_TAG -cne ('v'+$project.Project.PropertyGroup.Version)) { throw 'Release tag must match the project Version.' }
+      - name: Verify
+        run: ./build.ps1 -ChecksOnly
+      - name: Build self-contained update packages
+        run: ./scripts/Publish-Update.ps1
+      - name: Upload packages, then publish the update feed
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          $packages=@(Get-ChildItem artifacts/releases -File | Where-Object Extension -In '.nupkg','.zip' | ForEach-Object FullName)
+          gh release upload $env:RELEASE_TAG @packages
+          if($LASTEXITCODE -ne 0){throw 'Package upload failed; feed was not published.'}
+          gh release upload $env:RELEASE_TAG artifacts/releases/releases.win.json
+          if($LASTEXITCODE -ne 0){throw 'Update feed upload failed.'}

@@ -1,11 +1,21 @@
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
+using Velopack;
+using Velopack.Locators;
 
 namespace Sf6Prototype;
 
 public partial class App : Application
 {
+    [STAThread]
+    public static void Main(string[] args)
+    {
+        VelopackApp.Build().SetArgs(args).SetAutoApplyOnStartup(false).Run();
+        var app = new App();
+        app.InitializeComponent();
+        app.Run();
+    }
     private FileStream? _instanceLock;
     public static string DataDirectory { get; private set; } = "";
     public static bool AutoSync { get; private set; }
@@ -28,7 +38,7 @@ public partial class App : Application
             try { using var p = Process.GetProcessById(id); if (!p.WaitForExit(20_000)) throw new IOException(Strings.PreviousProcessRunning); }
             catch (ArgumentException) { }
         }
-        DataDirectory = DataPaths.Resolve(AppContext.BaseDirectory, Arg("--data-dir"));
+        DataDirectory = DataPaths.Resolve(AppContext.BaseDirectory, Arg("--data-dir"), VelopackLocator.Current.RootAppDir);
         AutoSync = e.Args.Contains("--sync-on-start");
         Capture = e.Args.Contains("--capture");
         if(Capture && DateTimeOffset.TryParse(Arg("--capture-session-start"),System.Globalization.CultureInfo.InvariantCulture,

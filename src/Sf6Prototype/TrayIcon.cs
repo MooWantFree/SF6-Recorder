@@ -14,11 +14,11 @@ public sealed class TrayIcon : IDisposable
     private readonly HwndSource _source;
     private Drawing.Icon? _small,_large;
     private bool _disposed;
-    public TrayIcon(Window window,Action show,Action exit)
+    public TrayIcon(Window window,Action show,Action settings,Action exit)
     {
         _window=window;
         _source=HwndSource.FromHwnd(new WindowInteropHelper(window).Handle);
-        _menu=new ModernTrayMenu(()=>window.Dispatcher.BeginInvoke(show),()=>window.Dispatcher.BeginInvoke(exit));
+        _menu=new ModernTrayMenu(()=>window.Dispatcher.BeginInvoke(show),()=>window.Dispatcher.BeginInvoke(settings),()=>window.Dispatcher.BeginInvoke(exit));
         _menu.Opening+=(_,_)=>_menu.ApplyDpi((uint)_menu.DeviceDpi);
         _tray=new Forms.NotifyIcon {Text=Strings.AppTitle,ContextMenuStrip=_menu};
         _tray.MouseDoubleClick+=(_,e)=>{if(e.Button==Forms.MouseButtons.Left) window.Dispatcher.BeginInvoke(show);};

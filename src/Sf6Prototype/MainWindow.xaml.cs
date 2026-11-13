@@ -58,7 +58,7 @@ public partial class MainWindow : ChromeWindow
         InitializeWindowChrome(WindowSurface,TitleBar,MaximizeButton);
         InitializeRefreshProgress();
         InitializeMatchEndStatus();
-        SourceInitialized+=(_,_)=> { if(!App.Capture) _tray=new TrayIcon(this,ShowMainPanel,()=>_=ExitApplicationAsync()); };
+        SourceInitialized+=(_,_)=> { if(!App.Capture) _tray=new TrayIcon(this,ShowMainPanel,OpenSettingsFromTray,()=>_=ExitApplicationAsync()); };
         StateChanged+=(_,_)=> { if(WindowState!=WindowState.Minimized) _restoreState=WindowState; };
         if (App.StartSize is { } size) { Width = size.Width; Height = size.Height; }
         AccountPopup.Opened += (_, _) => UiCapture.SaveLater((FrameworkElement)AccountPopup.Child, "ui-account-menu.png");
@@ -352,9 +352,19 @@ public partial class MainWindow : ChromeWindow
         RefreshAccountUi(); ReloadLocal(); SetStatus("logged_out", Strings.SignedOutLocalKept);
     }
     private void Settings_Click(object sender, RoutedEventArgs e) => OpenSettings();
+    private void OpenSettingsFromTray()
+    {
+        if(_exitRequested) return;
+        ShowMainPanel();
+        if(OwnedWindows.OfType<SettingsWindow>().FirstOrDefault() is { } existing)
+        { existing.Show(); existing.Activate(); return; }
+        if(IsEnabled) OpenSettings();
+    }
     private async void OpenSettings()
     {
         if (!_ready || _exitRequested || _savingSettings) return;
+        if(OwnedWindows.OfType<SettingsWindow>().FirstOrDefault() is { } existing)
+        { existing.Activate(); return; }
         var dialog = CreateSettingsWindow();
         if (dialog.ShowDialog() != true || dialog.Result == null) return;
         _savingSettings=true;
@@ -439,7 +449,7 @@ public partial class MainWindow : ChromeWindow
 
     private SettingsWindow CreateSettingsWindow()
     {
-        var dialog=new SettingsWindow(this,_settings) {BeforeImport=()=>CancelDownloadsAsync()};
+        var dialog=new SettingsWindow(this,_settings) {BeforeImport=()=>CancelDownloadsAsync(),ApplyUpdate=ApplyAppUpdateAsync};
         dialog.DatabaseImported+=()=>
         {
             _pagers.Clear(); History.AllowPageUpdates(); ReloadLocal(preserveViewport:true);
@@ -1050,7 +1060,12 @@ public partial class MainWindow : ChromeWindow
         foreach(var window in _hiddenOwnedWindows.Where(w=>OwnedWindows.OfType<Window>().Contains(w)).ToArray()) window.Show();
         _hiddenOwnedWindows.Clear();
     }
-    public async Task ExitApplicationAsync()
+    private async Task ApplyAppUpdateAsync(UpdateRelease release)
+    {
+        var schedule=await GitHubUpdates.PrepareRestartAsync(release,App.DataDirectory);
+        await ExitApplicationAsync(schedule);
+    }
+    public async Task ExitApplicationAsync(Action? beforeExit=null)
     {
         if(_exitRequested) return;
         _exitRequested=true;_closeRequested=true;
@@ -1058,10 +1073,18 @@ public partial class MainWindow : ChromeWindow
         await StopMatchEndDetectionAsync();
         AccountPopup.IsOpen=PlayerSearchPopup.IsOpen=false;
         var settings=OwnedWindows.OfType<SettingsWindow>().ToArray();
-        foreach(var dialog in settings) dialog.CancelTransfer();
+        foreach(var dialog in settings)
+            if(beforeExit==null || !dialog.PendingTransfer.IsCompleted) dialog.CancelTransfer();
         await CancelDownloadsAsync();
         await Task.WhenAll(settings.Select(w=>w.PendingTransfer));
         CloseOpponents();
+        try {beforeExit?.Invoke();}
+        catch
+        {
+            _exitRequested=_closeRequested=false;
+            ConfigureAutoRefresh();ConfigureRefreshReminder();await ConfigureMatchEndDetectionAsync();
+            throw;
+        }
         _exitReady=true;Close();
     }
     protected override void OnClosed(EventArgs e)

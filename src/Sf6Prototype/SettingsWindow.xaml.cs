@@ -5,6 +5,8 @@ using System.Windows.Controls;
 using System.Globalization;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Net;
+using System.Net.Http;
 using Shape = System.Windows.Shapes.Shape;
 using Microsoft.Win32;
 using System.Windows.Threading;
@@ -18,15 +20,22 @@ public partial class SettingsWindow : ChromeWindow
     private bool _syncingIntervals;
     private Task _transfer=Task.CompletedTask;
     private bool _waitingToClose;
+    private static UpdateRelease? _availableUpdate;
+    private CancellationTokenSource? _updateCancellation;
+    private Task _updateDownload=Task.CompletedTask;
+    public Func<UpdateRelease,Task>? ApplyUpdate {get;set;}
     private readonly DispatcherTimer _gameStatusTimer=new() {Interval=TimeSpan.FromSeconds(2)};
     public Func<Task>? BeforeImport { get; set; }
     public event Action? DatabaseImported;
-    public Task PendingTransfer=>_transfer;
+    public Task PendingTransfer=>WaitForTransfersAsync();
+    private async Task WaitForTransfersAsync()
+    { try {await Task.WhenAll(_transfer,_updateDownload);} catch { /* Individual operations report their own errors. */ } }
     public void CancelTransfer()=>_closing.Cancel();
     public ConnectionSettings? Result { get; private set; }
     public SettingsWindow(Window owner, ConnectionSettings current)
     {
         InitializeComponent(); InitializeWindowChrome(WindowSurface,TitleBar); Owner = owner; _current = current;
+        UpdateReleaseButton();
         ProxyEnabled.IsChecked = current.UseProxy; ProxyAddressBox.Text = current.ProxyAddress;
         ReminderSecondsBox.Text=current.RefreshReminderSeconds.ToString(CultureInfo.InvariantCulture);
         AutoRefreshSecondsBox.Text=current.AutoRefreshSeconds.ToString(CultureInfo.InvariantCulture);
@@ -68,6 +77,106 @@ public partial class SettingsWindow : ChromeWindow
         }
         catch(Exception ex) when(ex is Win32Exception or IOException or UnauthorizedAccessException)
         {ShowError(Strings.OpenLogFolderFailed);}
+    }
+    private void UpdateReleaseButton()
+    {
+        CheckUpdatesButton.SetResourceReference(ContentControl.ContentProperty,
+            "I18n.CheckUpdates");
+        CheckUpdatesButton.SetResourceReference(StyleProperty,
+            _availableUpdate == null ? typeof(Button) : "AccentButton");
+        CheckUpdatesButton.ToolTip = _availableUpdate == null ? null :
+            Localization.Format(Strings.UpdateAvailable, $"v{_availableUpdate.Version.ToString(3)}");
+        InstallUpdateButton.Visibility = _availableUpdate == null ? Visibility.Collapsed : Visibility.Visible;
+    }
+    private async void CheckUpdates_Click(object sender,RoutedEventArgs e)
+    {
+        if (!CheckUpdatesButton.IsEnabled) return;
+        ConnectionSettings settings;
+        try { settings = Draft(includeIntervals:false); }
+        catch (ArgumentException ex) { UpdateToast.Show(ex.Message,true); return; }
+        await CheckForUpdatesAsync(() => GitHubUpdates.CheckAsync(settings,_closing.Token));
+    }
+    private async Task CheckForUpdatesAsync(Func<Task<UpdateCheckResult>> check)
+    {
+        CheckUpdatesButton.IsEnabled = false;
+        InstallUpdateButton.IsEnabled = false;
+        ImportButton.IsEnabled=BackupButton.IsEnabled=false;
+        CheckUpdatesButton.SetResourceReference(ContentControl.ContentProperty,"I18n.CheckingUpdates");
+        try
+        {
+            var result = await check();
+            if (_closing.IsCancellationRequested) return;
+            if (result is {Status:UpdateStatus.Available,Release:{ } release})
+            {
+                _availableUpdate = release;
+                UpdateToast.Show(Localization.Format(Strings.UpdateAvailable,$"v{release.Version.ToString(3)}"),
+                    actionText:Strings.InstallUpdate,action:()=>InstallUpdate_Click(this,new RoutedEventArgs()));
+            }
+            else
+            {
+                _availableUpdate = null;
+                UpdateToast.Show(result.Status switch {UpdateStatus.NoRelease=>Strings.NoUpdatePackage,
+                    UpdateStatus.NotInstalled=>Strings.UpdatePortableRequired,_=>Strings.NoUpdates});
+            }
+        }
+        catch (OperationCanceledException) when (_closing.IsCancellationRequested) { }
+        catch (Exception ex) when (ex is HttpRequestException or OperationCanceledException or JsonException or InvalidDataException)
+        {
+            if (!_closing.IsCancellationRequested)
+                UpdateToast.Show(ex is HttpRequestException {StatusCode:HttpStatusCode.TooManyRequests}
+                    ? Strings.UpdateCheckRateLimited : Strings.UpdateCheckFailed,true);
+        }
+        finally
+        {
+            if (!_closing.IsCancellationRequested)
+            { CheckUpdatesButton.IsEnabled = InstallUpdateButton.IsEnabled = ImportButton.IsEnabled = BackupButton.IsEnabled = true; UpdateReleaseButton(); }
+        }
+    }
+    private async void InstallUpdate_Click(object sender,RoutedEventArgs e)
+    {
+        if(_updateCancellation != null) {_updateCancellation.Cancel();return;}
+        if(_availableUpdate is not { } release || ApplyUpdate == null || !InstallUpdateButton.IsEnabled) return;
+        ConnectionSettings settings;
+        try {settings=Draft(includeIntervals:false);}
+        catch(ArgumentException ex) {UpdateToast.Show(ex.Message,true);return;}
+        using var cancellation=CancellationTokenSource.CreateLinkedTokenSource(_closing.Token);
+        _updateCancellation=cancellation;
+        ImportButton.IsEnabled=BackupButton.IsEnabled=SaveButton.IsEnabled=false;
+        CheckUpdatesButton.IsEnabled=false;
+        InstallUpdateButton.SetResourceReference(ContentControl.ContentProperty,"I18n.Cancel");
+        UpdateToast.BeginProgress(Localization.Format(Strings.DownloadingUpdate,0));
+        try
+        {
+            var progress=new Progress<int>(value=>
+            {if(!cancellation.IsCancellationRequested) UpdateToast.UpdateProgress(Localization.Format(Strings.DownloadingUpdate,value));});
+            _updateDownload=GitHubUpdates.DownloadAsync(release,settings,progress,cancellation.Token);
+            await _updateDownload;
+            cancellation.Token.ThrowIfCancellationRequested();
+            InstallUpdateButton.IsEnabled=false;
+            UpdateToast.UpdateProgress(Strings.ApplyingUpdate);
+            await ApplyUpdate(release);
+        }
+        catch(OperationCanceledException) when(cancellation.IsCancellationRequested)
+        {if(!_closing.IsCancellationRequested) UpdateToast.CompleteProgress(Strings.UpdateCancelled);}
+        catch(Exception)
+        {if(!_closing.IsCancellationRequested) UpdateToast.CompleteProgress(Strings.UpdateInstallFailed,true,Strings.ViewUpdate,()=>OpenWebPage(release.Page));}
+        finally
+        {
+            _updateCancellation=null;
+            if(!_closing.IsCancellationRequested)
+            {
+                CheckUpdatesButton.IsEnabled=InstallUpdateButton.IsEnabled=true;
+                ImportButton.IsEnabled=BackupButton.IsEnabled=SaveButton.IsEnabled=true;
+                InstallUpdateButton.SetResourceReference(ContentControl.ContentProperty,"I18n.InstallUpdate");
+            }
+        }
+    }
+    private void GitHub_Click(object sender,RoutedEventArgs e) => OpenWebPage(new Uri(GitHubUpdates.RepositoryUrl));
+    private void OpenWebPage(Uri page)
+    {
+        try { Process.Start(new ProcessStartInfo {FileName=page.AbsoluteUri,UseShellExecute=true}); }
+        catch (Exception ex) when (ex is Win32Exception or InvalidOperationException)
+        { UpdateToast.Show(Strings.OpenWebPageFailed,true); }
     }
     private ConnectionSettings Draft(bool includeIntervals=true)
     {
@@ -119,7 +228,7 @@ public partial class SettingsWindow : ChromeWindow
     }
     private void ShowError(string? message) { ErrorText.Text = message ?? ""; ErrorText.Visibility = message == null ? Visibility.Collapsed : Visibility.Visible; }
     private void SetTransferBusy(bool busy)
-    { BackupButton.IsEnabled=ImportButton.IsEnabled=SaveButton.IsEnabled=!busy; }
+    { BackupButton.IsEnabled=ImportButton.IsEnabled=SaveButton.IsEnabled=InstallUpdateButton.IsEnabled=CheckUpdatesButton.IsEnabled=!busy; }
     private async void Backup_Click(object sender,RoutedEventArgs e)
     {
         var stamp=DateTimeOffset.UtcNow.ToOffset(TimeSpan.FromHours(8)).ToString("yyyyMMdd-HHmmss");
@@ -164,14 +273,14 @@ public partial class SettingsWindow : ChromeWindow
     }
     protected override void OnClosing(CancelEventArgs e)
     {
-        if(!_transfer.IsCompleted)
+        if(!_transfer.IsCompleted || !_updateDownload.IsCompleted)
         {
             e.Cancel=true; _closing.Cancel();
             if(!_waitingToClose) { _waitingToClose=true; _=CloseAfterTransferAsync(); }
         }
         base.OnClosing(e);
     }
-    private async Task CloseAfterTransferAsync() { await _transfer; Close(); }
+    private async Task CloseAfterTransferAsync() { await PendingTransfer; Close(); }
     private void Save_Click(object sender, RoutedEventArgs e)
     {
         try { Result = Draft(); DialogResult = true; }

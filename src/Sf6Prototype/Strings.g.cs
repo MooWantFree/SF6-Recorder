@@ -24,6 +24,7 @@ public static class Strings
     public static string ApiIntervalAccessible => Localization.Get(nameof(ApiIntervalAccessible));
     public static string ApiIntervalHelp => Localization.Get(nameof(ApiIntervalHelp));
     public static string ApiIntervalPresets => Localization.Get(nameof(ApiIntervalPresets));
+    public static string ApplyingUpdate => Localization.Get(nameof(ApplyingUpdate));
     public static string AppTitle => Localization.Get(nameof(AppTitle));
     public static string AskEveryTime => Localization.Get(nameof(AskEveryTime));
     public static string AutoRefresh => Localization.Get(nameof(AutoRefresh));
@@ -62,6 +63,8 @@ public static class Strings
     public static string ChartHelp => Localization.Get(nameof(ChartHelp));
     public static string CheckingSession => Localization.Get(nameof(CheckingSession));
     public static string CheckingSessionProgress => Localization.Get(nameof(CheckingSessionProgress));
+    public static string CheckingUpdates => Localization.Get(nameof(CheckingUpdates));
+    public static string CheckUpdates => Localization.Get(nameof(CheckUpdates));
     public static string ChooseAppBackup => Localization.Get(nameof(ChooseAppBackup));
     public static string ChooseDifferentDatabase => Localization.Get(nameof(ChooseDifferentDatabase));
     public static string Clear => Localization.Get(nameof(Clear));
@@ -85,6 +88,7 @@ public static class Strings
     public static string CopyUid => Localization.Get(nameof(CopyUid));
     public static string CurrentMatch => Localization.Get(nameof(CurrentMatch));
     public static string CurrentSeason => Localization.Get(nameof(CurrentSeason));
+    public static string CurrentVersion => Localization.Get(nameof(CurrentVersion));
     public static string CustomRoom => Localization.Get(nameof(CustomRoom));
     public static string CustomShort => Localization.Get(nameof(CustomShort));
     public static string Database => Localization.Get(nameof(Database));
@@ -98,6 +102,7 @@ public static class Strings
     public static string DayGroupDate => Localization.Get(nameof(DayGroupDate));
     public static string DayGroupDateYear => Localization.Get(nameof(DayGroupDateYear));
     public static string DismissNotice => Localization.Get(nameof(DismissNotice));
+    public static string DownloadingUpdate => Localization.Get(nameof(DownloadingUpdate));
     public static string DrawCountSuffix => Localization.Get(nameof(DrawCountSuffix));
     public static string DrawSummarySuffix => Localization.Get(nameof(DrawSummarySuffix));
     public static string DuplicateContent => Localization.Get(nameof(DuplicateContent));
@@ -150,6 +155,8 @@ public static class Strings
     public static string Importing => Localization.Get(nameof(Importing));
     public static string IncludeUnranked => Localization.Get(nameof(IncludeUnranked));
     public static string IncompleteHistoryCount => Localization.Get(nameof(IncompleteHistoryCount));
+    public static string InstallUpdate => Localization.Get(nameof(InstallUpdate));
+    public static string InstallUpdateHelp => Localization.Get(nameof(InstallUpdateHelp));
     public static string InvalidAccountId => Localization.Get(nameof(InvalidAccountId));
     public static string InvalidApiInterval => Localization.Get(nameof(InvalidApiInterval));
     public static string InvalidAutoRefresh => Localization.Get(nameof(InvalidAutoRefresh));
@@ -230,6 +237,7 @@ public static class Strings
     public static string NoMrForMatches => Localization.Get(nameof(NoMrForMatches));
     public static string NoPlayerUid => Localization.Get(nameof(NoPlayerUid));
     public static string NoProfileToSave => Localization.Get(nameof(NoProfileToSave));
+    public static string NoPublishedRelease => Localization.Get(nameof(NoPublishedRelease));
     public static string NoRankedRecords => Localization.Get(nameof(NoRankedRecords));
     public static string NoRankRecords => Localization.Get(nameof(NoRankRecords));
     public static string NoRecentRankedMatches => Localization.Get(nameof(NoRecentRankedMatches));
@@ -238,16 +246,20 @@ public static class Strings
     public static string NoScores => Localization.Get(nameof(NoScores));
     public static string NoSearchHistory => Localization.Get(nameof(NoSearchHistory));
     public static string NoSeasonMr => Localization.Get(nameof(NoSeasonMr));
+    public static string NoUpdatePackage => Localization.Get(nameof(NoUpdatePackage));
+    public static string NoUpdates => Localization.Get(nameof(NoUpdates));
     public static string Off => Localization.Get(nameof(Off));
     public static string OfficialCapcomSignIn => Localization.Get(nameof(OfficialCapcomSignIn));
     public static string OfficialMatchScore => Localization.Get(nameof(OfficialMatchScore));
     public static string OneDay => Localization.Get(nameof(OneDay));
     public static string OneHour => Localization.Get(nameof(OneHour));
     public static string OneSecond => Localization.Get(nameof(OneSecond));
+    public static string OpenGitHub => Localization.Get(nameof(OpenGitHub));
     public static string OpeningCapcom => Localization.Get(nameof(OpeningCapcom));
     public static string OpenLogFolder => Localization.Get(nameof(OpenLogFolder));
     public static string OpenLogFolderFailed => Localization.Get(nameof(OpenLogFolderFailed));
     public static string OpenMainPanel => Localization.Get(nameof(OpenMainPanel));
+    public static string OpenWebPageFailed => Localization.Get(nameof(OpenWebPageFailed));
     public static string OperationFailed => Localization.Get(nameof(OperationFailed));
     public static string OpponentCharacter => Localization.Get(nameof(OpponentCharacter));
     public static string OutcomeDraw => Localization.Get(nameof(OutcomeDraw));
@@ -416,8 +428,14 @@ public static class Strings
     public static string UnknownCategory => Localization.Get(nameof(UnknownCategory));
     public static string UnknownRoundResult => Localization.Get(nameof(UnknownRoundResult));
     public static string UnknownSummarySuffix => Localization.Get(nameof(UnknownSummarySuffix));
+    public static string UpdateAvailable => Localization.Get(nameof(UpdateAvailable));
+    public static string UpdateCancelled => Localization.Get(nameof(UpdateCancelled));
+    public static string UpdateCheckFailed => Localization.Get(nameof(UpdateCheckFailed));
+    public static string UpdateCheckRateLimited => Localization.Get(nameof(UpdateCheckRateLimited));
     public static string UpdatedAtPrefix => Localization.Get(nameof(UpdatedAtPrefix));
     public static string UpdateFailed => Localization.Get(nameof(UpdateFailed));
+    public static string UpdateInstallFailed => Localization.Get(nameof(UpdateInstallFailed));
+    public static string UpdatePortableRequired => Localization.Get(nameof(UpdatePortableRequired));
     public static string UpdatingCharacterProfiles => Localization.Get(nameof(UpdatingCharacterProfiles));
     public static string UpdatingProfilesProgress => Localization.Get(nameof(UpdatingProfilesProgress));
     public static string UseProxy => Localization.Get(nameof(UseProxy));
@@ -425,6 +443,7 @@ public static class Strings
     public static string ViewedPlayer => Localization.Get(nameof(ViewedPlayer));
     public static string ViewMatches => Localization.Get(nameof(ViewMatches));
     public static string ViewMatchesAndScores => Localization.Get(nameof(ViewMatchesAndScores));
+    public static string ViewUpdate => Localization.Get(nameof(ViewUpdate));
     public static string WaitingForRefresh => Localization.Get(nameof(WaitingForRefresh));
     public static string WaitingForResponse => Localization.Get(nameof(WaitingForResponse));
     public static string WaitingForSignIn => Localization.Get(nameof(WaitingForSignIn));

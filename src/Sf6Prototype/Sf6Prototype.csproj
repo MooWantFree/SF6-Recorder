@@ -9,12 +9,16 @@
     <AssemblyName>SF6 Recorder</AssemblyName>
     <AssemblyTitle>SF6 Recorder</AssemblyTitle>
     <Product>SF6 Recorder</Product>
+    <Version>0.0.2</Version>
+    <StartupObject>Sf6Prototype.App</StartupObject>
     <Description>SF6 Recorder</Description>
     <RootNamespace>Sf6Prototype</RootNamespace>
     <NeutralLanguage>en</NeutralLanguage>
     <ApplicationIcon>Assets\app.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <ApplicationDefinition Remove="App.xaml"/>
+    <Page Include="App.xaml"/>
     <Using Remove="System.Windows.Forms"/>
     <Using Remove="System.Drawing"/>
     <Resource Include="Assets\app.ico"/>
@@ -22,5 +26,6 @@
     <EmbeddedResource Include="Resources\CharacterNames.json" LogicalName="Sf6Prototype.Resources.CharacterNames.json"/>
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4314.35" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.15" />
+    <PackageReference Include="Velopack" Version="1.2.161" />
   </ItemGroup>
 </Project>

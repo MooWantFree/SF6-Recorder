@@ -142,7 +142,13 @@
     </ScrollViewer>
     <TextBlock x:Name="ErrorText" Foreground="{StaticResource Loss}" Margin="2,10,0,0" TextWrapping="Wrap" Visibility="Collapsed"/>
     <Grid Margin="0,18,0,0"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-      <Button x:Name="OpenLogsButton" Content="{DynamicResource I18n.OpenLogFolder}" Click="OpenLogs_Click" HorizontalAlignment="Left" AutomationProperties.Name="{DynamicResource I18n.OpenLogFolder}"/>
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+        <Button x:Name="OpenLogsButton" Content="{DynamicResource I18n.OpenLogFolder}" Click="OpenLogs_Click" AutomationProperties.Name="{DynamicResource I18n.OpenLogFolder}"/>
+        <Button x:Name="CheckUpdatesButton" Content="{DynamicResource I18n.CheckUpdates}" Click="CheckUpdates_Click" Margin="8,0,0,0"/>
+        <Button x:Name="InstallUpdateButton" Content="{DynamicResource I18n.InstallUpdate}" Click="InstallUpdate_Click" Margin="8,0,0,0" Style="{StaticResource AccentButton}" Visibility="Collapsed" ToolTip="{DynamicResource I18n.InstallUpdateHelp}"/>
+        <TextBlock x:Name="VersionText" Text="{x:Static local:GitHubUpdates.VersionLabel}" Foreground="{StaticResource Ink2}" VerticalAlignment="Center" Margin="12,0,4,0" ToolTip="{DynamicResource I18n.CurrentVersion}" AutomationProperties.Name="{DynamicResource I18n.CurrentVersion}"/>
+        <Button x:Name="GitHubButton" Content="GitHub ↗" Style="{StaticResource GhostButton}" Padding="6,6" Click="GitHub_Click" ToolTip="{x:Static local:GitHubUpdates.RepositoryUrl}" AutomationProperties.Name="{DynamicResource I18n.OpenGitHub}"/>
+      </StackPanel>
       <StackPanel Grid.Column="1" Orientation="Horizontal">
         <Button Content="{DynamicResource I18n.Cancel}" IsCancel="True" MinWidth="76" Margin="0,0,8,0"/>
         <Button x:Name="SaveButton" Content="{DynamicResource I18n.Save}" IsDefault="True" Click="Save_Click" Style="{StaticResource AccentButton}" MinWidth="76"/>
@@ -150,5 +156,6 @@
     </Grid>
   </StackPanel>
   </Border>
+    <local:StatusToast x:Name="UpdateToast" Grid.Row="1" Panel.ZIndex="10" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="24,0,24,70"/>
   </Grid>
 </local:ChromeWindow>

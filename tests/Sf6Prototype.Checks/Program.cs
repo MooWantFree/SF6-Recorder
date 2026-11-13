@@ -70,6 +70,7 @@ assertions += await RankQueryChecks.Run();
 assertions += NavigationChecks.Run();
 assertions += await ScorePagingChecks.Run();
 assertions += SettingsChecks.Run();
+assertions += await GitHubUpdateChecks.Run();
 assertions += MatchEndDetectionChecks.Run();
 assertions += await MatchEndRefreshOverlapChecks.Run();
 assertions += MatchEndSampleLogChecks.Run();

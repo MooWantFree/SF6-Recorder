@@ -15,8 +15,8 @@ if ($LASTEXITCODE -ne 0) { throw 'Checks failed.' }
 & $dotnetPath run --project 'tests\Sf6Prototype.DesktopChecks' --configuration Release
 if ($LASTEXITCODE -ne 0) { throw 'Headless desktop checks failed.' }
 if ($ChecksOnly) { return }
-& $dotnetPath publish 'src\Sf6Prototype\Sf6Prototype.csproj' -c Release -r win-x64 --self-contained false -o 'artifacts\app'
-if ($LASTEXITCODE -ne 0) { throw 'Build failed.' }
+& (Join-Path $PSScriptRoot 'scripts\Publish-Update.ps1') -OutputDirectory '.local\delivered-update' -FrameworkDependent
+& (Join-Path $PSScriptRoot 'scripts\Install-PortableBuild.ps1') -Package '.local\delivered-update\SF6Recorder-win-Portable.zip'
 # Remove the former application identity after a successful publish; keep Data intact.
 $legacyFiles = @('Sf6Prototype.exe', 'Sf6Prototype.dll', 'Sf6Prototype.pdb', 'Sf6Prototype.deps.json', 'Sf6Prototype.runtimeconfig.json')
 $legacyFiles += @('ja', 'zh-Hans', 'zh-Hant') | ForEach-Object { "$_\Sf6Prototype.resources.dll" }

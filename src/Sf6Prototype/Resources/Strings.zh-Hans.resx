@@ -1298,4 +1298,23 @@
   <data name="SessionBaseline" xml:space="preserve"><value>首场赛前分数</value></data>
   <data name="CollapseRecentMatches" xml:space="preserve"><value>折叠最近比赛</value></data>
   <data name="ExpandRecentMatches" xml:space="preserve"><value>展开最近比赛</value></data>
+  <data name="CheckUpdates" xml:space="preserve"><value>检查更新</value></data>
+  <data name="CheckingUpdates" xml:space="preserve"><value>检查中…</value></data>
+  <data name="ViewUpdate" xml:space="preserve"><value>查看更新</value></data>
+  <data name="CurrentVersion" xml:space="preserve"><value>当前版本</value></data>
+  <data name="OpenGitHub" xml:space="preserve"><value>打开 GitHub 项目</value></data>
+  <data name="UpdateAvailable" xml:space="preserve"><value>发现新版本 {0}。</value></data>
+  <data name="NoUpdates" xml:space="preserve"><value>暂无更新。</value></data>
+  <data name="NoPublishedRelease" xml:space="preserve"><value>未找到已发布的正式版本。</value></data>
+  <data name="UpdateCheckRateLimited" xml:space="preserve"><value>GitHub 请求受限，请稍后重试。</value></data>
+  <data name="UpdateCheckFailed" xml:space="preserve"><value>检查更新失败，请稍后重试。</value></data>
+  <data name="OpenWebPageFailed" xml:space="preserve"><value>无法打开网页。</value></data>
+  <data name="InstallUpdate" xml:space="preserve"><value>立即更新</value></data>
+  <data name="InstallUpdateHelp" xml:space="preserve"><value>下载完成后自动重启更新。</value></data>
+  <data name="DownloadingUpdate" xml:space="preserve"><value>正在下载更新… {0}%</value></data>
+  <data name="ApplyingUpdate" xml:space="preserve"><value>正在重启更新…</value></data>
+  <data name="UpdateCancelled" xml:space="preserve"><value>已取消更新。</value></data>
+  <data name="UpdateInstallFailed" xml:space="preserve"><value>更新失败，已保留当前版本和数据。</value></data>
+  <data name="NoUpdatePackage" xml:space="preserve"><value>尚未发布自动更新包。</value></data>
+  <data name="UpdatePortableRequired" xml:space="preserve"><value>请使用支持自动更新的便携版。</value></data>
 </root>

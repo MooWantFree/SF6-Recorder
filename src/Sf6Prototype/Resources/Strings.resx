@@ -1282,7 +1282,7 @@ The saved sign-in will be removed from this device. Local match records will be 
     <value>Sampling frequency must be 0.5–10 per second.</value>
   </data>
   <data name="OpenLogFolder" xml:space="preserve">
-    <value>Open log folder</value>
+    <value>Open logs</value>
   </data>
   <data name="OpenLogFolderFailed" xml:space="preserve">
     <value>Unable to open the log folder.</value>
@@ -1298,4 +1298,23 @@ The saved sign-in will be removed from this device. Local match records will be 
   <data name="SessionBaseline" xml:space="preserve"><value>Score before the first match</value></data>
   <data name="CollapseRecentMatches" xml:space="preserve"><value>Collapse recent matches</value></data>
   <data name="ExpandRecentMatches" xml:space="preserve"><value>Expand recent matches</value></data>
+  <data name="CheckUpdates" xml:space="preserve"><value>Check updates</value></data>
+  <data name="CheckingUpdates" xml:space="preserve"><value>Checking…</value></data>
+  <data name="ViewUpdate" xml:space="preserve"><value>View update</value></data>
+  <data name="CurrentVersion" xml:space="preserve"><value>Current version</value></data>
+  <data name="OpenGitHub" xml:space="preserve"><value>Open project on GitHub</value></data>
+  <data name="UpdateAvailable" xml:space="preserve"><value>Version {0} is available.</value></data>
+  <data name="NoUpdates" xml:space="preserve"><value>No updates available.</value></data>
+  <data name="NoPublishedRelease" xml:space="preserve"><value>No published stable release was found.</value></data>
+  <data name="UpdateCheckRateLimited" xml:space="preserve"><value>GitHub request limit reached. Try again later.</value></data>
+  <data name="UpdateCheckFailed" xml:space="preserve"><value>Could not check for updates. Try again later.</value></data>
+  <data name="OpenWebPageFailed" xml:space="preserve"><value>Unable to open the webpage.</value></data>
+  <data name="InstallUpdate" xml:space="preserve"><value>Update now</value></data>
+  <data name="InstallUpdateHelp" xml:space="preserve"><value>Download the update and restart the app.</value></data>
+  <data name="DownloadingUpdate" xml:space="preserve"><value>Downloading update… {0}%</value></data>
+  <data name="ApplyingUpdate" xml:space="preserve"><value>Restarting to update…</value></data>
+  <data name="UpdateCancelled" xml:space="preserve"><value>Update cancelled.</value></data>
+  <data name="UpdateInstallFailed" xml:space="preserve"><value>Update failed. Your current version and data are kept.</value></data>
+  <data name="NoUpdatePackage" xml:space="preserve"><value>No automatic update package has been published yet.</value></data>
+  <data name="UpdatePortableRequired" xml:space="preserve"><value>Use the auto-updating portable package to enable updates.</value></data>
 </root>

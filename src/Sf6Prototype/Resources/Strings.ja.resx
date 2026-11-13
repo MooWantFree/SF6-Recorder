@@ -1298,4 +1298,23 @@
   <data name="SessionBaseline" xml:space="preserve"><value>最初の対戦前のスコア</value></data>
   <data name="CollapseRecentMatches" xml:space="preserve"><value>最近の対戦を折りたたむ</value></data>
   <data name="ExpandRecentMatches" xml:space="preserve"><value>最近の対戦を展開</value></data>
+  <data name="CheckUpdates" xml:space="preserve"><value>更新を確認</value></data>
+  <data name="CheckingUpdates" xml:space="preserve"><value>確認中…</value></data>
+  <data name="ViewUpdate" xml:space="preserve"><value>更新を表示</value></data>
+  <data name="CurrentVersion" xml:space="preserve"><value>現在のバージョン</value></data>
+  <data name="OpenGitHub" xml:space="preserve"><value>GitHub プロジェクトを開く</value></data>
+  <data name="UpdateAvailable" xml:space="preserve"><value>新しいバージョン {0} があります。</value></data>
+  <data name="NoUpdates" xml:space="preserve"><value>更新はありません。</value></data>
+  <data name="NoPublishedRelease" xml:space="preserve"><value>公開済みの正式リリースが見つかりません。</value></data>
+  <data name="UpdateCheckRateLimited" xml:space="preserve"><value>GitHub のリクエスト上限に達しました。時間をおいて再試行してください。</value></data>
+  <data name="UpdateCheckFailed" xml:space="preserve"><value>更新を確認できませんでした。時間をおいて再試行してください。</value></data>
+  <data name="OpenWebPageFailed" xml:space="preserve"><value>ウェブページを開けません。</value></data>
+  <data name="InstallUpdate" xml:space="preserve"><value>今すぐ更新</value></data>
+  <data name="InstallUpdateHelp" xml:space="preserve"><value>ダウンロード後に再起動して更新します。</value></data>
+  <data name="DownloadingUpdate" xml:space="preserve"><value>更新をダウンロード中… {0}%</value></data>
+  <data name="ApplyingUpdate" xml:space="preserve"><value>再起動して更新中…</value></data>
+  <data name="UpdateCancelled" xml:space="preserve"><value>更新をキャンセルしました。</value></data>
+  <data name="UpdateInstallFailed" xml:space="preserve"><value>更新できませんでした。現在のバージョンとデータは保持されます。</value></data>
+  <data name="NoUpdatePackage" xml:space="preserve"><value>自動更新用のパッケージはまだ公開されていません。</value></data>
+  <data name="UpdatePortableRequired" xml:space="preserve"><value>自動更新対応のポータブル版を使用してください。</value></data>
 </root>

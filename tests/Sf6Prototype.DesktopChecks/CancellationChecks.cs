@@ -134,6 +134,18 @@ internal static class CancellationChecks
                 var failed=Download(delayed:true);var failedRequest=(Task)Call(main,"ViewPlayerAsync",home)!;Pump();
                 Busy(false);failed.Work.SetException(new System.IO.IOException("Synthetic cancellation failure"));Complete(failedRequest);
                 Check(detail.PendingPlayerId=="" && navigation.Current.Id==other.Id && ((FrameworkElement)main.FindName("Toast")).Visibility==Visibility.Visible,"A failed switch reports its error and clears loading so the action can be retried");
+                var updateWork=Download(delayed:true);var updaterStarted=false;
+                Set("_ready",false);
+                var updateExit=main.ExitApplicationAsync(()=>{updaterStarted=true;throw new InvalidOperationException("Synthetic updater start failure");});
+                Pump();
+                Check(updateWork.Token.IsCancellationRequested && !updaterStarted && !updateExit.IsCompleted,
+                    "The updater is not started until ongoing archive downloads have drained");
+                updateWork.Work.SetResult();Pump();
+                try {updateExit.GetAwaiter().GetResult();throw new Exception("Expected updater failure");}
+                catch(InvalidOperationException ex) when(ex.Message=="Synthetic updater start failure") {count++;}
+                Check(updaterStarted && !Get<bool>("_exitRequested") && !Get<bool>("_closeRequested") && !Get<bool>("_exitReady"),
+                    "Failure to start the updater leaves the existing application usable");
+                Get<DispatcherTimer>("_refreshReminderTimer").Stop();
             }
             finally {dataDirectory.SetValue(null,"");}
             Check(App.DataDirectory=="" && !main.IsVisible && new System.Windows.Interop.WindowInteropHelper(main).Handle==IntPtr.Zero,"Cancellation regression checks never show a window or access real user data");

@@ -12,15 +12,18 @@ public sealed class ModernTrayMenu : Forms.ContextMenuStrip
     private Drawing.Font? _labelFont;
     private float _scale=1;
     private const Forms.TextFormatFlags TextFlags=Forms.TextFormatFlags.VerticalCenter|Forms.TextFormatFlags.SingleLine|Forms.TextFormatFlags.NoPrefix|Forms.TextFormatFlags.NoPadding;
-    public ModernTrayMenu(Action show,Action exit)
+    public ModernTrayMenu(Action show,Action settings,Action exit)
     {
         AutoSize=false;ShowImageMargin=false; ShowCheckMargin=false;
         BackColor=Color("Surface"); ForeColor=Color("Ink"); DropShadowEnabled=true;
         Renderer=new FlatRenderer(this,Color("Surface"),Color("SurfaceSelected"),Color("Line"),Color("Ink"),Color("Ink3"));
-        Items.Add(new Forms.ToolStripMenuItem(Strings.OpenMainPanel,null,(_,_)=>show()) {Tag="home"});
+        Items.Add(new InsetMenuItem(Strings.OpenMainPanel,(_,_)=>show()) {Tag="home"});
+        Items.Add(new InsetMenuItem(Strings.Settings,(_,_)=>settings()) {Tag="settings"});
         Items.Add(new Forms.ToolStripSeparator());
-        Items.Add(new Forms.ToolStripMenuItem(Strings.Exit,null,(_,_)=>exit()) {Tag="exit"});
-        ApplyDpi(96);
+        Items.Add(new InsetMenuItem(Strings.Exit,(_,_)=>exit()) {Tag="exit"});
+        // NotifyIcon positions the menu before Opening. Its first size must
+        // already match the display DPI or later scaling moves the cursor edge.
+        ApplyDpi((uint)DeviceDpi);
         Opened+=(_,_)=>
         {
             ApplyDpi((uint)DeviceDpi);
@@ -31,7 +34,7 @@ public sealed class ModernTrayMenu : Forms.ContextMenuStrip
     public void RefreshLanguage()
     {
         foreach(var item in Items.OfType<Forms.ToolStripMenuItem>())
-            item.Text=item.Tag as string=="home" ? Strings.OpenMainPanel : Strings.Exit;
+            item.Text=(item.Tag as string) switch {"home"=>Strings.OpenMainPanel,"settings"=>Strings.Settings,_=>Strings.Exit};
         ApplyDpi((uint)DeviceDpi);
     }
     public void ApplyDpi(uint dpi)
@@ -53,6 +56,7 @@ public sealed class ModernTrayMenu : Forms.ContextMenuStrip
         ResumeLayout(true);previous?.Dispose();
     }
     private int Px(int value)=>(int)Math.Round(value*_scale);
+    protected override Forms.Padding DefaultPadding=>new(Px(5));
     public Drawing.Rectangle TextBounds(Forms.ToolStripItem item) => new(Px(32),0,Math.Max(0,item.Width-Px(42)),item.Height);
     public Drawing.Size MeasureLabel(Forms.ToolStripItem item) => Forms.TextRenderer.MeasureText(item.Text,_labelFont,Drawing.Size.Empty,TextFlags);
     protected override void OnDpiChangedAfterParent(EventArgs e) {base.OnDpiChangedAfterParent(e);ApplyDpi((uint)DeviceDpi);}
@@ -65,6 +69,17 @@ public sealed class ModernTrayMenu : Forms.ContextMenuStrip
     {
         base.Dispose(disposing);
         if(disposing) _labelFont?.Dispose();
+    }
+    private sealed class InsetMenuItem(string text,EventHandler onClick) : Forms.ToolStripMenuItem(text,null,onClick)
+    {
+        protected override void SetBounds(Drawing.Rectangle bounds)
+        {
+            // ToolStripMenuItem subtracts the owner's left padding to paint its
+            // native menu columns edge-to-edge. Our renderer has no such columns:
+            // preserve the inset for both hover painting and the actual hit area.
+            if(Owner is ModernTrayMenu menu) bounds.X+=menu.Padding.Left;
+            base.SetBounds(bounds);
+        }
     }
     private sealed class FlatRenderer(ModernTrayMenu menu,Drawing.Color surface,Drawing.Color selected,Drawing.Color line,Drawing.Color ink,Drawing.Color muted) : Forms.ToolStripRenderer
     {
@@ -97,6 +112,16 @@ public sealed class ModernTrayMenu : Forms.ContextMenuStrip
             {
                 e.Graphics.DrawLines(pen,new Drawing.PointF[]{new(0,6),new(7,0),new(14,6)});
                 e.Graphics.DrawLines(pen,new Drawing.PointF[]{new(2,5),new(2,13),new(6,13),new(6,9),new(9,9),new(9,13),new(12,13),new(12,5)});
+            }
+            else if(e.Item.Tag as string=="settings")
+            {
+                e.Graphics.DrawEllipse(pen,2,2,10,10);e.Graphics.DrawEllipse(pen,5,5,4,4);
+                for(var i=0;i<8;i++)
+                {
+                    var angle=i*Math.PI/4;
+                    e.Graphics.DrawLine(pen,(float)(7+5*Math.Cos(angle)),(float)(7+5*Math.Sin(angle)),
+                        (float)(7+7*Math.Cos(angle)),(float)(7+7*Math.Sin(angle)));
+                }
             }
             else
             {

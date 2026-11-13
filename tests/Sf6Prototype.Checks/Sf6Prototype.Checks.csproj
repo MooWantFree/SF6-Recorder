@@ -21,6 +21,8 @@
     <Compile Include="../../src/Sf6Prototype/MatchTags.cs" Link="MatchTags.cs"/>
     <Compile Include="../../src/Sf6Prototype/Favorites.cs" Link="Favorites.cs"/>
     <Compile Include="../../src/Sf6Prototype/ConnectionSettings.cs" Link="ConnectionSettings.cs"/>
+    <Compile Include="../../src/Sf6Prototype/GitHubUpdates.cs" Link="GitHubUpdates.cs"/>
+    <Compile Include="../../src/Sf6Prototype/GitHubReleaseSource.cs" Link="GitHubReleaseSource.cs"/>
     <Compile Include="../../src/Sf6Prototype/DatabaseTransfer.cs" Link="DatabaseTransfer.cs"/>
     <Compile Include="../../src/Sf6Prototype/PlayerSearch.cs" Link="PlayerSearch.cs"/>
     <Compile Include="../../src/Sf6Prototype/AutoRefreshSchedule.cs" Link="AutoRefreshSchedule.cs"/>
@@ -48,6 +50,7 @@
     <Compile Include="../../src/Sf6Prototype/BattlePager.cs" Link="BattlePager.cs"/>
     <Compile Include="../../src/Sf6Prototype/IncrementalList.cs" Link="IncrementalList.cs"/>
     <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.15"/>
+    <PackageReference Include="Velopack" Version="1.2.161"/>
     <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.0"/>
   </ItemGroup>
 </Project>
