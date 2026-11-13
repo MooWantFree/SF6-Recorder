@@ -53,9 +53,13 @@ public partial class App : Application
             Shutdown();
             return;
         }
+        Diagnostics.Log = new DiagnosticLog(DataDirectory);
+        Diagnostics.Write("application", "started");
         DispatcherUnhandledException += (_, args) =>
         {
-            File.WriteAllText(Path.Combine(DataDirectory, "fatal-error.txt"), args.Exception.GetType().Name + " / " + args.Exception.HResult);
+            Diagnostics.Write("application", "fatal", args.Exception);
+            try { File.WriteAllText(Path.Combine(DataDirectory, "fatal-error.txt"), args.Exception.GetType().Name + " / " + args.Exception.HResult); }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
             // Keep a native fallback if the UI resources themselves caused the failure.
             try {MessageWindow.Notice(MainWindow,Strings.UnexpectedError,Strings.AppTitle);}
             catch {MessageBox.Show(Strings.UnexpectedError,Strings.AppTitle);}
@@ -69,6 +73,7 @@ public partial class App : Application
     }
     protected override void OnExit(ExitEventArgs e)
     {
+        Diagnostics.Write("application", "exited");
         _instanceLock?.Dispose();
         base.OnExit(e);
     }

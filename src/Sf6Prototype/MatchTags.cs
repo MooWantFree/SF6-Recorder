@@ -43,13 +43,13 @@ public sealed partial class BattleStore
         cmd.CommandText="INSERT OR IGNORE INTO tags(name,color) SELECT $name,COALESCE(MAX(color)+1,0) FROM tags";
         Add(cmd,"$name",name);cmd.ExecuteNonQuery();
         cmd.CommandText="INSERT OR IGNORE INTO battle_tags(owner_id,replay_id,tag_name) VALUES($owner,$replay,$name)";
-        Add(cmd,"$owner",owner);Add(cmd,"$replay",replay);cmd.ExecuteNonQuery();tx.Commit();
+        Add(cmd,"$owner",owner);Add(cmd,"$replay",replay);cmd.ExecuteNonQuery();tx.Commit();Changed();
     }
     public void RemoveTag(string owner,string replay,string name)
     {
         using var db=Open();using var cmd=db.CreateCommand();
         cmd.CommandText="DELETE FROM battle_tags WHERE owner_id=$owner AND replay_id=$replay AND tag_name=$name";
-        Add(cmd,"$owner",owner);Add(cmd,"$replay",replay);Add(cmd,"$name",name);cmd.ExecuteNonQuery();
+        Add(cmd,"$owner",owner);Add(cmd,"$replay",replay);Add(cmd,"$name",name);cmd.ExecuteNonQuery();Changed();
         // Keep the vocabulary and its color for future autocomplete, even after the last use.
     }
 }

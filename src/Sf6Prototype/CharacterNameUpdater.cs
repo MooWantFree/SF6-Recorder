@@ -47,7 +47,7 @@ public sealed class CharacterNameUpdater(CharacterNames names,
                     throw;
                 }
                 catch(Exception ex) when(ex is not OutOfMemoryException)
-                { /* Preserve existing names and retry on a later observation after the cooldown. */ }
+                { Diagnostics.Write("character_names", "refresh", ex); /* Retry after the cooldown. */ }
                 finally {if(names.Revision!=revision && !token.IsCancellationRequested) changed();}
             }
         }

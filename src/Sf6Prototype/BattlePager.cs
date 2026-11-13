@@ -66,7 +66,7 @@ public sealed class BattlePager
     }
     private List<Battle> PrefixRows(Window window,string category)
     {
-        return _store.PrefixBattles(Owner,window.Prefix).Where(b=>category.Length==0 || b.Category==category).ToList();
+        return _store.PrefixSummaries(Owner,window.Prefix).Where(b=>category.Length==0 || b.Category==category).ToList();
     }
     private void SetOldest(Window window,string category) => window.Oldest=PrefixRows(window,category).Select(b=>b.PlayedAt).DefaultIfEmpty(long.MaxValue).Min();
     private void SaveWindow(string category)
@@ -100,7 +100,7 @@ public sealed class BattlePager
         if(range.Count<0) throw new ArgumentOutOfRangeException(nameof(range));
         if(_windows["rank"].Complete) return false;
         if(range.From is { } start && _windows["rank"].Initialized && _windows["rank"].Oldest<start) return false;
-        var ranked=_store.Query(new(Owner,Category:"rank"));
+        var ranked=_store.QuerySummaries(new(Owner,Category:"rank"));
         return !range.Resolve(ranked).HasEnough(ranked);
     }
     public async Task<SyncResult> LoadScoreRangeAsync(IBattleSource source,ScoreRange range,CancellationToken token,Func<Task> pageSaved,bool forceHead=false)
@@ -108,15 +108,15 @@ public sealed class BattlePager
         token.ThrowIfCancellationRequested();
         if(range.Count<0) throw new ArgumentOutOfRangeException(nameof(range));
         var window=_windows["rank"];
-        range=range.Resolve(_store.Query(new(Owner,Category:"rank")));
+        range=range.Resolve(_store.QuerySummaries(new(Owner,Category:"rank")));
         RankHeadFetched=false;
         var refreshToBoundary=forceHead && window.Incremental;
         if(!forceHead && !NeedsScoreRange(range)) return new(0,0,source.Requests);
         var run=_store.BeginRun(Owner); var added=0; var pages=0;
-        var initialMatches=_store.Query(new(Owner,Category:"rank")).Count(b=>b.CharacterId==range.CharacterId && range.Contains(b.PlayedAt));
+        var initialMatches=_store.QuerySummaries(new(Owner,Category:"rank")).Count(b=>b.CharacterId==range.CharacterId && range.Contains(b.PlayedAt));
         void Report(bool finished=false)
         {
-            var matches=_store.Query(new(Owner,Category:"rank")).Count(b=>b.CharacterId==range.CharacterId && range.Contains(b.PlayedAt));
+            var matches=_store.QuerySummaries(new(Owner,Category:"rank")).Count(b=>b.CharacterId==range.CharacterId && range.Contains(b.PlayedAt));
             double? fraction=finished ? 1 : forceHead ? 0 : range.Count>0 ? Math.Min(1,(double)matches/range.Count) :
                 window.TotalPages is >0 ? (double)(window.NextPage-1)/window.TotalPages.Value : null;
             int? remaining=range.Count==0 && window.TotalPages is { } total ? Math.Max(0,total-window.NextPage+1) : null;
@@ -144,7 +144,7 @@ public sealed class BattlePager
                 if(window.ReachedBoundary || window.Complete) {refreshToBoundary=false;window.Prepared=true;}
                 // With no previous games, choose the same first character as the score view,
                 // then keep it fixed while later pages contain other characters.
-                range=range.Resolve(_store.Query(new(Owner,Category:"rank")));
+                range=range.Resolve(_store.QuerySummaries(new(Owner,Category:"rank")));
             }
             token.ThrowIfCancellationRequested();SaveWindow("rank");Report(finished:true);
             _store.FinishRun(run,_windows.Values.All(w=>w.Complete) ? "completed" : "paged",source.Requests,added,$"{pages} pages");
@@ -161,7 +161,7 @@ public sealed class BattlePager
         {
             var target=Math.Min(2,window.TotalPages ?? 2);
             ProgressChanged?.Invoke(new(finished ? Strings.MatchesSaved : Reading(category),finished ? 1 : window.Incremental ? null : (double)(window.NextPage-1)/Math.Max(1,target),
-                pages,finished ? 0 : window.Incremental ? null : Math.Max(0,target-window.NextPage+1),window.Incremental ? Localization.Format(Strings.NewMatchesCount,added) : Localization.Format(Strings.MatchesPreparedOfTotal,Math.Min(20,Ordered(_store.Query(new(Owner)),category).Count),20)));
+                pages,finished ? 0 : window.Incremental ? null : Math.Max(0,target-window.NextPage+1),window.Incremental ? Localization.Format(Strings.NewMatchesCount,added) : Localization.Format(Strings.MatchesPreparedOfTotal,Math.Min(20,Ordered(_store.QuerySummaries(new(Owner)),category).Count),20)));
         }
         try
         {
@@ -237,12 +237,11 @@ public sealed class BattlePager
             {
                 // The previous account checkpoint covered every category; All has now bridged
                 // every newer match, including any category refresh that stopped halfway.
-                var rows=_store.Query(new(Owner));
                 foreach(var category in BattleCategory.All)
                 {
                     var window=_windows[category.Key];
                     window.Complete=true;
-                    _store.CompleteCategory(Owner,category.Key,Ordered(rows,category.Key).FirstOrDefault()?.ReplayId);
+                    _store.CompleteCategory(Owner,category.Key,_store.QuerySummaryPage(new(Owner,Category:category.Key),0,1).FirstOrDefault()?.ReplayId);
                 }
             }
             _store.CompleteCategory(Owner,AccountBoundary,all.Head);
@@ -278,6 +277,7 @@ public sealed class BattlePager
     {
         var window=_windows[category];
         if(window.NextPage==1) _store.MarkCategoryPending(Owner,category);
+        Diagnostics.Write("sync","fetch_page",page:window.NextPage,category:category);
         var page=await source.FetchPageAsync(Owner,category,window.NextPage,token);
         token.ThrowIfCancellationRequested();
         if(page.CurrentPage!=window.NextPage) throw new InvalidDataException(Strings.DuplicatePage);
@@ -288,6 +288,7 @@ public sealed class BattlePager
         if(window.NextPage==1) window.Head=page.Battles.FirstOrDefault()?.ReplayId;
         if(window.NextPage==1 && (category=="rank" || category.Length==0 && page.Battles.Any(b=>b.Category=="rank"))) RankHeadFetched=true;
         var added=_store.SavePage(page.Battles);
+        Diagnostics.Write("sync","page_saved",page:page.CurrentPage,category:category);
         var tail=window.Prefix.LastOrDefault();
         var tailIndex=page.Battles.ToList().FindIndex(b=>b.ReplayId==tail);
         // Ignore newly inserted heads seen during older-page browsing until they connect

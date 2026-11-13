@@ -3,6 +3,15 @@ using Sf6Prototype;
 
 if(Environment.GetCommandLineArgs().Contains("--match-end-log-bench")) {MatchEndSampleLogChecks.Benchmark();return;}
 
+if(Environment.GetCommandLineArgs().Contains("--archive-read-bench")) {ArchiveReadChecks.Benchmark();return;}
+
+if(Environment.GetCommandLineArgs().Contains("--name-cache-checks"))
+{
+    var logDirectory=Path.Combine(Environment.CurrentDirectory,".local","checks","name-cache-"+Guid.NewGuid().ToString("N"));
+    Diagnostics.Log=new DiagnosticLog(logDirectory);Console.WriteLine("Diagnostics: "+logDirectory);
+    for(var attempt=0;attempt<10;attempt++) {try {await BundledCharacterNameChecks.Run();Console.WriteLine($"Name cache pass {attempt+1}");} catch(Exception ex) {Diagnostics.Write("name_cache_check","failed",ex);throw;}}
+    return;
+}
 Localization.Apply("zh");
 var assertions = 0;
 void Check(bool condition, string description)
@@ -85,4 +94,8 @@ assertions += await RefreshProgressChecks.Run();
 assertions += LocalizationChecks.Run();
 assertions += await CharacterNameChecks.Run();
 assertions += await BundledCharacterNameChecks.Run();
+assertions += await AtomicFileChecks.RunAsync();
+assertions += ArchiveReadChecks.Run();
+assertions += await DiagnosticChecks.RunAsync();
+assertions += await SyncCoordinatorChecks.RunAsync();
 Console.WriteLine($"Passed {assertions} checks.");

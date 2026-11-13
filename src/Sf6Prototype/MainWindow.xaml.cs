@@ -26,14 +26,13 @@ public partial class MainWindow : ChromeWindow
     private Archive _archive = null!;
     private ConnectionSettings _settings = new();
     private bool _ready, _busy, _closeRequested, _reloadingLocal, _restoringView;
-    private CancellationTokenSource? _cancellation;
+    private readonly SyncCoordinator _sync = new();
     private ImageDownloads? _imageDownloads;
-    private Task _foregroundTask = Task.CompletedTask;
+    private readonly DispatcherTimer _imageRefreshTimer=new() {Interval=TimeSpan.FromMilliseconds(100)};
     private int _navigationVersion;
     private int _pendingPlayerVersion;
     private int _viewLoadVersion;
     private bool _stoppingRefresh,_loadingInBackground;
-    private bool _silentCancellation;
     private readonly Dictionary<string,BattlePager> _pagers=[];
     private BattlePager Pager => _pagers.TryGetValue(_navigation.Current.Id,out var pager) ? pager : _pagers[_navigation.Current.Id]=new(_store,_navigation.Current.Id);
     private SyncResult? _lastSync;
@@ -57,6 +56,25 @@ public partial class MainWindow : ChromeWindow
         InitializeComponent();
         InitializeWindowChrome(WindowSurface,TitleBar,MaximizeButton);
         InitializeRefreshProgress();
+        _sync.RequestChanged += RequestProgress;
+        _sync.Started += request => SetBusy(true, request.Quiet, request.Background);
+        _sync.Finished += result =>
+        {
+            if(result.Request.ShowsCompletion)
+                FinishButtonProgress(result.Outcome==SyncOutcome.Completed,result.Outcome==SyncOutcome.Cancelled);
+            SetBusy(false);
+            if(_closeRequested) Close();
+        };
+        _sync.ProgressChanged += update =>
+        {
+            if(!_progressVisible) return;
+            _refreshProgress.Load(update.Progress,update.MetadataRequests);UpdateButtonProgress();
+        };
+        _imageRefreshTimer.Tick+=(_,_)=>
+        {
+            _imageRefreshTimer.Stop();
+            if(_ready && !_closeRequested && !_exitRequested) {ReloadLocal(preserveViewport:true);RefreshAccountUi();}
+        };
         InitializeMatchEndStatus();
         SourceInitialized+=(_,_)=> { if(!App.Capture) _tray=new TrayIcon(this,ShowMainPanel,OpenSettingsFromTray,()=>_=ExitApplicationAsync()); };
         StateChanged+=(_,_)=> { if(WindowState!=WindowState.Minimized) _restoreState=WindowState; };
@@ -125,6 +143,8 @@ public partial class MainWindow : ChromeWindow
         if (session != null) _settings = _settings with { PlayerId = session.AccountId };
         _navigation.SetHome(new(_settings.PlayerId, _profiles.Profile(_settings.PlayerId)?.Name ?? session?.AccountName ?? ""));
         RefreshAccountUi();
+        await _archive.PrepareAsync(_navigation.Current.Id,CancellationToken.None);
+        if(_exitRequested || App.IsShuttingDown) return;
         _ready = true; ReloadLocal();
         ConfigureRefreshReminder();
         ConfigureAutoRefresh();
@@ -196,24 +216,24 @@ public partial class MainWindow : ChromeWindow
             // Snapshot the signed-in account, never the player currently being browsed.
             var session=_vault.Load();
             if(!_autoRefresh.TryBegin(now,session!=null)) return;
-            await (_foregroundTask=AutoRefreshAccountAsync(session!));
+            await AutoRefreshAccountAsync(session!);
         }
         catch(Exception ex) { _autoRefresh.Pause(); ReportError(ex); }
     }
-    private async Task<bool> AutoRefreshAccountAsync(SavedSession session)
+    private Task<bool> AutoRefreshAccountAsync(SavedSession session) =>
+        _sync.RunAsync(new(SyncOperation.AutomaticRefresh,Quiet:true,Background:true,SilentCancellation:true), context=>AutoRefreshAccountCoreAsync(session,context));
+    private async Task<bool> AutoRefreshAccountCoreAsync(SavedSession session,SyncContext context)
     {
-        SetBusy(true,quiet:true,background:true);
-        _cancellation=new CancellationTokenSource(); _silentCancellation=true;
-        var token=_cancellation.Token;
+        var token=context.Token;
         var owner=session.AccountId;
         var daily=new DailyProfileRefresh(_profiles,owner,DateTimeOffset.UtcNow);
         var pager=new BattlePager(_store,owner);var completed=false;
-        void Progress(BattleLoadProgress progress) {_refreshProgress.Load(progress,daily.Required ? 1 : 0);UpdateButtonProgress();}
+        void Progress(BattleLoadProgress progress) => context.Report(progress,daily.Required ? 1 : 0);
         pager.ProgressChanged+=Progress;
         try
         {
             using var client=CreateClient(session,owner,observeCharacterNames:daily.Required);
-            client.Activity+=RequestProgress;
+            client.Activity+=context.Report;
             if(daily.Required) await client.ValidateAsync(token);
             if(client.AccountId!=owner) throw new LoginRequiredException(Strings.AccountChanged);
             if(daily.Required)
@@ -224,7 +244,12 @@ public partial class MainWindow : ChromeWindow
             _pagers[owner]=pager;
             await pager.LoadAccountAsync(client,token,async ()=>
             {
-                if(_navigation.Current.Id==owner) ReloadLocal(preserveViewport:true,refreshImages:false,automaticRefresh:true);
+                if(_navigation.Current.Id==owner)
+                {
+                    await _archive.PrepareAsync(owner,token);
+                    token.ThrowIfCancellationRequested();
+                    if(_navigation.Current.Id==owner) ReloadLocal(preserveViewport:true,refreshImages:false,automaticRefresh:true);
+                }
                 await Dispatcher.InvokeAsync(()=>{},DispatcherPriority.Background);
             },()=>PreferredHistoryCategory(owner));
             token.ThrowIfCancellationRequested();
@@ -239,26 +264,23 @@ public partial class MainWindow : ChromeWindow
                 }
             }
             catch(Exception ex) when(ex is not OperationCanceledException && ex is not OutOfMemoryException && ex is not LoginRequiredException)
-            { /* Keep the saved matches; portraits can be retried on the next refresh. */ }
+            { Diagnostics.Write("sync", "refresh_profile", ex); /* Keep the saved matches. */ }
             if(_navigation.Current.Id==owner) ReloadLocal(preserveViewport:true);
             RefreshAccountUi();
             ShowNotice(Strings.RefreshCompleteHint);
-            completed=true;
+            completed=true;context.Complete();
         }
         catch(OperationCanceledException) when(token.IsCancellationRequested) { }
         catch(Exception ex)
         {
             if(ex is LoginRequiredException) _autoRefresh.Pause();
-            ReportError(ex);
+            context.Fail(ex);ReportError(ex);
         }
         finally
         {
             pager.ProgressChanged-=Progress;
-            FinishButtonProgress(completed,token.IsCancellationRequested);
             _autoRefresh.Restart(DateTimeOffset.UtcNow);
-            _cancellation.Dispose(); _cancellation=null; SetBusy(false);
             History.ContinueAutoLoad();
-            if(_closeRequested) Close();
         }
         return completed;
     }
@@ -267,13 +289,12 @@ public partial class MainWindow : ChromeWindow
     private Task LoginAsync()
     {
         if(_busy || _exitRequested) return Task.CompletedTask;
-        return _foregroundTask=LoginCoreAsync();
+        return _sync.RunAsync(new(SyncOperation.Login), LoginCoreAsync);
     }
-    private async Task LoginCoreAsync()
+    private async Task LoginCoreAsync(SyncContext context)
     {
         AccountPopup.IsOpen = false;
-        SetBusy(true);
-        _cancellation=new CancellationTokenSource(); var token=_cancellation.Token;
+        var token=context.Token;
         try
         {
             await StopBackgroundDownloadsAsync();
@@ -295,12 +316,11 @@ public partial class MainWindow : ChromeWindow
                     StartImageDownloads(images);
                 }
             }
-            catch (Exception ex) when (ex is not OutOfMemoryException && ex is not OperationCanceledException) { SetStatus("profile_pending", Strings.SessionSavedImagesPending); RefreshAccountUi(); return; }
-            RefreshAccountUi(); ReloadLocal(); SetStatus("logged_in", Strings.SessionSaved);
+            catch (Exception ex) when (ex is not OutOfMemoryException && ex is not OperationCanceledException) { Diagnostics.Write("login", "refresh_profile", ex); SetStatus("profile_pending", Strings.SessionSavedImagesPending); RefreshAccountUi(); return; }
+            RefreshAccountUi(); ReloadLocal(); SetStatus("logged_in", Strings.SessionSaved);context.Complete();
         }
         catch (OperationCanceledException) when(token.IsCancellationRequested) { }
-        catch (Exception ex) { ReportError(ex); }
-        finally { _cancellation.Dispose(); _cancellation=null; SetBusy(false); if (_closeRequested) Close(); }
+        catch (Exception ex) { context.Fail(ex);ReportError(ex); }
     }
     private void RefreshAccountUi()
     {
@@ -391,7 +411,7 @@ public partial class MainWindow : ChromeWindow
                 if(session==null)
                     ShowNotice(Strings.SavedCharacterNamesSignIn,false,Strings.SignIn,()=>_=LoginAsync());
                 else
-                    await (_foregroundTask=LoadLanguageNamesAsync(session,language,roster));
+                    await _sync.RunAsync(new(SyncOperation.CharacterNames,Quiet:true,Background:true), context=>LoadLanguageNamesAsync(session,language,roster,context));
             }
         }
         catch (Exception ex) { ReportError(ex); }
@@ -399,10 +419,9 @@ public partial class MainWindow : ChromeWindow
     }
 
     private async Task LoadLanguageNamesAsync(SavedSession session,string language,
-        IReadOnlyList<(int Id,string Name,string ToolName)> roster)
+        IReadOnlyList<(int Id,string Name,string ToolName)> roster,SyncContext context)
     {
-        SetBusy(true,quiet:true,background:true);
-        _cancellation=new CancellationTokenSource();var token=_cancellation.Token;
+        var token=context.Token;
         Toast.BeginProgress(Strings.SavedLoadingCharacterNames);
         try
         {
@@ -412,19 +431,14 @@ public partial class MainWindow : ChromeWindow
             await _profiles.Names.EnsureLanguageAsync(client,session.AccountId,language,roster,token);
             token.ThrowIfCancellationRequested();
             ApplyLanguage();
-            Toast.CompleteProgress(Strings.SavedCharacterNamesReady);
+            Toast.CompleteProgress(Strings.SavedCharacterNamesReady);context.Complete();
         }
         catch(OperationCanceledException) when(token.IsCancellationRequested)
         {Toast.CompleteProgress(Strings.SavedCharacterNamesCancelled);}
-        catch(LoginRequiredException)
-        {Toast.CompleteProgress(Strings.SavedCharacterNamesSignIn,true,Strings.SignInAgain,()=>_=LoginAsync());}
+        catch(LoginRequiredException ex)
+        {context.Fail(ex);Diagnostics.Write("character_names", "login_required", ex);Toast.CompleteProgress(Strings.SavedCharacterNamesSignIn,true,Strings.SignInAgain,()=>_=LoginAsync());}
         catch(Exception ex) when(ex is not OutOfMemoryException)
-        {Toast.CompleteProgress(Strings.SavedCharacterNamesFailed,true);}
-        finally
-        {
-            _cancellation.Dispose();_cancellation=null;
-            SetBusy(false);
-        }
+        {context.Fail(ex);Diagnostics.Write("character_names", "failed", ex);Toast.CompleteProgress(Strings.SavedCharacterNamesFailed,true);}
     }
 
     private void ApplyLanguage()
@@ -452,7 +466,7 @@ public partial class MainWindow : ChromeWindow
         var dialog=new SettingsWindow(this,_settings) {BeforeImport=()=>CancelDownloadsAsync(),ApplyUpdate=ApplyAppUpdateAsync};
         dialog.DatabaseImported+=()=>
         {
-            _pagers.Clear(); History.AllowPageUpdates(); ReloadLocal(preserveViewport:true);
+            _store.InvalidateReads(); _pagers.Clear(); History.AllowPageUpdates(); ReloadLocal(preserveViewport:true);
         };
         return dialog;
     }
@@ -530,11 +544,11 @@ public partial class MainWindow : ChromeWindow
         string id;
         try { id=PlayerLookup.ParseUid(input); } catch(ArgumentException ex) {SetSearchError(ex.Message);return;}
         if(_busy && !_searchingPlayer && id==_navigation.Current.Id) {ClosePlayerSearch();return;}
-        if(_searchingPlayer && _lookupUid==id && _cancellation?.IsCancellationRequested==false) return;
+        if(_searchingPlayer && _lookupUid==id && _sync.Active?.Token.IsCancellationRequested==false) return;
         var version=++_navigationVersion; await CancelDownloadsAsync(); if(version!=_navigationVersion || _exitRequested) return;
         var session=_vault.Load();
         if(session==null) {SetSearchError(Strings.SignInBeforeSearch);return;}
-        var lookup=LookupPlayerCoreAsync(id,session); _foregroundTask=lookup;
+        var lookup=_sync.RunAsync(new(SyncOperation.PlayerLookup,Quiet:true,Background:true), context=>LookupPlayerCoreAsync(id,session,context));
         var player=await lookup;
         if(player==null || version!=_navigationVersion || _exitRequested) return;
         try
@@ -552,27 +566,28 @@ public partial class MainWindow : ChromeWindow
         }
         catch(Exception ex) { SetSearchError(Strings.SearchSaveFailed); if(!PlayerSearchPopup.IsOpen) ReportError(ex); }
     }
-    private async Task<PlayerIdentity?> LookupPlayerCoreAsync(string id,SavedSession session)
+    private async Task<PlayerIdentity?> LookupPlayerCoreAsync(string id,SavedSession session,SyncContext context)
     {
-        SetBusy(true,quiet:true,background:true); _searchingPlayer=true; _lookupUid=id; SetSearchError(null);
+        _searchingPlayer=true; _lookupUid=id; SetSearchError(null);
         PlayerSearchSubmit.IsEnabled=false;
-        PlayerSearchStatus.Visibility=Visibility.Visible; _cancellation=new CancellationTokenSource();
-        var token=_cancellation.Token;
+        PlayerSearchStatus.Visibility=Visibility.Visible;
+        var token=context.Token;
         try
         {
             using var client=CreateClient(session);
-            return await PlayerLookup.FindAsync(client,id,token);
+            var player=await PlayerLookup.FindAsync(client,id,token);context.Complete();return player;
         }
         catch(OperationCanceledException) when(token.IsCancellationRequested) {return null;}
         catch(Exception ex)
         {
+            context.Fail(ex);Diagnostics.Write("player_lookup", "failed", ex);
             SetSearchError(ex is InvalidDataException or ArgumentException ? ex.Message : ex is LoginRequiredException ? Strings.SessionExpired : Strings.SearchFailed);
             return null;
         }
         finally
         {
-            _cancellation.Dispose();_cancellation=null;_searchingPlayer=false;_lookupUid=null;
-            PlayerSearchStatus.Visibility=Visibility.Collapsed;PlayerSearchSubmit.IsEnabled=true;UpdateSearchEmptyState();SetBusy(false);
+            _searchingPlayer=false;_lookupUid=null;
+            PlayerSearchStatus.Visibility=Visibility.Collapsed;PlayerSearchSubmit.IsEnabled=true;UpdateSearchEmptyState();
         }
     }
 
@@ -593,7 +608,13 @@ public partial class MainWindow : ChromeWindow
         {
             ProgressStage(Strings.Stopping);
             await CancelDownloadsAsync(silent:false);
-            if(!_closeRequested) ShowNotice(Strings.StoppedRecordsKept);
+            if(!_closeRequested)
+            {
+                // A page may already be committed when its asynchronous view preparation
+                // is cancelled. Reconcile the local view before reporting the stop.
+                ReloadLocal(preserveViewport:true);
+                ShowNotice(Strings.StoppedRecordsKept);
+            }
         }
         finally {_stoppingRefresh=false;}
     }
@@ -610,27 +631,24 @@ public partial class MainWindow : ChromeWindow
         if(PageTabs.SelectedIndex==0 && History.FavoritesOnly) return Task.CompletedTask;
         if(scoreRange && (PageTabs.SelectedIndex!=1 || !Pager.NeedsScoreRange(Scores.Range))) return Task.CompletedTask;
         History.AllowPageUpdates();
-        return _foregroundTask=LoadPagesAsync(reset,more,scoreRange);
+        return _sync.RunAsync(new(reset ? SyncOperation.ManualRefresh : SyncOperation.LoadHistory,Quiet:!reset && PageTabs.SelectedIndex!=1), context=>LoadPagesAsync(reset,more,scoreRange,context));
     }
-    private async Task LoadPagesAsync(bool reset,bool more,bool scoreRange)
+    private async Task LoadPagesAsync(bool reset,bool more,bool scoreRange,SyncContext context)
     {
-        SetBusy(true,quiet:!reset && PageTabs.SelectedIndex!=1); HideNotice(); _cancellation = new CancellationTokenSource(); _silentCancellation=false;
-        var token=_cancellation.Token;
+        HideNotice();
+        var token=context.Token;
         var pager=Pager; var category=PageTabs.SelectedIndex==1 ? "rank" : History.Category;
         var fillScores=PageTabs.SelectedIndex==1;
         var requestedScores=Scores.Range;
         var completed=false;
         DailyProfileRefresh? daily=null;
         BattlePager? observedPager=null;
-        void PageProgress(BattleLoadProgress progress)
-        {
-            if(!_progressVisible)return;
-            _refreshProgress.Load(progress,daily?.Required==true ? 1 : 0);
-            UpdateButtonProgress();
-        }
+        void PageProgress(BattleLoadProgress progress) => context.Report(progress,daily?.Required==true ? 1 : 0);
         if(reset) pager.Reset(category);
         async Task PageSaved()
         {
+            token.ThrowIfCancellationRequested();
+            await _archive.PrepareAsync(_navigation.Current.Id,token);
             token.ThrowIfCancellationRequested();
             ReloadLocal(preserveViewport:true,refreshImages:false);
             await Dispatcher.InvokeAsync(() => { },DispatcherPriority.Background);
@@ -640,7 +658,7 @@ public partial class MainWindow : ChromeWindow
             if(more && !pager.MoreNeedsNetwork(History.Filtered,category))
             {
                 await pager.LoadMoreAsync(null,category,History.Filtered,token,PageSaved);
-                completed=true;
+                completed=true;context.Complete();
                 return;
             }
             var session = _vault.Load();
@@ -657,11 +675,11 @@ public partial class MainWindow : ChromeWindow
                 pager=Pager;
                 if(reset) pager.Reset(category);
             }
-            _cancellation.Token.ThrowIfCancellationRequested();
+            token.ThrowIfCancellationRequested();
             var profileRefreshAt=DateTimeOffset.UtcNow;
             if(!more) daily=new(_profiles,pager.Owner,profileRefreshAt);
             using var client = CreateClient(session,observeCharacterNames:daily?.Required==true);
-            client.Activity+=RequestProgress;
+            client.Activity+=context.Report;
             if(daily?.Required==true)
             {
                 ProgressStage(Strings.CheckingSession);
@@ -700,31 +718,29 @@ public partial class MainWindow : ChromeWindow
                 }
             }
             catch (Exception ex) when (ex is not OperationCanceledException && ex is not OutOfMemoryException)
-            { profileMessage = Strings.ImagesPendingSuffix; }
+            { Diagnostics.Write("sync", "refresh_profile", ex); profileMessage = Strings.ImagesPendingSuffix; }
             _lastSync = _lastSync with { Requests = client.Requests };
             ReloadLocal(preserveViewport: true); RefreshAccountUi();
             SetStatus(profileMessage.Length>0 ? "sync_complete_images_pending" : "sync_complete", Localization.Format(Strings.RefreshCompleteSummary, _lastSync.Inserted, _lastSync.Pages, _lastSync.Requests, profileMessage));
             if(reset && profileMessage.Length==0) ShowNotice(Strings.RefreshCompleteHint);
-            completed=true;
+            completed=true;context.Complete();
             if(target==_settings.PlayerId) _autoRefresh.Resume(DateTimeOffset.UtcNow);
         }
         catch (OperationCanceledException) when (token.IsCancellationRequested)
-        { if(!_silentCancellation) SetStatus("cancelled", Strings.CancelledLoadedSaved); }
-        catch (Exception ex) { ReloadLocal(preserveViewport: true); ReportError(ex); }
+        { if(!context.SilentCancellation) SetStatus("cancelled", Strings.CancelledLoadedSaved); }
+        catch (Exception ex) { context.Fail(ex);ReloadLocal(preserveViewport: true); ReportError(ex); }
         finally
         {
             if(observedPager!=null) observedPager.ProgressChanged-=PageProgress;
-            FinishButtonProgress(completed,token.IsCancellationRequested);
             if(reset && pager.Owner==_settings.PlayerId) _autoRefresh.Restart(DateTimeOffset.UtcNow);
-            _cancellation.Dispose(); _cancellation = null; SetBusy(false);
             if(completed && !token.IsCancellationRequested && !_closeRequested) History.ContinueAutoLoad();
             else History.StopAutoLoad();
             if (App.Capture) { await Task.Delay(200); Capture(); }
-            if (_closeRequested) Close();
         }
     }
     private void ReportError(Exception ex)
     {
+        Diagnostics.Write("foreground", "failed", ex);
         var text = ex switch
         {
             LoginRequiredException => ex.Message,
@@ -777,7 +793,7 @@ public partial class MainWindow : ChromeWindow
         }
         catch(Exception ex) when(ex is not OutOfMemoryException && ex is not OperationCanceledException && ex is not LoginRequiredException
             && ex is not System.Net.Http.HttpRequestException {StatusCode:System.Net.HttpStatusCode.TooManyRequests})
-        {return false;}
+        {Diagnostics.Write("sync", "refresh_avatar", ex); return false;}
     }
     private void StartImageDownloads(IReadOnlyList<ImageDownload> images)
     {
@@ -785,9 +801,10 @@ public partial class MainWindow : ChromeWindow
         _imageDownloads ??=new(new ImageClient(_settings,session),_=>
         {
             if(_closeRequested || _exitRequested) return;
-            ReloadLocal(preserveViewport:true);RefreshAccountUi();
+            _imageRefreshTimer.Stop();_imageRefreshTimer.Start();
         },ex=>
         {
+            Diagnostics.Write("images", "download", ex);
             if(!_busy && !_closeRequested && !_exitRequested)
                 SetStatus("images_pending",Localization.Format(Strings.ImageRetryPending,ex.GetType().Name));
         });
@@ -795,25 +812,25 @@ public partial class MainWindow : ChromeWindow
     }
     private async Task StopBackgroundDownloadsAsync()
     {
+        _imageRefreshTimer.Stop();
         if(_characterNames!=null) await _characterNames.CancelAsync();
         var downloads=_imageDownloads;
         if(downloads!=null) await downloads.DisposeAsync();
         if(ReferenceEquals(_imageDownloads,downloads)) _imageDownloads=null;
     }
-    private void RequestCancellation()
+    private void RequestCancellation() => RequestCancellation(true);
+    private void RequestCancellation(bool silent)
     {
         // Invalidate any view change waiting behind this download before cancelling it.
         _viewLoadVersion++;
         History.StopAutoLoad();
-        _silentCancellation=true; _cancellation?.Cancel(); _imageDownloads?.Cancel();
+        _sync.Cancel(silent); _imageDownloads?.Cancel();
         foreach(var login in OwnedWindows.OfType<LoginWindow>().ToArray()) login.Close();
     }
     private async Task CancelDownloadsAsync(bool silent=true)
     {
-        RequestCancellation();
-        _silentCancellation=silent;
-        await _foregroundTask;
-        await StopBackgroundDownloadsAsync();
+        RequestCancellation(silent);
+        await _sync.CancelAndDrainAsync(StopBackgroundDownloadsAsync,silent);
     }
     private async Task CategoryChangedAsync()
     {
@@ -831,7 +848,7 @@ public partial class MainWindow : ChromeWindow
         if(!_ready || _restoringView || _exitRequested || _stoppingRefresh || App.Capture) return;
         var version=++_viewLoadVersion;var navigationVersion=_navigationVersion;
         // Filters update locally now; the newest view gets its turn after active work finishes.
-        if(_busy) await _foregroundTask;
+        if(_busy) await _sync.PendingWork;
         if(version!=_viewLoadVersion || navigationVersion!=_navigationVersion || _busy || _exitRequested) return;
         if(PageTabs.SelectedIndex==1) await BeginLoadAsync(scoreRange:true);
         else if(!History.FavoritesOnly && Pager.NeedsInitial(History.Category)) await BeginLoadAsync();
@@ -983,6 +1000,7 @@ public partial class MainWindow : ChromeWindow
     private void HideNotice()=>Toast.Dismiss();
     private void SetStatus(string stage, string message)
     {
+        Diagnostics.Write("ui", stage);
         switch (stage)
         {
             case "error": ShowNotice(message, true); break;
@@ -1088,5 +1106,5 @@ public partial class MainWindow : ChromeWindow
         _exitReady=true;Close();
     }
     protected override void OnClosed(EventArgs e)
-    { _tray?.Dispose();_refreshReminderTimer.Stop();_autoRefreshTimer.Stop();_progressTimer.Stop();_matchEndStatusTimer.Stop();base.OnClosed(e); }
+    { _tray?.Dispose();_imageRefreshTimer.Stop();_refreshReminderTimer.Stop();_autoRefreshTimer.Stop();_progressTimer.Stop();_matchEndStatusTimer.Stop();base.OnClosed(e); }
 }

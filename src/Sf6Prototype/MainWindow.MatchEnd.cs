@@ -127,7 +127,7 @@ public partial class MainWindow
             var follow=CaptureMatchEndFollow(session!.AccountId);
             version=_matchEndRefresh.Begin();_matchEndMonitor?.ReportRefresh("refreshing");
             _matchEndRefreshInFlight=true;
-            var task=AutoRefreshAccountAsync(session!);_foregroundTask=task;
+            var task=AutoRefreshAccountAsync(session!);
             var success=await task;
             var changed=_store.Frontier(session!.AccountId,BattlePager.AccountBoundary)!=boundary;
             if(success && changed) FollowRefreshedMatch(follow);

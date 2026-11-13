@@ -23,6 +23,7 @@ internal static class Program
         var assembly=Uri.EscapeDataString(typeof(MainWindow).Assembly.GetName().Name!);
         app.Resources.MergedDictionaries.Add(new ResourceDictionary {Source=new Uri($"pack://application:,,,/{assembly};component/Themes/Utility.xaml")});
         if(args.Contains("--match-end-follow-capture")) {MatchEndFollowChecks.Capture();app.Shutdown();return;}
+        if(args.Contains("--cancellation-checks")) {Console.WriteLine($"Passed {CancellationChecks.Run()} cancellation checks.");app.Shutdown();return;}
         var main=new MainWindow();
         main.ApplyTemplate();main.Dispatcher.Invoke(()=>{},System.Windows.Threading.DispatcherPriority.ContextIdle);
         Check(new System.Windows.Interop.WindowInteropHelper(main).Handle==IntPtr.Zero,"Control checks do not create a native window or tray icon");
@@ -169,6 +170,7 @@ internal static class Program
             Check(icon.Width==size && icon.Height==size && icon.Handle!=IntPtr.Zero,$"Packaged ICO provides a native {size}-pixel icon without shrinking a single frame");
         }
         Check(App.DataDirectory=="" && !main.IsVisible && !settings.IsVisible && !choice.IsVisible && new System.Windows.Interop.WindowInteropHelper(main).Handle==IntPtr.Zero && new System.Windows.Interop.WindowInteropHelper(settings).Handle==IntPtr.Zero && new System.Windows.Interop.WindowInteropHelper(choice).Handle==IntPtr.Zero,"Desktop checks never start the application, create native windows or use user data");
+        count+=ArchiveSnapshotChecks.Run();
         count+=CancellationChecks.Run();
         count+=RefreshReminderChecks.Run();
         count+=MatchEndFailureImageChecks.Run();

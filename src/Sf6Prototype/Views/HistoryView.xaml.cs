@@ -202,7 +202,7 @@ public partial class HistoryView : UserControl
         var oldCharacter = restore!=null ? restore.Character : (CharacterFilter.SelectedItem as CharacterChoice)?.Key;
         var oldOpponentCharacter=restore!=null ? restore.OpponentCharacter : (OpponentCharacterFilter.SelectedItem as CharacterChoice)?.Key;
         var oldOutcome = restore!=null ? restore.Outcome : (OutcomeFilter.SelectedItem as OutcomeChoice)?.Key;
-        _favoriteRecords=a.Store.FavoriteRecords();
+        _favoriteRecords=a.Store.FavoriteRecords(summariesOnly:true);
         var defaultPlayer=DefaultFavoritePlayer ?? new PlayerIdentity(a.SignedInId ?? a.Owner,a.All.FirstOrDefault(b=>b.OwnerId==(a.SignedInId ?? a.Owner))?.PlayerName ?? "");
         FavoritePlayer ??=defaultPlayer;
         if(FavoritesOnly)
@@ -267,7 +267,7 @@ public partial class HistoryView : UserControl
         var outcome = OutcomeFilter.SelectedIndex > 0 ? (OutcomeFilter.SelectedItem as OutcomeChoice)?.Key : null;
         var filter=new BattleFilter(a.Owner,string.IsNullOrEmpty(category) ? null : category,character,outcome,SearchBox.Text,
             Epoch(DateRange.Start),Epoch(DateRange.End?.AddDays(1)),opponentCharacter,FavoritesOnly,FavoritesOnly ? _filterTags : [],_matchAllTags);
-        var filtered=FavoritesOnly ? Favorites.Filter(_playerFavorites,filter) : a.Store.Query(filter);
+        var filtered=FavoritesOnly ? Favorites.Filter(_playerFavorites,filter) : a.Store.QuerySummaries(filter);
 
         var wins = filtered.Count(b => b.Outcome == "胜"); var losses = filtered.Count(b => b.Outcome == "负"); var draws = filtered.Count(b => b.Outcome == "平");
         var incomplete=!FavoritesOnly && HistoryIncomplete(category);

@@ -63,8 +63,8 @@ public sealed class BucklerClient : IBattleSource, IProfileSource, IRankSource, 
             CharacterObserver?.Invoke(CharacterObservation.Battles(parsed.Battles));
             return parsed;
         }
-        catch (JsonException) { throw new InvalidDataException(Strings.InvalidReplayJson); }
-        catch (KeyNotFoundException) { throw new InvalidDataException(Strings.ReplayStructureChanged); }
+        catch (JsonException ex) { Diagnostics.Write("replays", "parse", ex); throw new InvalidDataException(Strings.InvalidReplayJson); }
+        catch (KeyNotFoundException ex) { Diagnostics.Write("replays", "parse", ex); throw new InvalidDataException(Strings.ReplayStructureChanged); }
     }
     public async Task<string> FetchPlayAsync(string owner, CancellationToken token)
     {
@@ -110,8 +110,11 @@ public sealed class BucklerClient : IBattleSource, IProfileSource, IRankSource, 
     }
     private async Task<(int Code, string Body)> GetAsync(string path, CancellationToken token, string? payload = null)
     {
+        var endpoint = path.Contains("battlelog") ? "battles" : path.Contains("getlogindata") ? "session" :
+            path.Contains("/card/") ? "card" : path.Contains("play") ? "profile" : "character_names";
         for (var attempt = 0; ; attempt++)
         {
+            var started = System.Diagnostics.Stopwatch.GetTimestamp();
             try
             {
                 using var request = new HttpRequestMessage(payload==null ? HttpMethod.Get : HttpMethod.Post,Origin+path);
@@ -127,6 +130,7 @@ public sealed class BucklerClient : IBattleSource, IProfileSource, IRankSource, 
                 }, token);
                 Persist();
                 var code = (int)response.StatusCode;
+                Diagnostics.Write("http", endpoint, elapsedMs: System.Diagnostics.Stopwatch.GetElapsedTime(started).TotalMilliseconds, statusCode: code, attempt: attempt + 1);
                 Activity?.Invoke(new(RequestPhase.Completed,System.Diagnostics.Stopwatch.GetElapsedTime(sent).TotalSeconds,code==200));
                 if (code == 429)
                 {
@@ -137,8 +141,13 @@ public sealed class BucklerClient : IBattleSource, IProfileSource, IRankSource, 
                 var body = await response.Content.ReadAsStringAsync(token);
                 return (code, body);
             }
-            catch (TaskCanceledException) when (!token.IsCancellationRequested && attempt < 1)
-            {Activity?.Invoke(new(RequestPhase.Retrying)); await Task.Delay(TimeSpan.FromSeconds(5), token); }
+            catch (TaskCanceledException ex) when (!token.IsCancellationRequested && attempt < 1)
+            {Diagnostics.Write("http", "timeout_retry", ex, attempt: attempt + 1); Activity?.Invoke(new(RequestPhase.Retrying)); await Task.Delay(TimeSpan.FromSeconds(5), token); }
+            catch (Exception ex)
+            {
+                Diagnostics.Write("http", token.IsCancellationRequested ? "cancelled" : endpoint, ex, System.Diagnostics.Stopwatch.GetElapsedTime(started).TotalMilliseconds, attempt: attempt + 1);
+                throw;
+            }
         }
     }
     private static void EnsureSuccess(int code)
@@ -149,7 +158,7 @@ public sealed class BucklerClient : IBattleSource, IProfileSource, IRankSource, 
     private static JsonDocument ParseJson(string text)
     {
         try { return JsonDocument.Parse(text); }
-        catch (JsonException) { throw new LoginRequiredException(Strings.LoginVerificationPage); }
+        catch (JsonException ex) { Diagnostics.Write("http","parse_json",ex); throw new LoginRequiredException(Strings.LoginVerificationPage); }
     }
     private void Persist() { _session = _session with { Cookies = CookieVault.FromContainer(_cookies) }; _vault.Save(_session); }
     public void Dispose() { Persist(); _http.Dispose(); }

@@ -39,22 +39,26 @@ internal static class CancellationChecks
         history.Bind(archive);scores.Bind(archive);detail.Bind(archive);
         Set("_ready",true);Call(main,"ReloadLocal",false,true,null,false);
         var ring=(RefreshProgressGlyph)main.FindName("SyncRing");var sync=(Button)main.FindName("SyncButton");
-        var tokens=new List<CancellationTokenSource>();
+        var coordinator=Get<SyncCoordinator>("_sync");
         var imageSource=new HeldImage();
         var images=new ImageDownloads(imageSource,_=>throw new Exception("Cancelled image notified the UI"),ex=>throw ex);
         images.Start([new ImageDownload("/held",System.IO.Path.Combine(root,"held.png"))]);
         Set("_imageDownloads",images);
-        (CancellationTokenSource Token,TaskCompletionSource Work) Download(bool delayed=false)
+        (CancellationToken Token,TaskCompletionSource Work) Download(bool delayed=false)
         {
-            var token=new CancellationTokenSource();tokens.Add(token);var work=new TaskCompletionSource();
-            Set("_cancellation",token);Set("_foregroundTask",work.Task);
-            if(!delayed) token.Token.Register(()=>{Busy(false);work.TrySetResult();});Busy(true);
+            var work=new TaskCompletionSource();var token=CancellationToken.None;
+            _=coordinator.RunAsync(new(SyncOperation.LoadHistory),async context=>
+            {
+                token=context.Token;
+                using var registration=delayed ? default : token.Register(()=>work.TrySetResult());
+                await work.Task;
+            });
             return (token,work);
         }
         try
         {
             var first=Download();
-            Complete((Task)Call(main,"PrepareImageDownloadsAsync",first.Token.Token)!);
+            Complete((Task)Call(main,"PrepareImageDownloadsAsync",first.Token)!);
             Check(!imageSource.Token.IsCancellationRequested && !images.PendingWork.IsCompleted,
                 "Starting another battle load preserves ongoing portrait downloads");
             MouseDown((UIElement)main.Content);
@@ -114,16 +118,30 @@ internal static class CancellationChecks
             Check(next.Token.IsCancellationRequested && navigation.Current.Id==third.Id,"A new player keeps normal navigation after repeated cancellations");
             var explicitStop=Download();Complete((Task)Call(main,"ToggleRefreshAsync")!);
             Check(explicitStop.Token.IsCancellationRequested && !Get<bool>("_busy"),"The shared button and Ctrl+R action stops rather than cancels-and-restarts");
+            var preparing=Download();
+            store.SavePage([new Battle {OwnerId=third.Id,ReplayId="saved-before-stop",Category="rank",PlayedAt=2000,CharacterId=1,Character="隆",MyRounds=2,OpponentRounds=1}]);
+            Check(!archive.All.Any(b=>b.ReplayId=="saved-before-stop"),"The committed page can await asynchronous view preparation");
+            Complete((Task)Call(main,"ToggleRefreshAsync")!);
+            Check(preparing.Token.IsCancellationRequested && archive.All.Any(b=>b.ReplayId=="saved-before-stop") &&
+                history.Filtered.Any(b=>b.ReplayId=="saved-before-stop"),"Stopping during preparation displays the last committed page without requesting more data");
+            var unrelatedError=Download(delayed:true);
+            var directoryProperty=typeof(App).GetProperty(nameof(App.DataDirectory))!;
+            directoryProperty.SetValue(null,root);
+            try
+            {
+                Call(main,"ReportError",new System.IO.IOException("Unrelated settings failure"));
+                Check(coordinator.Active?.Error==null,"An unrelated UI error cannot mark the active synchronization as failed");
+            }
+            finally {directoryProperty.SetValue(null,"");unrelatedError.Work.TrySetResult();Pump();}
             var slow=Download(delayed:true);var pending=(Task)Call(main,"ViewPlayerAsync",home)!;
             var pendingVersion=Get<int>("_navigationVersion");
             Check(detail.PendingPlayerId==home.Id && !pending.IsCompleted && navigation.Current.Id==third.Id,"A player click exposes loading synchronously before waiting for cancellation or reading another archive");
             var duplicate=(Task)Call(main,"ViewPlayerAsync",home)!;
             Check(duplicate.IsCompleted && Get<int>("_navigationVersion")==pendingVersion,"Repeated clicks for the pending player do not start or invalidate another navigation");
             Pump();Check(slow.Token.IsCancellationRequested && !pending.IsCompleted && detail.PendingPlayerId==home.Id,"Loading feedback stays visible while cancellation is still in progress");
-            var replacement=Download(delayed:true);var newer=(Task)Call(main,"ViewPlayerAsync",other)!;Pump();
-            slow.Work.SetResult();Complete(pending);
-            Check(detail.PendingPlayerId==other.Id && !newer.IsCompleted && navigation.Current.Id==third.Id,"A superseded request cannot clear newer loading feedback or change the current player");
-            Busy(false);replacement.Work.SetResult();Complete(newer);
+            var newer=(Task)Call(main,"ViewPlayerAsync",other)!;Pump();
+            Check(detail.PendingPlayerId==other.Id && !newer.IsCompleted && navigation.Current.Id==third.Id,"A newer navigation owns feedback while both requests await the same cancelled operation");
+            slow.Work.SetResult();Complete(pending);Complete(newer);
             Check(detail.PendingPlayerId=="" && navigation.Current.Id==other.Id,"Completing the latest navigation clears its feedback and opens the requested player");
             var exitRequest=(Task)Call(main,"ViewPlayerAsync",home)!;Set("_exitRequested",true);Complete(exitRequest);Set("_exitRequested",false);
             Check(detail.PendingPlayerId=="" && navigation.Current.Id==other.Id,"Exiting before the deferred navigation starts clears its feedback without switching archives");
@@ -152,8 +170,8 @@ internal static class CancellationChecks
         }
         finally
         {
-            Set("_ready",false);Set("_cancellation",null);Busy(false);
-            Call(main,"HideNotice");foreach(var token in tokens)token.Dispose();
+            Set("_ready",false);coordinator.Cancel();Busy(false);
+            Call(main,"HideNotice");
             Complete(images.DisposeAsync().AsTask());Set("_imageDownloads",null);
             SynchronizationContext.SetSynchronizationContext(previousContext);
         }

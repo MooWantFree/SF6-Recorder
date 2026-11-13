@@ -44,18 +44,24 @@ public static class Favorites
 
 public sealed partial class BattleStore
 {
-    public IReadOnlyList<FavoriteRecord> FavoriteRecords()
+    private IReadOnlyList<FavoriteRecord>? _favoriteSummaries;
+    private long _favoriteRevision=-1;
+    public IReadOnlyList<FavoriteRecord> FavoriteRecords(bool summariesOnly=false)
     {
+        if(summariesOnly && _favoriteSummaries!=null && _favoriteRevision==ReadRevision) return _favoriteSummaries;
         using var db=Open();using var cmd=db.CreateCommand();
-        cmd.CommandText="SELECT b.data_json,c.name,c.color FROM battle_tags t JOIN battles b ON b.owner_id=t.owner_id AND b.replay_id=t.replay_id JOIN tags c ON c.name=t.tag_name ORDER BY b.played_at DESC,b.owner_id,b.replay_id,c.name";
+        var payload=summariesOnly ? "json_remove(b.data_json,'$.RawJson')" : "b.data_json";
+        cmd.CommandText="SELECT b.owner_id,b.replay_id,"+payload+",c.name,c.color FROM battle_tags t JOIN battles b ON b.owner_id=t.owner_id AND b.replay_id=t.replay_id JOIN tags c ON c.name=t.tag_name ORDER BY b.played_at DESC,b.owner_id,b.replay_id,c.name";
         using var reader=cmd.ExecuteReader();var entries=new Dictionary<(string,string),(Battle Battle,List<MatchTag> Tags)>();
         while(reader.Read())
         {
-            var battle=JsonSerializer.Deserialize<Battle>(reader.GetString(0))!;var key=(battle.OwnerId,battle.ReplayId);
-            if(!entries.TryGetValue(key,out var entry)) entries[key]=entry=(battle,[]);
-            entry.Tags.Add(new(reader.GetString(1),reader.GetInt32(2)));
+            var key=(reader.GetString(0),reader.GetString(1));
+            if(!entries.TryGetValue(key,out var entry)) entries[key]=entry=(JsonSerializer.Deserialize<Battle>(reader.GetString(2))!,[]);
+            entry.Tags.Add(new(reader.GetString(3),reader.GetInt32(4)));
         }
-        return entries.Values.Select(e=>new FavoriteRecord(e.Battle,e.Tags)).ToArray();
+        var result=entries.Values.Select(e=>new FavoriteRecord(e.Battle,e.Tags)).ToArray();
+        if(summariesOnly) {_favoriteSummaries=result;_favoriteRevision=ReadRevision;}
+        return result;
     }
     public void SetFavoriteTag(string player,string replay,string name,bool selected)
     {
@@ -66,6 +72,6 @@ public sealed partial class BattleStore
         using var db=Open();using var tx=db.BeginTransaction();using var cmd=db.CreateCommand();cmd.Transaction=tx;
         cmd.CommandText="DELETE FROM battle_tags WHERE owner_id=$owner AND replay_id=$replay AND tag_name=$name";
         Add(cmd,"$replay",replay);Add(cmd,"$name",name);var owner=cmd.Parameters.Add("$owner",Microsoft.Data.Sqlite.SqliteType.Text);
-        foreach(var source in sources) {owner.Value=source.Battle.OwnerId;cmd.ExecuteNonQuery();}tx.Commit();
+        foreach(var source in sources) {owner.Value=source.Battle.OwnerId;cmd.ExecuteNonQuery();}tx.Commit();Changed();
     }
 }

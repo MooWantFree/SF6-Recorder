@@ -27,6 +27,28 @@ public sealed class Archive(BattleStore store, ProfileCache profiles)
     private readonly Dictionary<string, ImageSource?> _images = [];
     private Dictionary<string,Battle> _battles=[];
     private IReadOnlyDictionary<string,string> _scoreLinks=new Dictionary<string,string>();
+    private long _loadedRevision=-1;
+    private List<Battle>? _nativeRows;
+    private Dictionary<string,ScorePoint> _nativePoints=[];
+    private Dictionary<string,IReadOnlyList<MatchTag>> _nativeTags=[];
+    private sealed record Prepared(string Owner,long Revision,List<Battle> Rows,CurrentScores? Current,
+        Dictionary<string,string> Links,Dictionary<string,ScorePoint> Points,Dictionary<string,IReadOnlyList<MatchTag>> Tags);
+    private Prepared? _prepared;
+    public async Task PrepareAsync(string owner,CancellationToken token)
+    {
+        // Only immutable data is prepared here; WPF image objects and bindings stay on the dispatcher.
+        var prepared=await Task.Run(()=>
+        {
+            token.ThrowIfCancellationRequested();
+            var revision=store.ReadRevision;
+            var rows=store.QuerySummaries(new(owner));var current=profiles.Scores(owner);
+            var links=store.ScoreLinks(owner);var tags=store.TagsFor(owner);
+            var points=BattleStore.Scores(rows,current,links:links).ToDictionary(p=>p.ReplayId);
+            token.ThrowIfCancellationRequested();
+            return new Prepared(owner,revision,rows,current,links,points,tags);
+        },token);
+        if(prepared.Revision==store.ReadRevision) _prepared=prepared;
+    }
     public string? SignedInId { get; set; }
     public BattleStore Store => store;
     public ProfileCache Profiles => profiles;
@@ -37,12 +59,28 @@ public sealed class Archive(BattleStore store, ProfileCache profiles)
     public Dictionary<string,IReadOnlyList<MatchTag>> Tags { get; private set; }=[];
     public void Load(string owner, bool refreshImages = true)
     {
-        Owner = owner; All = store.Query(new(owner)); Current = profiles.Scores(owner);
-        Tags=store.TagsFor(owner);
-        _scoreLinks=store.ScoreLinks(owner); _battles=All.ToDictionary(b=>b.ReplayId);
-        Points = BattleStore.Scores(All, Current, links: _scoreLinks).ToDictionary(p => p.ReplayId);
+        var current=profiles.Scores(owner);
+        var rows=store.QuerySummaries(new(owner));
+        var prepared=_prepared is { } p && p.Owner==owner && p.Revision==store.ReadRevision && ReferenceEquals(p.Rows,rows) &&
+            SameScores(p.Current,current) ? p : null;
+        _prepared=null;
+        var changed=Owner!=owner || !ReferenceEquals(rows,_nativeRows) || _loadedRevision!=store.ReadRevision;
+        var scoresChanged=!SameScores(Current,current);
+        Owner=owner;All=_nativeRows=rows;Current=current;
+        if(changed)
+        {
+            _nativeTags=prepared?.Tags ?? store.TagsFor(owner);
+            _scoreLinks=prepared?.Links ?? store.ScoreLinks(owner);_battles=All.ToDictionary(b=>b.ReplayId);
+            _loadedRevision=store.ReadRevision;
+        }
+        if(changed || scoresChanged)
+            _nativePoints=prepared?.Points ?? BattleStore.Scores(All,Current,links:_scoreLinks).ToDictionary(p=>p.ReplayId);
+        Points=_nativePoints;Tags=_nativeTags;
         if (refreshImages) _images.Clear();
     }
+    private static bool SameScores(CurrentScores? first,CurrentScores? second) =>
+        first?.FetchedAt==second?.FetchedAt && first?.Season==second?.Season &&
+        (first?.Characters ?? []).SequenceEqual(second?.Characters ?? []);
     public ImageSource? Image(int id, string? name)
     {
         var path = profiles.CharacterImage(id, name); if (path == null) return null;
@@ -52,6 +90,7 @@ public sealed class Archive(BattleStore store, ProfileCache profiles)
     public IReadOnlyList<FavoriteRecord> LoadFavorites(string owner,IReadOnlyList<FavoriteRecord> records)
     {
         Load(owner,false);
+        Points=new(Points);
         var favorites=Favorites.ForPlayer(records,owner).Select(r=>r with {Battle=r.Battle.CharacterId<0 ? r.Battle with {CharacterId=profiles.Characters.FirstOrDefault(c=>c.Name==r.Battle.Character)?.Id ?? -1} : r.Battle}).ToArray();
         // Native records retain verified score links. Reversed records have pre-match values only.
         All=All.Concat(favorites.Select(r=>r.Battle)).DistinctBy(b=>b.ReplayId).OrderByDescending(b=>b.PlayedAt).ToList();

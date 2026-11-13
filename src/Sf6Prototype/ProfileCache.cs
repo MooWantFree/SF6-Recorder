@@ -111,12 +111,11 @@ public sealed class ProfileCache(string directory)
             var profile = RankProfiles.ParseProfile(playJson, owner);
             WriteJson(Path.Combine(directory, "scores-" + owner + ".json"), new CurrentScores(fetchedAt, profile.CurrentSeason, profile.Characters));
         }
-        catch (Exception e) when (e is InvalidDataException or KeyNotFoundException or InvalidOperationException or JsonException) { }
+        catch (Exception e) when (e is InvalidDataException or KeyNotFoundException or InvalidOperationException or JsonException) { Diagnostics.Write("profile", "save_scores", e); }
     }
     private static void WriteJson<T>(string path, T value)
     {
         File.WriteAllText(path + ".tmp", JsonSerializer.Serialize(value));
-        if(File.Exists(path)) File.Replace(path+".tmp",path,null);
-        else File.Move(path+".tmp",path);
+        AtomicFile.Commit(path+".tmp",path);
     }
 }

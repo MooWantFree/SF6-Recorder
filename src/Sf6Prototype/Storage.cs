@@ -90,6 +90,7 @@ public sealed partial class BattleStore
     public int SavePage(IEnumerable<Battle> rows)
     {
         using var db = Open(); using var tx = db.BeginTransaction(); var added = 0;
+        var changed=new HashSet<(string Owner,string Replay)>();
         foreach (var b in rows)
         {
             using var cmd = db.CreateCommand(); cmd.Transaction = tx;
@@ -98,6 +99,7 @@ public sealed partial class BattleStore
             Add(cmd, "$cid", b.CharacterId); Add(cmd, "$char", b.Character); Add(cmd, "$opponent", b.Opponent); Add(cmd, "$outcome", b.Outcome);
             Add(cmd, "$lp", b.Lp); Add(cmd, "$mr", b.Mr); Add(cmd, "$data", JsonSerializer.Serialize(b)); Add(cmd, "$saved", DateTimeOffset.UtcNow.ToString("O"));
             var inserted=cmd.ExecuteNonQuery(); added+=inserted;
+            if(inserted>0) changed.Add((b.OwnerId,b.ReplayId));
             if(inserted==0 && b.RawJson is {ValueKind:JsonValueKind.Object} raw)
             {
                 using var payload=db.CreateCommand();payload.Transaction=tx;
@@ -129,14 +131,14 @@ public sealed partial class BattleStore
                 Add(metadata,"$owner",b.OwnerId); Add(metadata,"$id",b.ReplayId);
                 Add(metadata,"$rank",b.OpponentLeagueRank); Add(metadata,"$master",b.OpponentMasterLeague);
                 Add(metadata,"$position",b.MasterRatingRanking); Add(metadata,"$opponentPosition",b.OpponentMasterRatingRanking);
-                metadata.ExecuteNonQuery();
+                if(metadata.ExecuteNonQuery()>0) changed.Add((b.OwnerId,b.ReplayId));
             }
             using var score = db.CreateCommand(); score.Transaction = tx;
             score.CommandText = "INSERT INTO score_snapshots VALUES($owner,$id,$cid,$time,$lp,$mr,$season) ON CONFLICT(owner_id,replay_id) DO NOTHING";
             Add(score, "$owner", b.OwnerId); Add(score, "$id", b.ReplayId); Add(score, "$cid", b.CharacterId); Add(score, "$time", b.PlayedAt);
             Add(score, "$lp", b.Lp); Add(score, "$mr", b.Mr); Add(score, "$season", b.Season); score.ExecuteNonQuery();
         }
-        tx.Commit(); return added;
+        tx.Commit(); Changed(changed); return added;
     }
     public string? Frontier(string owner, string category)
     {
@@ -203,7 +205,7 @@ public sealed partial class BattleStore
             }
             newer[b.CharacterId]=b.ReplayId;
         }
-        tx.Commit();
+        tx.Commit(); Changed();
     }
     public Dictionary<string,string> ScoreLinks(string owner)
     {
@@ -253,6 +255,13 @@ public sealed partial class BattleStore
     public List<Battle> Query(BattleFilter filter)
     {
         using var db = Open(); using var cmd = db.CreateCommand();
+        cmd.CommandText = "SELECT data_json FROM battles WHERE " + FilterSql(cmd,filter) + " ORDER BY played_at DESC,replay_id";
+        using var reader = cmd.ExecuteReader(); var rows = new List<Battle>();
+        while (reader.Read()) rows.Add(JsonSerializer.Deserialize<Battle>(reader.GetString(0))!);
+        return rows;
+    }
+    private static string FilterSql(SqliteCommand cmd,BattleFilter filter)
+    {
         var where = new List<string> { "owner_id=$owner" }; Add(cmd, "$owner", filter.OwnerId);
         if (filter.Category != null) { where.Add("category=$category"); Add(cmd, "$category", filter.Category); }
         if (filter.Character != null) { where.Add("character=$character"); Add(cmd, "$character", filter.Character); }
@@ -269,10 +278,7 @@ public sealed partial class BattleStore
         if (!string.IsNullOrWhiteSpace(filter.Search)) { where.Add("(instr(lower(opponent),lower($search))>0 OR instr(lower(replay_id),lower($search))>0 OR instr(json_extract(data_json,'$.OpponentId'),$search)>0)"); Add(cmd, "$search", filter.Search.Trim()); }
         if (filter.From != null) { where.Add("played_at >= $from"); Add(cmd, "$from", filter.From); }
         if (filter.Until != null) { where.Add("played_at < $until"); Add(cmd, "$until", filter.Until); }
-        cmd.CommandText = "SELECT data_json FROM battles WHERE " + string.Join(" AND ", where) + " ORDER BY played_at DESC,replay_id";
-        using var reader = cmd.ExecuteReader(); var rows = new List<Battle>();
-        while (reader.Read()) rows.Add(JsonSerializer.Deserialize<Battle>(reader.GetString(0))!);
-        return rows;
+        return string.Join(" AND ",where);
     }
     public static List<CharacterSummary> Summaries(IEnumerable<Battle> rows) => rows.GroupBy(b => new { b.CharacterId, b.Character })
         .Select(g => { var last = g.OrderByDescending(b => b.PlayedAt).First(); return new CharacterSummary(g.Key.Character, g.Key.CharacterId, g.Count(), g.Count(b => b.Outcome == "胜"), g.Count(b => b.Outcome == "负"), g.Count(b => b.Outcome == "平"), last.Lp, last.Mr); })

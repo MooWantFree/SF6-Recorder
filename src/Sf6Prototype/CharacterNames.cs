@@ -185,8 +185,7 @@ public sealed class CharacterNames
         // Commit each completed language separately so an interrupted first run can resume.
         File.WriteAllText(_path+".tmp",JsonSerializer.Serialize(new CharacterNameCatalog(1,updated.Values.OrderBy(c=>c.Id).ToList()),
             new JsonSerializerOptions {WriteIndented=true,Encoder=JavaScriptEncoder.UnsafeRelaxedJsonEscaping}));
-        if(File.Exists(_path)) File.Replace(_path+".tmp",_path,null);
-        else File.Move(_path+".tmp",_path);
+        AtomicFile.Commit(_path+".tmp",_path);
         _characters=updated;
         Revision++;
     }

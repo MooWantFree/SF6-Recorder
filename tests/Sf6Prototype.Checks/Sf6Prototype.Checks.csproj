@@ -17,6 +17,10 @@
     <Compile Include="../../src/Sf6Prototype/BattleParser.cs" Link="BattleParser.cs"/>
     <Compile Include="../../src/Sf6Prototype/SessionEvidence.cs" Link="SessionEvidence.cs"/>
     <Compile Include="../../src/Sf6Prototype/Models.cs" Link="Models.cs"/>
+    <Compile Include="../../src/Sf6Prototype/SyncCoordinator.cs" Link="SyncCoordinator.cs"/>
+    <Compile Include="../../src/Sf6Prototype/AtomicFile.cs" Link="AtomicFile.cs"/>
+    <Compile Include="../../src/Sf6Prototype/Diagnostics.cs" Link="Diagnostics.cs"/>
+    <Compile Include="../../src/Sf6Prototype/Storage.Reads.cs" Link="Storage.Reads.cs"/>
     <Compile Include="../../src/Sf6Prototype/Storage.cs" Link="Storage.cs"/>
     <Compile Include="../../src/Sf6Prototype/MatchTags.cs" Link="MatchTags.cs"/>
     <Compile Include="../../src/Sf6Prototype/Favorites.cs" Link="Favorites.cs"/>
