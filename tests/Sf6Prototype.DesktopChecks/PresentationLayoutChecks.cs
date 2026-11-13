@@ -120,7 +120,8 @@ internal static class PresentationLayoutChecks
             {
                 presets.SelectedIndex=i;Layout(settingsContent,settings.Width-16,680);
                 var item=(ListBoxItem)presets.Items[i];var text=Descendants<TextBlock>(item).First();
-                Check(TextWidth(text)<=text.ActualWidth+.5,$"Selected preset {item.Content} renders without clipping");
+                var measuredWidth=TextWidth(text);
+                Check(measuredWidth<=text.ActualWidth+.5,$"Selected preset {item.Content} renders without clipping (measured={measuredWidth:F2}, available={text.ActualWidth:F2}, language={text.Language}, formatting={TextOptions.GetTextFormattingMode(text)})");
             }
         }
         ((ListBox)settings.FindName("ReminderPresets")).SelectedIndex=4;Layout(settingsContent,settings.Width-16,680);Save(settingsContent,"settings.png");
@@ -136,8 +137,9 @@ internal static class PresentationLayoutChecks
         element.Measure(new Size(width,height));element.Arrange(new Rect(0,0,width,height));element.UpdateLayout();
         element.Dispatcher.Invoke(()=>{},DispatcherPriority.ContextIdle);element.UpdateLayout();
     }
-    private static double TextWidth(TextBlock text)=>new FormattedText(text.Text,CultureInfo.CurrentCulture,FlowDirection.LeftToRight,
-        new Typeface(text.FontFamily,text.FontStyle,text.FontWeight,text.FontStretch),text.FontSize,Brushes.Black,1).WidthIncludingTrailingWhitespace;
+    private static double TextWidth(TextBlock text)=>new FormattedText(text.Text,text.Language.GetSpecificCulture(),text.FlowDirection,
+        new Typeface(text.FontFamily,text.FontStyle,text.FontWeight,text.FontStretch),text.FontSize,Brushes.Black,
+        null,TextOptions.GetTextFormattingMode(text),VisualTreeHelper.GetDpi(text).PixelsPerDip).WidthIncludingTrailingWhitespace;
     private static IEnumerable<T> Descendants<T>(DependencyObject parent) where T:DependencyObject
     {
         for(var i=0;i<VisualTreeHelper.GetChildrenCount(parent);i++)

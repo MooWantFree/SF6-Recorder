@@ -56,8 +56,9 @@ internal static class LocalizationChecks
                 Check(windowHeight<=720,$"The localized settings window fits the minimum height in {culture} ({windowHeight:F2} DIP)");
                 foreach(var text in Descendants<TextBlock>(content).Where(t=>t.Visibility==Visibility.Visible && t.TextWrapping==TextWrapping.NoWrap && t.Text.Length>0 && t.ActualWidth>0))
                 {
-                    var width=new FormattedText(text.Text,Localization.Culture,FlowDirection.LeftToRight,new Typeface(text.FontFamily,text.FontStyle,text.FontWeight,text.FontStretch),text.FontSize,Brushes.Black,1).Width;
-                    Check(width<=text.ActualWidth+1,$"Settings label fits in {culture}: {text.Text}");
+                    var width=new FormattedText(text.Text,text.Language.GetSpecificCulture(),text.FlowDirection,new Typeface(text.FontFamily,text.FontStyle,text.FontWeight,text.FontStretch),text.FontSize,Brushes.Black,
+                        null,TextOptions.GetTextFormattingMode(text),VisualTreeHelper.GetDpi(text).PixelsPerDip).Width;
+                    Check(width<=text.ActualWidth+1,$"Settings label fits in {culture}: {text.Text} (measured={width:F2}, available={text.ActualWidth:F2})");
                 }
             }
         }
