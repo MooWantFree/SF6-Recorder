@@ -4,16 +4,6 @@
 
 用于将 [CAPCOM Buckler's Boot Camp](https://www.streetfighter.com/6/buckler/profile/) 上的`Street Fighter 6`对局记录保存到本机. 官网只保留最近一段时间的战绩, `SF6 Recorder`每次刷新会把新增战绩记录写入本地 SQLite 数据库持久保存, 不随官网历史滚动而消失.
 
-## 运行环境与启动
-
-- Windows 10 或 Windows 11 (64 位)
-- 不带运行时的版本需要安装 .NET 10 Windows Desktop Runtime (x64); 带运行时的版本无需另外安装 .NET
-- Microsoft Edge WebView2 Runtime (Windows 11 通常已自带)
-
-直接运行 `SF6 Recorder.exe`
-
-![image-20261113233624167](image/image-20261113233624167.png)
-
 ## 自动构建与发布包
 
 ### 自动构建下载
@@ -33,6 +23,16 @@ pwsh -File .\scripts\Publish-Packages.ps1
 ```
 
 ZIP 默认保存在 `artifacts\packages`.
+
+## 运行环境与启动
+
+- Windows 10 或 Windows 11 (64 位)
+- 不带运行时的版本需要安装 .NET 10 Windows Desktop Runtime (x64); 带运行时的版本无需另外安装 .NET
+- Microsoft Edge WebView2 Runtime (Windows 11 通常已自带)
+
+直接运行 `SF6 Recorder.exe`
+
+![image-20261113233624167](image/image-20261113233624167.png)
 
 ## 登录与账号管理
 

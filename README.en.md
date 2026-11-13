@@ -4,16 +4,6 @@
 
 Save your `Street Fighter 6` match history from [CAPCOM's Buckler's Boot Camp](https://www.streetfighter.com/6/buckler/profile/) to your PC. The official website only keeps recent matches. Each time you refresh, `SF6 Recorder` saves new match records to a local SQLite database for long-term storage, so they remain available after they disappear from the website.
 
-## Requirements and startup
-
-- Windows 10 or Windows 11 (64-bit)
-- The framework-dependent version requires .NET 10 Windows Desktop Runtime (x64); the self-contained version includes .NET and does not require a separate installation
-- Microsoft Edge WebView2 Runtime (usually included with Windows 11)
-
-Run `SF6 Recorder.exe`.
-
-![Match history](image/image-20261113233624167.png)
-
 ## Automated builds and packages
 
 ### Download automated builds
@@ -33,6 +23,16 @@ pwsh -File .\scripts\Publish-Packages.ps1
 ```
 
 ZIP files are saved to `artifacts\packages` by default.
+
+## Requirements and startup
+
+- Windows 10 or Windows 11 (64-bit)
+- The framework-dependent version requires .NET 10 Windows Desktop Runtime (x64); the self-contained version includes .NET and does not require a separate installation
+- Microsoft Edge WebView2 Runtime (usually included with Windows 11)
+
+Run `SF6 Recorder.exe`.
+
+![Match history](image/image-20261113233624167.png)
 
 ## Signing in and managing accounts
 

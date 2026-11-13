@@ -4,16 +4,6 @@
 
 [CAPCOM の Buckler's Boot Camp](https://www.streetfighter.com/6/buckler/profile/) に掲載されている『ストリートファイター6』の対戦履歴を PC に保存するアプリです。公式サイトには直近の戦績しか残りませんが、`SF6 Recorder` は更新のたびに新しい戦績をローカルの SQLite データベースに永続保存するため、公式サイトから古い履歴が消えても、保存済みの記録は残ります。
 
-## 動作環境と起動
-
-- Windows 10 または Windows 11（64 ビット）
-- ランタイムなし版には .NET 10 Windows Desktop Runtime（x64）が必要です。ランタイム同梱版では .NET を別途インストールする必要はありません
-- Microsoft Edge WebView2 Runtime（通常、Windows 11 にはインストール済み）
-
-`SF6 Recorder.exe` を実行してください。
-
-![戦績一覧](image/image-20261113233624167.png)
-
 ## 自動ビルドと配布パッケージ
 
 ### 自動ビルドのダウンロード
@@ -33,6 +23,16 @@ pwsh -File .\scripts\Publish-Packages.ps1
 ```
 
 ZIP の既定の保存先は `artifacts\packages` です。
+
+## 動作環境と起動
+
+- Windows 10 または Windows 11（64 ビット）
+- ランタイムなし版には .NET 10 Windows Desktop Runtime（x64）が必要です。ランタイム同梱版では .NET を別途インストールする必要はありません
+- Microsoft Edge WebView2 Runtime（通常、Windows 11 にはインストール済み）
+
+`SF6 Recorder.exe` を実行してください。
+
+![戦績一覧](image/image-20261113233624167.png)
 
 ## ログインとアカウント管理
 
