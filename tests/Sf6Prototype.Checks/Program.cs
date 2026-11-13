@@ -36,8 +36,21 @@ var scored = data.Replace("\"pageProps\":{", "\"pageProps\":{\"current_page\":1,
     .Replace("\"character_name\":\"CHUN-LI\"", "\"character_id\":7,\"character_name\":\"CHUN-LI\",\"league_point\":12500,\"master_rating\":1500")
     .Replace("3396336472", "3396336472.0");
 var parsedPage = MatchParser.Parse(scored, "3396336472", "rank");
+assertions += RoundResultChecks.Run(scored);
 Check(parsedPage.Battles.Single().Lp == 12500 && parsedPage.Battles.Single().Mr == 1500, "Scores must be taken from the user's side");
 Check(parsedPage.Battles.Single().CharacterId == 7 && parsedPage.Battles.Single().Outcome == "胜", "Decimal user IDs and character identity must parse correctly");
+foreach(var (type,key) in new[]{(1,"rank"),(2,"casual"),(3,"custom"),(4,"hub")})
+{
+    var typed=scored.Replace("\"replay_id\":",$"\"replay_battle_type\":{type},\"replay_id\":");
+    foreach(var name in new[]{"", "Ranked Match", "自定义房间<br />对战", "異なる表示名"})
+        Check(MatchParser.Parse(typed.Replace("Ranked Match",name),"3396336472","").Battles.Single().Category==key,"Numeric battle types classify records independently of empty, translated or HTML display names: "+key);
+    Check(MatchParser.Parse(typed.Replace("\"replay_battle_type_name\":\"Ranked Match\",",""),"3396336472","").Battles.Single().Category==key,"A display name is not required to classify a replay: "+key);
+}
+foreach(var typeField in new[]{"", "\"replay_battle_type\":99,", "\"replay_battle_type\":null,"})
+{
+    try {MatchParser.Parse(scored.Replace("\"replay_id\":",typeField+"\"replay_id\":"),"3396336472","");throw new Exception("Missing or unsupported numeric modes must not be guessed from display text");}
+    catch(InvalidDataException){assertions++;}
+}
 var opponentPage = MatchParser.Parse(scored, "1234567890", "rank");
 Check(opponentPage.Battles.Single() is { OwnerId: "1234567890", PlayerName: "Other", OpponentId: "3396336472", Outcome: "负", Lp: 12000 }, "The same replay is parsed from the viewed player's side, including UID, outcome and scores");
 var badgePage=MatchParser.Parse(scored.Replace("\"master_rating\":1500","\"master_rating\":1500,\"master_league\":40"),"3396336472","rank");
@@ -47,7 +60,9 @@ Check(MatchParser.Parse(rankingJson,"3396336472","rank").Battles.Single() is {Ma
 Check(MatchParser.Parse(rankingJson,"1234567890","rank").Battles.Single() is {MasterRatingRanking:501,OpponentMasterRatingRanking:500},"Switching the viewed player swaps both leaderboard positions");
 assertions += await IntegrationChecks.Run();
 assertions += await StreamingChecks.Run();
+assertions += await ImageDownloadChecks.Run();
 assertions += await PagingChecks.Run();
+assertions += await IncrementalBrowsingChecks.Run();
 assertions += PresentationChecks.Run();
 assertions += await RankQueryChecks.Run();
 assertions += NavigationChecks.Run();

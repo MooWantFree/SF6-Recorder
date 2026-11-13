@@ -1,6 +1,11 @@
 <UserControl x:Class="Sf6Prototype.MatchDetailPanel" Language="{DynamicResource UiLanguage}" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:Sf6Prototype">
   <UserControl.Resources>
+    <Style x:Key="RoundCode" TargetType="TextBlock" BasedOn="{StaticResource Number}">
+      <Setter Property="FontSize" Value="12"/><Setter Property="FontWeight" Value="SemiBold"/><Setter Property="TextAlignment" Value="Center"/>
+      <Setter Property="Foreground" Value="{StaticResource Ink3}"/>
+      <Style.Triggers><DataTrigger Binding="{Binding RelativeSource={RelativeSource Self},Path=Tag}" Value="win"><Setter Property="Foreground" Value="{StaticResource Win}"/></DataTrigger></Style.Triggers>
+    </Style>
     <local:PlayerHistoryEnabledConverter x:Key="PlayerHistoryEnabled"/>
     <local:PlayerHistoryLoadingConverter x:Key="PlayerHistoryLoading"/>
     <DataTemplate x:Key="PlayerHistoryLoadingContent">
@@ -98,6 +103,23 @@
             <Border Grid.Column="1" Width="1" Background="{StaticResource LineSubtle}"/>
             <ContentControl Grid.Column="2" Content="{Binding OtherSide}" ContentTemplate="{StaticResource PlayerDetailTemplate}" HorizontalContentAlignment="Stretch"/>
           </Grid>
+          <Border BorderBrush="{StaticResource LineSubtle}" BorderThickness="0,1,0,0" Margin="0,12,0,0" Padding="0,10,0,0">
+            <StackPanel>
+              <TextBlock Text="{DynamicResource I18n.MatchInfo}" FontWeight="SemiBold" Margin="0,0,0,6"/>
+              <TextBlock x:Name="NoRounds" Text="{DynamicResource I18n.NoRoundInfo}" Foreground="{StaticResource Ink3}" FontSize="12">
+                <TextBlock.Style><Style TargetType="TextBlock"><Style.Triggers><DataTrigger Binding="{Binding HasRoundInfo}" Value="True"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger></Style.Triggers></Style></TextBlock.Style>
+              </TextBlock>
+              <ItemsControl x:Name="RoundResultsList" ItemsSource="{Binding Rounds}">
+                <ItemsControl.ItemTemplate><DataTemplate>
+                  <Grid Height="23"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="40"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                    <TextBlock Text="{Binding Own}" Tag="{Binding OwnKind}" ToolTip="{Binding OwnTip}" AutomationProperties.Name="{Binding OwnTip}" Style="{StaticResource RoundCode}" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Column="1" Text="{Binding Label}" FontSize="11" Foreground="{StaticResource Ink3}" TextAlignment="Center" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Column="2" Text="{Binding Opponent}" Tag="{Binding OpponentKind}" ToolTip="{Binding OpponentTip}" AutomationProperties.Name="{Binding OpponentTip}" Style="{StaticResource RoundCode}" VerticalAlignment="Center"/>
+                  </Grid>
+                </DataTemplate></ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Border>
         </StackPanel>
           <Border x:Name="HistorySection" Grid.Row="1" BorderBrush="{StaticResource LineSubtle}" BorderThickness="0,1,0,0" Margin="0,12,0,0" Padding="0,10,0,0" Visibility="Collapsed">
             <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition/></Grid.RowDefinitions>

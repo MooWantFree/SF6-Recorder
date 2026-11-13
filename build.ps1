@@ -1,4 +1,4 @@
-param([switch]$Launch)
+param([switch]$Launch, [switch]$ChecksOnly)
 $ErrorActionPreference = 'Stop'
 Set-Location -LiteralPath $PSScriptRoot
 $env:DOTNET_CLI_HOME = Join-Path $PSScriptRoot '.local\dotnet-cli'
@@ -14,6 +14,14 @@ if (-not (Test-Path -LiteralPath $dotnetPath)) { $dotnetPath = 'dotnet' }
 if ($LASTEXITCODE -ne 0) { throw 'Checks failed.' }
 & $dotnetPath run --project 'tests\Sf6Prototype.DesktopChecks' --configuration Release
 if ($LASTEXITCODE -ne 0) { throw 'Headless desktop checks failed.' }
+if ($ChecksOnly) { return }
 & $dotnetPath publish 'src\Sf6Prototype\Sf6Prototype.csproj' -c Release -r win-x64 --self-contained false -o 'artifacts\app'
 if ($LASTEXITCODE -ne 0) { throw 'Build failed.' }
-if ($Launch) { Start-Process -FilePath (Join-Path $PSScriptRoot 'artifacts\app\Sf6Prototype.exe') }
+# Remove the former application identity after a successful publish; keep Data intact.
+$legacyFiles = @('Sf6Prototype.exe', 'Sf6Prototype.dll', 'Sf6Prototype.pdb', 'Sf6Prototype.deps.json', 'Sf6Prototype.runtimeconfig.json')
+$legacyFiles += @('ja', 'zh-Hans', 'zh-Hant') | ForEach-Object { "$_\Sf6Prototype.resources.dll" }
+foreach ($relativePath in $legacyFiles) {
+    $legacyPath = Join-Path $PSScriptRoot "artifacts\app\$relativePath"
+    if (Test-Path -LiteralPath $legacyPath -PathType Leaf) { Remove-Item -LiteralPath $legacyPath }
+}
+if ($Launch) { Start-Process -FilePath (Join-Path $PSScriptRoot 'artifacts\app\SF6 Recorder.exe') }

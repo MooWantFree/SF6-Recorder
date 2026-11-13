@@ -211,8 +211,8 @@ public partial class HistoryView : UserControl
             _favoriteArchive.SignedInId=a.SignedInId;
             _playerFavorites=_favoriteArchive.LoadFavorites(FavoritePlayer.Id,_favoriteRecords);
         }
-        var categories = BattleCategory.All.Select(c => new CategoryChoice(c.Key, c.ShortName, a.All.Count(b => b.Category == c.Key)))
-            .Prepend(new CategoryChoice("", Strings.All, a.All.Count)).Append(new CategoryChoice("favorites",Strings.Favorites,Favorites.ForPlayer(_favoriteRecords,FavoritePlayer.Id).Count)).ToList();
+        var categories = BattleCategory.All.Select(c => new CategoryChoice(c.Key, c.ShortName, a.All.Count(b => b.Category == c.Key),HistoryIncomplete(c.Key)))
+            .Prepend(new CategoryChoice("", Strings.All, a.All.Count,HistoryIncomplete(""))).Append(new CategoryChoice("favorites",Strings.Favorites,Favorites.ForPlayer(_favoriteRecords,FavoritePlayer.Id).Count)).ToList();
         CategoryFilter.ItemsSource = categories;
         CategoryFilter.SelectedItem = categories.FirstOrDefault(c => c.Key == oldCategory) ?? categories[0];
         var filterRows=FavoritesOnly ? _playerFavorites.Select(r=>r.Battle).ToList() : a.All;
@@ -242,6 +242,13 @@ public partial class HistoryView : UserControl
         DateRange.SetRange(null, null); SearchBox.Text = ""; _searchTimer.Stop();
         _ready = true;
     }
+    private bool HistoryIncomplete(string category)
+    {
+        if(_archive is not { } archive) return false;
+        if(Pager?.Owner==archive.Owner) return !Pager.IsComplete(category);
+        return category.Length==0 ? archive.Store.IsCategoryPending(archive.Owner,"") || BattleCategory.All.Any(c=>!archive.Store.HasCategorySnapshot(archive.Owner,c.Key)) :
+            !archive.Store.HasCategorySnapshot(archive.Owner,category);
+    }
     private void ApplyFilter(bool preserveViewport = false)
     {
         if (!_ready || ActiveArchive is not { } a) return;
@@ -261,7 +268,10 @@ public partial class HistoryView : UserControl
         var filtered=FavoritesOnly ? Favorites.Filter(_playerFavorites,filter) : a.Store.Query(filter);
 
         var wins = filtered.Count(b => b.Outcome == "胜"); var losses = filtered.Count(b => b.Outcome == "负"); var draws = filtered.Count(b => b.Outcome == "平");
-        TotalMetric.Text = filtered.Count.ToString("N0");
+        var incomplete=!FavoritesOnly && HistoryIncomplete(category);
+        TotalMetric.Text = filtered.Count.ToString("N0")+(incomplete ? "*" : "");
+        TotalMetric.ToolTip=incomplete ? Strings.IncompleteHistoryCount : null;
+        System.Windows.Automation.AutomationProperties.SetHelpText(TotalMetric,incomplete ? Strings.IncompleteHistoryCount : "");
         TotalMetricUnit.Text = filtered.Count==1 ? Strings.MatchSuffix : Strings.MatchesSuffix;
         WinRateMetric.Text = wins + losses + draws == 0 ? "—" : $"{100d * wins / (wins + losses + draws):F1}%";
         ResultsMetric.Text = Localization.Format(Strings.WinLossSummary, wins, losses) + (draws > 0 ? Localization.Format(Strings.DrawCountSuffix, draws) : "");
@@ -348,7 +358,9 @@ public partial class HistoryView : UserControl
     {
         if(!_ready) return;_pendingRestore=null;ClosePickers();
         var favorites=(CategoryFilter.SelectedItem as CategoryChoice)?.Key=="favorites";
+        var previousOwner=FavoritesOnly ? FavoritePlayer?.Id : _archive?.Owner;
         if(favorites && !FavoritesOnly) FavoritePlayer=DefaultFavoritePlayer;
+        if(previousOwner!=(favorites ? FavoritePlayer?.Id : _archive?.Owner)) PlayerChanged?.Invoke();
         FavoritesOnly=favorites;Reload();CategoryChanged?.Invoke();
     }
     private void Filter_Changed(object sender, SelectionChangedEventArgs e) { if(!_ready) return; _pendingRestore=null; ApplyFilter(); }

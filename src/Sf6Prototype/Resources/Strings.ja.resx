@@ -67,13 +67,13 @@
     <value>CAPCOM リクエスト間隔（秒）</value>
   </data>
   <data name="ApiIntervalHelp" xml:space="preserve">
-    <value>公式サイトへのリクエスト開始間の最短間隔です。データとポートレートで共用します。ログイン画面と Google テストには適用されません。</value>
+    <value>公式データの取得間隔です。画像のダウンロード、ログイン画面、Google テストには適用されません。</value>
   </data>
   <data name="ApiIntervalPresets" xml:space="preserve">
     <value>CAPCOM リクエスト間隔のプリセット</value>
   </data>
   <data name="AppTitle" xml:space="preserve">
-    <value>ストリートファイター6 戦績</value>
+    <value>SF6 Recorder</value>
   </data>
   <data name="AskEveryTime" xml:space="preserve">
     <value>毎回確認</value>
@@ -841,6 +841,9 @@
   <data name="RefreshComplete" xml:space="preserve">
     <value>更新完了</value>
   </data>
+  <data name="RefreshCompleteHint" xml:space="preserve">
+    <value>更新完了。上にスクロールするか、ホームをクリックしてください。</value>
+  </data>
   <data name="RefreshCompleteSummary" xml:space="preserve">
     <value>更新完了 · 追加：{0} 件 · {1} ページ · HTTP リクエスト：{2} 回{3}</value>
   </data>
@@ -998,7 +1001,7 @@
     <value>対戦後の変動は不明</value>
   </data>
   <data name="ShortIntervalWarning" xml:space="preserve">
-    <value>間隔が短いと公式サイトのアクセス制限を受ける場合があります。5 秒以上を推奨します。</value>
+    <value>間隔が短いと公式サイトのアクセス制限を受ける場合があります。2 秒以上を推奨します。</value>
   </data>
   <data name="SignIn" xml:space="preserve">
     <value>ログイン</value>
@@ -1199,5 +1202,53 @@
   </data>
   <data name="SavedCharacterNamesCancelled" xml:space="preserve">
     <value>言語を保存しました。キャラクター名の取得を中止しました。</value>
+  </data>
+  <data name="IncompleteHistoryCount" xml:space="preserve">
+    <value>対戦履歴の取得が完了していません。</value>
+  </data>
+  <data name="TwoSeconds" xml:space="preserve">
+    <value>2 秒</value>
+  </data>
+  <data name="ReadingCategoryPageOfTotal" xml:space="preserve">
+    <value>{0} · {1} / {2} ページ</value>
+  </data>
+  <data name="NewMatchesCount" xml:space="preserve">
+    <value>{0} 戦を追加</value>
+  </data>
+  <data name="MatchInfo" xml:space="preserve">
+    <value>対戦情報</value>
+  </data>
+  <data name="NoRoundInfo" xml:space="preserve">
+    <value>ラウンド情報なし</value>
+  </data>
+  <data name="RoundLost" xml:space="preserve">
+    <value>ラウンド敗北</value>
+  </data>
+  <data name="RoundVictory" xml:space="preserve">
+    <value>通常勝利</value>
+  </data>
+  <data name="RoundChip" xml:space="preserve">
+    <value>削り勝利</value>
+  </data>
+  <data name="RoundTime" xml:space="preserve">
+    <value>タイムオーバー勝利</value>
+  </data>
+  <data name="RoundDraw" xml:space="preserve">
+    <value>引き分け</value>
+  </data>
+  <data name="RoundOverdrive" xml:space="preserve">
+    <value>OD フィニッシュ</value>
+  </data>
+  <data name="RoundSuperArt" xml:space="preserve">
+    <value>SA フィニッシュ</value>
+  </data>
+  <data name="RoundCriticalArt" xml:space="preserve">
+    <value>CA フィニッシュ</value>
+  </data>
+  <data name="RoundPerfect" xml:space="preserve">
+    <value>Perfect 勝利</value>
+  </data>
+  <data name="UnknownRoundResult" xml:space="preserve">
+    <value>不明な結果（{0}）</value>
   </data>
 </root>

@@ -40,6 +40,10 @@ internal static class CancellationChecks
         Set("_ready",true);Call(main,"ReloadLocal",false,true,null,false);
         var ring=(RefreshProgressGlyph)main.FindName("SyncRing");var sync=(Button)main.FindName("SyncButton");
         var tokens=new List<CancellationTokenSource>();
+        var imageSource=new HeldImage();
+        var images=new ImageDownloads(imageSource,_=>throw new Exception("Cancelled image notified the UI"),ex=>throw ex);
+        images.Start([new ImageDownload("/held",System.IO.Path.Combine(root,"held.png"))]);
+        Set("_imageDownloads",images);
         (CancellationTokenSource Token,TaskCompletionSource Work) Download(bool delayed=false)
         {
             var token=new CancellationTokenSource();tokens.Add(token);var work=new TaskCompletionSource();
@@ -50,6 +54,9 @@ internal static class CancellationChecks
         try
         {
             var first=Download();
+            Complete((Task)Call(main,"PrepareImageDownloadsAsync",first.Token.Token)!);
+            Check(!imageSource.Token.IsCancellationRequested && !images.PendingWork.IsCompleted,
+                "Starting another battle load preserves ongoing portrait downloads");
             MouseDown((UIElement)main.Content);
             Check(!first.Token.IsCancellationRequested && ring.Visibility==Visibility.Visible,"Clicking blank content preserves the download and progress ring");
             MouseDown((Button)main.FindName("SettingsButton"));
@@ -60,6 +67,9 @@ internal static class CancellationChecks
             Check(!first.Token.IsCancellationRequested,"Scrolling through existing matches does not cancel the active request");
             var categories=(ListBox)history.FindName("CategoryFilter");categories.SelectedItem=categories.Items.OfType<CategoryChoice>().Single(c=>c.Key=="rank");
             Check(!first.Token.IsCancellationRequested && history.Category=="rank","Changing the category keeps active downloading and applies the local filter");
+            ((Button)main.FindName("HomeButton")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));Pump();
+            Check(!first.Token.IsCancellationRequested && history.Category=="" && ring.Visibility==Visibility.Visible,"Home within the active account returns to All without stopping its download");
+            categories.SelectedItem=categories.Items.OfType<CategoryChoice>().Single(c=>c.Key=="rank");
             ((ListBox)main.FindName("PageTabs")).SelectedIndex=1;
             var chart=(ScoreChart)scores.FindName("Chart");Call(scores,"Chart_PointInvoked",chart,chart.Points.First());
             Check(!first.Token.IsCancellationRequested && detail.Row?.Battle.ReplayId==chart.Points.First().ReplayId,"Score point detail and switching pages retain the active download");
@@ -69,6 +79,8 @@ internal static class CancellationChecks
             Check(((TextBlock)sync.ToolTip).Text.Contains("再次点击停止"),"The busy refresh tooltip advertises the click-to-stop action");
             var version=Get<int>("_viewLoadVersion");sync.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));Pump();
             Check(first.Token.IsCancellationRequested && first.Work.Task.IsCompleted && queued.IsCompleted && Get<int>("_viewLoadVersion")>version && !Get<bool>("_busy"),"A second refresh click stops work and invalidates the queued range without restarting");
+            Check(imageSource.Token.IsCancellationRequested && images.PendingWork.IsCompleted && imageSource.Disposed,
+                "Explicit stop also drains and disposes the independent image downloads");
             Check(ring.Visibility==Visibility.Collapsed && ((TextBlock)((StatusToast)main.FindName("Toast")).FindName("MessageText")).Text.Contains("已停止"),"An explicit stop restores the refresh icon and confirms saved records are retained");
             Check(store.Query(new(home.Id)).Count==3,"Stopping retains downloaded local matches");
 
@@ -130,8 +142,17 @@ internal static class CancellationChecks
         {
             Set("_ready",false);Set("_cancellation",null);Busy(false);
             Call(main,"HideNotice");foreach(var token in tokens)token.Dispose();
+            Complete(images.DisposeAsync().AsTask());Set("_imageDownloads",null);
             SynchronizationContext.SetSynchronizationContext(previousContext);
         }
         return count;
+    }
+    private sealed class HeldImage : IImageSource,IDisposable
+    {
+        public CancellationToken Token;
+        public bool Disposed;
+        public Task DownloadAsync(ImageDownload image,CancellationToken token)
+        {Token=token;return Task.Delay(Timeout.Infinite,token);}
+        public void Dispose()=>Disposed=true;
     }
 }

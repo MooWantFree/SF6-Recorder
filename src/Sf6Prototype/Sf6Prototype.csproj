@@ -6,7 +6,10 @@
     <UseWindowsForms>true</UseWindowsForms>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <AssemblyName>Sf6Prototype</AssemblyName>
+    <AssemblyName>SF6 Recorder</AssemblyName>
+    <AssemblyTitle>SF6 Recorder</AssemblyTitle>
+    <Product>SF6 Recorder</Product>
+    <Description>SF6 Recorder</Description>
     <RootNamespace>Sf6Prototype</RootNamespace>
     <NeutralLanguage>en</NeutralLanguage>
     <ApplicationIcon>Assets\app.ico</ApplicationIcon>

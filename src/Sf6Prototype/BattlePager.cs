@@ -16,12 +16,15 @@ public sealed class BattlePager
     {
         public int Limit=20, NextPage=1;
         public int? TotalPages;
-        public bool Initialized, Complete;
+        public bool Initialized, Complete, ReachedBoundary, Prepared, Incremental;
+        public bool BoundaryComplete=true;
         public string? Boundary, Head;
+        public IReadOnlyList<string> PreviousPrefix=[];
+        public List<string> Prefix=[];
         public long Oldest=long.MaxValue;
         public readonly HashSet<string> Signatures=[];
-        public readonly Dictionary<int,string> Newer=[];
     }
+    private const string AccountBoundary="all-sync";
     private readonly BattleStore _store;
     private readonly Dictionary<string,Window> _windows=[];
     public string Owner { get; }
@@ -31,59 +34,66 @@ public sealed class BattlePager
     public BattlePager(BattleStore store,string owner)
     {
         _store=store; Owner=owner;
-        foreach(var category in BattleCategory.All)
-            _windows[category.Key]=new() {Complete=store.HasCategorySnapshot(owner,category.Key)};
+        foreach(var key in BattleCategory.All.Select(c=>c.Key).Prepend(""))
+        {
+            var window=new Window {Complete=store.HasCategorySnapshot(owner,key),Boundary=store.Frontier(owner,key)};
+            if(!window.Complete && store.Prefix(owner,key) is { } prefix)
+            {
+                window.Prefix=prefix.ReplayIds.ToList();window.Head=window.Prefix.FirstOrDefault();
+                window.NextPage=prefix.NextPage;window.TotalPages=prefix.TotalPages;
+                window.Initialized=true;window.Prepared=window.Prefix.Count>=20;
+                SetOldest(window,key);
+            }
+            _windows[key]=window;
+        }
+        // Older archives may have full category snapshots without an all-stream snapshot.
+        if(!store.IsCategoryPending(owner,"") && BattleCategory.All.All(c=>_windows[c.Key].Complete)) _windows[""].Complete=true;
     }
-    private static IEnumerable<string> Categories(string category) => string.IsNullOrEmpty(category) ? BattleCategory.All.Select(c=>c.Key) : [category];
-    private static List<Battle> Ordered(IReadOnlyList<Battle> rows,string category) => rows.Where(b=>b.Category==category).OrderByDescending(b=>b.PlayedAt).ThenBy(b=>b.ReplayId,StringComparer.Ordinal).ToList();
-    private static bool LocalPageAvailable(IReadOnlyList<Battle> rows,Window window) => rows.Count>window.Limit && (window.Complete || rows[window.Limit].PlayedAt>window.Oldest);
-    public bool NeedsInitial(string category) => Categories(category).Any(c=>!_windows[c].Initialized && !_windows[c].Complete);
-    public void Reset(string category)
+    private static List<Battle> Ordered(IReadOnlyList<Battle> rows,string category) => rows
+        .Where(b=>category.Length==0 || b.Category==category).OrderByDescending(b=>b.PlayedAt).ThenBy(b=>b.ReplayId,StringComparer.Ordinal).ToList();
+    private static bool LocalPageAvailable(IReadOnlyList<Battle> rows,Window window) => rows.Count>window.Limit &&
+        (window.Complete || window.Initialized && rows[window.Limit].PlayedAt>=window.Oldest);
+    public bool NeedsInitial(string category) => !_windows[category].Complete && !_windows[category].Prepared &&
+        (_windows[category].Incremental ? !_windows[category].ReachedBoundary : _windows[category].NextPage<=2);
+    public bool IsComplete(string category) => category.Length>0 ? _windows[category].Complete :
+        _windows[""].Complete && BattleCategory.All.All(c=>_windows[c.Key].Complete);
+    public void Reset(string category,bool usePrefix=true)
     {
-        foreach(var key in Categories(category)) _windows[key]=new() {Boundary=_store.Frontier(Owner,key)};
+        var prefix=usePrefix ? _store.Prefix(Owner,category) : null;
+        _windows[category]=prefix is {ReplayIds.Count:>0} ? new()
+        {Boundary=prefix.ReplayIds[0],BoundaryComplete=false,PreviousPrefix=prefix.ReplayIds,Incremental=true} :
+            new() {Boundary=_store.Frontier(Owner,category)};
+    }
+    private List<Battle> PrefixRows(Window window,string category)
+    {
+        return _store.PrefixBattles(Owner,window.Prefix).Where(b=>category.Length==0 || b.Category==category).ToList();
+    }
+    private void SetOldest(Window window,string category) => window.Oldest=PrefixRows(window,category).Select(b=>b.PlayedAt).DefaultIfEmpty(long.MaxValue).Min();
+    private void SaveWindow(string category)
+    {
+        var window=_windows[category];
+        if(window.Complete) _store.CompleteCategory(Owner,category,window.Head);
+        else if(window.Prefix.Count>0 && !NeedsInitial(category))
+            _store.SavePrefix(Owner,category,new(window.Prefix.ToArray(),window.NextPage,window.TotalPages ?? 0));
     }
     public IReadOnlyList<Battle> Visible(IReadOnlyList<Battle> filtered,string category,bool orderedPrefix=true,IReadOnlyList<Battle>? retained=null,bool prependOnly=false)
     {
-        // An unseen stream may contain newer games than every stream already fetched.
-        // Wait for its head before committing any globally ordered rows to the screen.
-        var ready=!(orderedPrefix && IsPreparingInitial && NeedsInitial(category));
-        var rows=new List<Battle>(); var cutoff=long.MinValue;
-        foreach(var key in Categories(category))
-        {
-            var window=_windows[key]; var games=Ordered(filtered,key);
-            var visible=games.Take(window.Limit).ToList(); rows.AddRange(visible);
-            // Only expose the chronological prefix known across every stream. Loading
-            // another category must not insert newer matches above the scrolling position.
-            if(games.Count>window.Limit && visible.Count>0) cutoff=Math.Max(cutoff,games[window.Limit].PlayedAt);
-            if(!window.Complete && window.Initialized) cutoff=Math.Max(cutoff,window.Oldest);
-        }
-        // A page can split matches with the same timestamp. Keep that boundary hidden
-        // until the next page establishes their complete ordering.
-        var prefix=rows.Where(b=>ready && (!orderedPrefix || b.PlayedAt>cutoff));
-        // Refreshing a partial cache must not retract rows the user already saw.
-        // Their visual position is anchored by replay ID while newer gaps are filled.
+        var window=_windows[category];
+        var prefix=Ordered(filtered,category).Take(window.Limit).Where(b=>!orderedPrefix || !window.Initialized || window.Complete || b.PlayedAt>=window.Oldest);
         var kept=retained?.Where(b=>b.OwnerId==Owner).Select(b=>b.ReplayId).ToHashSet() ?? [];
         if(prependOnly && retained?.FirstOrDefault(b=>b.OwnerId==Owner) is { } head)
             prefix=prefix.Where(b=>b.PlayedAt>head.PlayedAt || b.PlayedAt==head.PlayedAt && StringComparer.Ordinal.Compare(b.ReplayId,head.ReplayId)<0);
         return prefix.Concat(filtered.Where(b=>kept.Contains(b.ReplayId))).DistinctBy(b=>b.ReplayId)
-            .OrderByDescending(b=>b.PlayedAt).ThenBy(b=>b.ReplayId, StringComparer.Ordinal).ToList();
+            .OrderByDescending(b=>b.PlayedAt).ThenBy(b=>b.ReplayId,StringComparer.Ordinal).ToList();
     }
-    private string? NextCategory(IReadOnlyList<Battle> filtered,string category)
+    public bool HasMore(IReadOnlyList<Battle> filtered,string category) => Ordered(filtered,category).Count>_windows[category].Limit || !_windows[category].Complete;
+    public bool MoreNeedsNetwork(IReadOnlyList<Battle> filtered,string category) => HasMore(filtered,category) &&
+        !LocalPageAvailable(Ordered(filtered,category),_windows[category]);
+    private string Reading(string category)
     {
-        var candidates=new List<(string Key,long Time)>();
-        foreach(var key in Categories(category))
-        {
-            var window=_windows[key]; var games=Ordered(filtered,key);
-            if(games.Count>window.Limit || !window.Complete)
-                candidates.Add((key,Math.Max(games.Count>window.Limit ? games[window.Limit].PlayedAt : long.MinValue,window.Complete ? long.MinValue : window.Oldest)));
-        }
-        return candidates.OrderByDescending(c=>c.Time).Select(c=>c.Key).FirstOrDefault();
-    }
-    public bool HasMore(IReadOnlyList<Battle> filtered,string category) => NextCategory(filtered,category)!=null;
-    public bool MoreNeedsNetwork(IReadOnlyList<Battle> filtered,string category)
-    {
-        var key=NextCategory(filtered,category);
-        return key!=null && !LocalPageAvailable(Ordered(filtered,key),_windows[key]);
+        var window=_windows[category];var name=category.Length==0 ? Strings.All : BattleCategory.All.Single(c=>c.Key==category).Name;
+        return window.TotalPages is >0 ? Localization.Format(Strings.ReadingCategoryPageOfTotal,name,window.NextPage,window.TotalPages) :
+            Localization.Format(Strings.ReadingCategoryPage,name,window.NextPage);
     }
     public bool NeedsScoreRange(ScoreRange range)
     {
@@ -100,6 +110,7 @@ public sealed class BattlePager
         var window=_windows["rank"];
         range=range.Resolve(_store.Query(new(Owner,Category:"rank")));
         RankHeadFetched=false;
+        var refreshToBoundary=forceHead && window.Incremental;
         if(!forceHead && !NeedsScoreRange(range)) return new(0,0,source.Requests);
         var run=_store.BeginRun(Owner); var added=0; var pages=0;
         var initialMatches=_store.Query(new(Owner,Category:"rank")).Count(b=>b.CharacterId==range.CharacterId && range.Contains(b.PlayedAt));
@@ -122,19 +133,20 @@ public sealed class BattlePager
         }
         try
         {
-            while(forceHead || NeedsScoreRange(range))
+            while(forceHead || refreshToBoundary || NeedsScoreRange(range))
             {
                 token.ThrowIfCancellationRequested();
                 Report();
-                if(window.NextPage==1) window.Boundary=_store.Frontier(Owner,"rank");
+                if(window.NextPage==1 && !window.Incremental) window.Boundary=_store.Frontier(Owner,"rank");
                 window.Limit=Math.Max(window.Limit,window.NextPage*10);
-                added+=await FetchOneAsync(source,"rank",token,pageSaved); pages++;
+                added+=await FetchOneAsync(source,"rank",token,pageSaved,commitCheckpoint:false); pages++;
                 forceHead=false;
+                if(window.ReachedBoundary || window.Complete) {refreshToBoundary=false;window.Prepared=true;}
                 // With no previous games, choose the same first character as the score view,
                 // then keep it fixed while later pages contain other characters.
                 range=range.Resolve(_store.Query(new(Owner,Category:"rank")));
             }
-            token.ThrowIfCancellationRequested();Report(finished:true);
+            token.ThrowIfCancellationRequested();SaveWindow("rank");Report(finished:true);
             _store.FinishRun(run,_windows.Values.All(w=>w.Complete) ? "completed" : "paged",source.Requests,added,$"{pages} pages");
             return new(added,pages,source.Requests);
         }
@@ -143,70 +155,163 @@ public sealed class BattlePager
     }
     public async Task<SyncResult> LoadInitialAsync(IBattleSource source,string category,CancellationToken token,Func<Task> pageSaved)
     {
-        var keys=Categories(category).ToArray(); var run=_store.BeginRun(Owner); var added=0; var pages=0;
-        RankHeadFetched=false;
-        IsPreparingInitial=true;
+        var run=_store.BeginRun(Owner);var added=0;var pages=0;var window=_windows[category];
+        RankHeadFetched=false;IsPreparingInitial=true;
+        void Report(bool finished=false)
+        {
+            var target=Math.Min(2,window.TotalPages ?? 2);
+            ProgressChanged?.Invoke(new(finished ? Strings.MatchesSaved : Reading(category),finished ? 1 : window.Incremental ? null : (double)(window.NextPage-1)/Math.Max(1,target),
+                pages,finished ? 0 : window.Incremental ? null : Math.Max(0,target-window.NextPage+1),window.Incremental ? Localization.Format(Strings.NewMatchesCount,added) : Localization.Format(Strings.MatchesPreparedOfTotal,Math.Min(20,Ordered(_store.Query(new(Owner)),category).Count),20)));
+        }
         try
         {
-            var pending=keys.Where(key=>!_windows[key].Initialized && !_windows[key].Complete).ToArray();
-            var done=pending.ToDictionary(key=>key,_=>0);
-            void Report(string stage)
+            while(NeedsInitial(category))
             {
-                var completed=done.Values.Sum();var total=pending.Length*2;
-                ProgressChanged?.Invoke(new(stage,total==0 ? 1 : (double)completed/total,pages,total-completed,Localization.Format(Strings.CategoriesRead, pages, done.Count(p=>p.Value==2), pending.Length)));
+                token.ThrowIfCancellationRequested();Report();
+                added+=await FetchOneAsync(source,category,token,pageSaved,commitCheckpoint:false);pages++;
             }
-            // Discover all stream heads first, then fetch their second pages.
-            for(var i=0;i<2;i++) foreach(var key in pending)
-            {
-                var window=_windows[key];
-                if(window.Complete) continue;
-                Report(Localization.Format(Strings.ReadingCategoryPage, BattleCategory.All.Single(c=>c.Key==key).Name, window.NextPage));
-                if(i==0) window.Boundary=_store.Frontier(Owner,key);
-                added+=await FetchOneAsync(source,key,token,pageSaved); pages++;
-                done[key]=window.Complete ? 2 : done[key]+1;
-            }
-            token.ThrowIfCancellationRequested();Report(Strings.MatchesSaved);
-            _store.FinishRun(run,_windows.Values.All(w=>w.Complete) ? "completed" : "paged",source.Requests,added,$"{pages} pages");
+            token.ThrowIfCancellationRequested();window.Prepared=true;SaveWindow(category);Report(true);
+            _store.FinishRun(run,IsComplete("") ? "completed" : "paged",source.Requests,added,$"{pages} pages");
             return new(added,pages,source.Requests);
         }
-        catch(Exception ex) { _store.FinishRun(run,ex is OperationCanceledException ? "cancelled" : "failed",source.Requests,added,ex.GetType().Name); throw; }
-        finally { IsPreparingInitial=false; }
+        catch(Exception ex) {_store.FinishRun(run,ex is OperationCanceledException ? "cancelled" : "failed",source.Requests,added,ex.GetType().Name);throw;}
+        finally {IsPreparingInitial=false;}
+    }
+    public async Task<SyncResult> LoadAccountAsync(IBattleSource source,CancellationToken token,Func<Task> pageSaved,Func<string?>? preferredCategory=null)
+    {
+        var run=_store.BeginRun(Owner);var added=0;var pages=0;
+        RankHeadFetched=false;IsPreparingInitial=true;
+        // Only a fully successful account refresh can establish this checkpoint.
+        _windows[""]=new() {Boundary=_store.Frontier(Owner,AccountBoundary)};
+        // Older versions only saved per-category checkpoints. Verify those directly once
+        // instead of traversing All searching for an account checkpoint that cannot exist.
+        var verifyCategoryCheckpoints=!_store.HasCategoryCheckpoint(Owner,AccountBoundary) &&
+            BattleCategory.All.All(c=>_store.HasCategoryCheckpoint(Owner,c.Key));
+        // Retain old checkpoints while marking every category's new coverage as unconfirmed.
+        // This also survives a stop between finishing All and starting category fallback.
+        foreach(var category in BattleCategory.All)
+        {
+            Reset(category.Key,usePrefix:false);
+            _store.MarkCategoryPending(Owner,category.Key);
+        }
+        var all=_windows[""];
+        var fetched=new HashSet<string>();
+        async Task Fetch(string category)
+        {
+            token.ThrowIfCancellationRequested();
+            ProgressChanged?.Invoke(new(Reading(category),null,pages,null,Localization.Format(Strings.NewMatchesCount,added)));
+            added+=await FetchOneAsync(source,category,token,pageSaved);pages++;fetched.Add(category);
+        }
+        async Task PrioritizeView()
+        {
+            // Finish the in-flight request, then serve only the latest category's first screen.
+            while(preferredCategory?.Invoke() is {Length:>0} category && _windows.ContainsKey(category))
+            {
+                if(!fetched.Contains(category)) Reset(category,usePrefix:false);
+                if(!NeedsInitial(category)) break;
+                await Fetch(category);
+            }
+        }
+        try
+        {
+            do
+            {
+                await Fetch("");
+                // A proven All boundary already covers the selected category too.
+                if(!all.ReachedBoundary) await PrioritizeView();
+            } while(!all.Complete && !verifyCategoryCheckpoints);
+            if(!all.ReachedBoundary)
+            {
+                foreach(var category in BattleCategory.All)
+                {
+                    // A first screen fetched for the selected category can be continued here.
+                    if(!fetched.Contains(category.Key)) Reset(category.Key,usePrefix:false);
+                    while(!_windows[category.Key].Complete) {await Fetch(category.Key);await PrioritizeView();}
+                }
+                // Verified complete category windows also prove coverage for the All stream.
+                all.Complete=true;
+                _store.CompleteCategory(Owner,"",all.Head);
+            }
+            token.ThrowIfCancellationRequested();
+            if(all.ReachedBoundary)
+            {
+                // The previous account checkpoint covered every category; All has now bridged
+                // every newer match, including any category refresh that stopped halfway.
+                var rows=_store.Query(new(Owner));
+                foreach(var category in BattleCategory.All)
+                {
+                    var window=_windows[category.Key];
+                    window.Complete=true;
+                    _store.CompleteCategory(Owner,category.Key,Ordered(rows,category.Key).FirstOrDefault()?.ReplayId);
+                }
+            }
+            _store.CompleteCategory(Owner,AccountBoundary,all.Head);
+            await pageSaved();
+            ProgressChanged?.Invoke(new(Strings.MatchesSaved,1,pages,0,Localization.Format(Strings.NewMatchesCount,added)));
+            _store.FinishRun(run,"completed",source.Requests,added,$"{pages} pages");
+            return new(added,pages,source.Requests);
+        }
+        catch(Exception ex) {_store.FinishRun(run,ex is OperationCanceledException ? "cancelled" : "failed",source.Requests,added,ex.GetType().Name);throw;}
+        finally {IsPreparingInitial=false;}
     }
     public async Task<SyncResult> LoadMoreAsync(IBattleSource? source,string category,IReadOnlyList<Battle> filtered,CancellationToken token,Func<Task> pageSaved)
     {
-        var key=NextCategory(filtered,category); if(key==null) return new(0,0,0);
-        var window=_windows[key];
-        if(LocalPageAvailable(Ordered(filtered,key),window))
-        { window.Limit+=10; await pageSaved(); return new(0,0,0); }
+        token.ThrowIfCancellationRequested();
+        if(!HasMore(filtered,category)) return new(0,0,0);
+        var window=_windows[category];
+        if(LocalPageAvailable(Ordered(filtered,category),window))
+        {window.Limit+=10;await pageSaved();return new(0,0,0);}
         if(source==null) throw new InvalidOperationException(Strings.LoginToLoad);
-        var run=_store.BeginRun(Owner); var added=0;
+        var run=_store.BeginRun(Owner);var added=0;
         try
         {
-            window.Limit+=10;
-            added=await FetchOneAsync(source,key,token,pageSaved);
-            _store.FinishRun(run,_windows.Values.All(w=>w.Complete) ? "completed" : "paged",source.Requests,added,"1 page");
+            ProgressChanged?.Invoke(new(Reading(category),0,0,1,""));
+            window.Limit+=10;added=await FetchOneAsync(source,category,token,pageSaved,commitCheckpoint:false);
+            token.ThrowIfCancellationRequested();SaveWindow(category);
+            ProgressChanged?.Invoke(new(Strings.MatchesSaved,1,1,0,Localization.Format(Strings.NewMatchesCount,added)));
+            _store.FinishRun(run,IsComplete("") ? "completed" : "paged",source.Requests,added,"1 page");
             return new(added,1,source.Requests);
         }
-        catch(Exception ex) { _store.FinishRun(run,ex is OperationCanceledException ? "cancelled" : "failed",source.Requests,added,ex.GetType().Name); throw; }
+        catch(Exception ex) {_store.FinishRun(run,ex is OperationCanceledException ? "cancelled" : "failed",source.Requests,added,ex.GetType().Name);throw;}
     }
-    private async Task<int> FetchOneAsync(IBattleSource source,string category,CancellationToken token,Func<Task> pageSaved)
+    private async Task<int> FetchOneAsync(IBattleSource source,string category,CancellationToken token,Func<Task> pageSaved,bool commitCheckpoint=true)
     {
-        var window=_windows[category]; var page=await source.FetchPageAsync(Owner,category,window.NextPage,token);
+        var window=_windows[category];
+        if(window.NextPage==1) _store.MarkCategoryPending(Owner,category);
+        var page=await source.FetchPageAsync(Owner,category,window.NextPage,token);
         token.ThrowIfCancellationRequested();
         if(page.CurrentPage!=window.NextPage) throw new InvalidDataException(Strings.DuplicatePage);
-        if(page.Battles.Any(b=>b.OwnerId!=Owner || b.Category!=category)) throw new InvalidDataException(Strings.MismatchedRecords);
+        if(page.Battles.Any(b=>b.OwnerId!=Owner || (category.Length>0 ? b.Category!=category : !BattleCategory.All.Any(c=>c.Key==b.Category))))
+            throw new InvalidDataException(Strings.MismatchedRecords);
         var signature=string.Join('|',page.Battles.Select(b=>b.ReplayId));
         if(page.Battles.Count>0 && !window.Signatures.Add(signature)) throw new InvalidDataException(Strings.DuplicateContent);
         if(window.NextPage==1) window.Head=page.Battles.FirstOrDefault()?.ReplayId;
-        if(category=="rank" && window.NextPage==1) RankHeadFetched=true;
+        if(window.NextPage==1 && (category=="rank" || category.Length==0 && page.Battles.Any(b=>b.Category=="rank"))) RankHeadFetched=true;
         var added=_store.SavePage(page.Battles);
-        if(category=="rank") _store.SaveRankLinks(Owner,page.Battles,window.Newer);
-        window.Initialized=true; window.NextPage++;
-        window.TotalPages=page.TotalPages;
-        if(page.Battles.Count>0) window.Oldest=page.Battles.Min(b=>b.PlayedAt);
-        window.Complete=page.Battles.Count==0 || page.CurrentPage>=page.TotalPages || window.Boundary!=null && page.Battles.Any(b=>b.ReplayId==window.Boundary);
-        if(window.Complete) _store.CompleteCategory(Owner,category,window.Head);
-        await pageSaved();
-        return added;
+        var tail=window.Prefix.LastOrDefault();
+        var tailIndex=page.Battles.ToList().FindIndex(b=>b.ReplayId==tail);
+        // Ignore newly inserted heads seen during older-page browsing until they connect
+        // to the known prefix. They are saved, but cannot prove score adjacency.
+        var extension=tailIndex>=0 ? page.Battles.Skip(tailIndex+1) :
+            tail==null || page.Battles.All(b=>b.PlayedAt<=window.Oldest) ? page.Battles : [];
+        window.Prefix=window.Prefix.Concat(extension.Select(b=>b.ReplayId)).Distinct().ToList();
+        window.Initialized=true;window.NextPage++;window.TotalPages=page.TotalPages;
+        window.ReachedBoundary=window.Boundary!=null && page.Battles.Any(b=>b.ReplayId==window.Boundary);
+        if(window.ReachedBoundary && !window.BoundaryComplete)
+        {
+            var at=window.Prefix.IndexOf(window.Boundary!);
+            if(at<0) throw new InvalidDataException(Strings.MismatchedRecords);
+            window.Prefix=window.Prefix.Take(at).Concat(window.PreviousPrefix).Concat(window.Prefix.Skip(at)).Distinct().Take(page.TotalPages*10).ToList();
+            // A shifted prefix can end halfway through a page. Re-read that page on scroll.
+            window.NextPage=window.Prefix.Count/10+1;
+            window.Signatures.Clear();
+            window.Prepared=true;
+        }
+        SetOldest(window,category);
+        if(category is "rank" or "") _store.SaveRankLinks(Owner,PrefixRows(window,category).Where(b=>b.Category=="rank").ToArray(),new());
+        window.Complete=page.Battles.Count==0 || page.CurrentPage>=page.TotalPages || window.ReachedBoundary &&
+            (window.BoundaryComplete || window.Prefix.Count>=page.TotalPages*10);
+        if(window.Complete && commitCheckpoint) _store.CompleteCategory(Owner,category,window.Head);
+        await pageSaved();return added;
     }
 }

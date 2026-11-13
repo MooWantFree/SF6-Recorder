@@ -1,0 +1,53 @@
+name: Build Windows ZIPs
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+
+      - name: Run logic and headless desktop checks
+        run: ./build.ps1 -ChecksOnly
+
+      - name: Publish and ZIP both variants
+        run: ./scripts/Publish-Packages.ps1
+
+      - name: Upload ZIP with .NET runtime
+        uses: actions/upload-artifact@v7
+        with:
+          path: artifacts/packages/SF6-Recorder-win-x64-self-contained.zip
+          archive: false
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload ZIP without .NET runtime
+        uses: actions/upload-artifact@v7
+        with:
+          path: artifacts/packages/SF6-Recorder-win-x64-framework-dependent.zip
+          archive: false
+          if-no-files-found: error
+          retention-days: 30

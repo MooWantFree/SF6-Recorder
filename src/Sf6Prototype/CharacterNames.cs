@@ -31,6 +31,7 @@ public sealed class CharacterNames
     private readonly SemaphoreSlim _gate=new(1,1);
     private Dictionary<int,CharacterTranslation> _characters=[];
     public int Revision {get;private set;}
+    public IEnumerable<(int Id,string ToolName)> Portraits => _characters.Values.Select(c=>(c.Id,c.ToolName));
     public bool IsComplete(int id)=>_characters.TryGetValue(id,out var character) && Languages.All(character.Names.ContainsKey);
     public CharacterNames(string directory) : this(directory,ReadBundledCatalog()) { }
     internal CharacterNames(string directory,CharacterNameCatalog bundled)
@@ -184,7 +185,8 @@ public sealed class CharacterNames
         // Commit each completed language separately so an interrupted first run can resume.
         File.WriteAllText(_path+".tmp",JsonSerializer.Serialize(new CharacterNameCatalog(1,updated.Values.OrderBy(c=>c.Id).ToList()),
             new JsonSerializerOptions {WriteIndented=true,Encoder=JavaScriptEncoder.UnsafeRelaxedJsonEscaping}));
-        File.Move(_path+".tmp",_path,true);
+        if(File.Exists(_path)) File.Replace(_path+".tmp",_path,null);
+        else File.Move(_path+".tmp",_path);
         _characters=updated;
         Revision++;
     }

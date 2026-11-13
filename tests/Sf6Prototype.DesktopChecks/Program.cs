@@ -15,7 +15,8 @@ internal static class Program
         // would otherwise be dispatched and attempt to open the user's data directory.
         var app=new Application {ShutdownMode=ShutdownMode.OnExplicitShutdown};
         LocalizationWpf.Apply("zh");
-        app.Resources.MergedDictionaries.Add(new ResourceDictionary {Source=new Uri("pack://application:,,,/Sf6Prototype;component/Themes/Utility.xaml")});
+        var assembly=Uri.EscapeDataString(typeof(MainWindow).Assembly.GetName().Name!);
+        app.Resources.MergedDictionaries.Add(new ResourceDictionary {Source=new Uri($"pack://application:,,,/{assembly};component/Themes/Utility.xaml")});
         var main=new MainWindow();
         main.ApplyTemplate();main.Dispatcher.Invoke(()=>{},System.Windows.Threading.DispatcherPriority.ContextIdle);
         Check(new System.Windows.Interop.WindowInteropHelper(main).Handle==IntPtr.Zero,"Control checks do not create a native window or tray icon");
@@ -85,7 +86,7 @@ internal static class Program
         setBusy.Invoke(main,[false,false,false]);
         Check(ring.Visibility==Visibility.Visible && (double)ring.GetAnimationBaseValue(RefreshProgressGlyph.ValueProperty)==1,"Successful completion briefly retains the full ring");
         setBusy.Invoke(main,[true,true,false]);
-        Check(ring.Visibility==Visibility.Collapsed && !ring.HasAnimatedProperties && sync.ToolTip is string,"Quiet pagination does not announce or retain a foreground progress animation");
+        Check(ring.Visibility==Visibility.Visible && ring.Indeterminate && sync.ToolTip is TextBlock,"Pagination and implicit history loads expose the same progress and stop action");
         setBusy.Invoke(main,[false,false,false]);
         var opened=0;var exited=0;
         using(var menu=new ModernTrayMenu(()=>opened++,()=>exited++))
@@ -110,15 +111,15 @@ internal static class Program
         Check(((TextBox)settings.FindName("AutoRefreshSecondsBox")).Text=="1200" && reminder.Text=="0","Automatic refresh presets do not overwrite the separate reminder field");
         Check(settings.FindName("BackupButton") is Button && settings.FindName("ImportButton") is Button && ((ComboBox)settings.FindName("CloseActionBox")).SelectedIndex==0,"Backup, merge import and the resettable close preference exist in compiled settings");
         var api=(TextBox)settings.FindName("ApiIntervalBox");var apiPresets=(ListBox)settings.FindName("ApiIntervalPresets");var warning=(TextBlock)settings.FindName("ApiIntervalWarning");
-        Check(api.Text=="5" && (apiPresets.SelectedItem as ListBoxItem)?.Tag?.ToString()=="5" && warning.Visibility==Visibility.Collapsed,"The five-second default populates the new setting without a warning");
+        Check(api.Text=="2" && (apiPresets.SelectedItem as ListBoxItem)?.Tag?.ToString()=="2" && warning.Visibility==Visibility.Collapsed,"The two-second default selects its preset without a warning");
         apiPresets.SelectedIndex=0;
         Check(api.Text=="1" && warning.Visibility==Visibility.Visible && reminder.Text=="0","Low presets populate the interval and warn without changing reminder settings");
         api.Text="2.5";
-        Check(apiPresets.SelectedItem==null && warning.Visibility==Visibility.Visible,"Custom fractional seconds retain the low-interval warning");
+        Check(apiPresets.SelectedItem==null && warning.Visibility==Visibility.Collapsed,"Custom intervals above two seconds do not show the warning");
         var draft=typeof(SettingsWindow).GetMethod("Draft",BindingFlags.Instance|BindingFlags.NonPublic)!;
         Check(((ConnectionSettings)draft.Invoke(settings,[true])!).ApiIntervalSeconds==2.5,"Saving settings preserves custom decimal API intervals");
         api.Text="";
-        Check(((ConnectionSettings)draft.Invoke(settings,[false])!).ApiIntervalSeconds==5,"A partially edited API interval does not block the independent Google proxy test");
+        Check(((ConnectionSettings)draft.Invoke(settings,[false])!).ApiIntervalSeconds==2,"A partially edited API interval does not block the independent Google proxy test");
         apiPresets.SelectedIndex=2;
         var settingsContent=(FrameworkElement)settings.Content;settingsContent.Measure(new Size(settings.Width-16,double.PositiveInfinity));settingsContent.Arrange(new Rect(settingsContent.DesiredSize));
         Check(settingsContent.DesiredSize.Height<680 && api.TranslatePoint(new Point(api.ActualWidth,0),settingsContent).X<=apiPresets.TranslatePoint(new Point(0,0),settingsContent).X,"The new settings row fits the compact dialog without overlapping its preset group");
@@ -136,6 +137,8 @@ internal static class Program
         count+=PresentationLayoutChecks.Run();
         count+=HistoryAlignmentChecks.Run();
         count+=TitleBarChecks.Run();
+        count+=OpponentChromeChecks.Run();
+        count+=AuxiliaryChromeChecks.Run();
         count+=LocalizationChecks.Run();
         count+=ToastChecks.Run();
         Console.WriteLine($"Passed {count} headless desktop checks.");

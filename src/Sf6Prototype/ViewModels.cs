@@ -117,6 +117,8 @@ public sealed class MatchListRow(Battle battle, ImageSource? ownImage, ImageSour
     public DayGroup? Group { get; init; }
     public string Kind => Kinds.Of(Battle.Outcome);
     public string Result => Localization.Outcome(Battle.Outcome);
+    public IReadOnlyList<RoundResult> Rounds=>RoundResult.From(Battle);
+    public bool HasRoundInfo=>Rounds.Count>0;
     public string Clock => Battle.Time.Substring(11, 5);
     public string FullTime => Battle.Time[..16];
     public string DetailTime => BattleDateDisplay.Timestamp(Battle.Time);
@@ -185,7 +187,11 @@ public record CharacterCard(int Id, string Name, ImageSource? Image, string Rati
     public string Summary => (RankLabel.Length>0 ? " · " : "")+Detail;
 }
 public record AccountChoice(string Id, string Name, ImageSource? Image, bool Active);
-public record CategoryChoice(string Key, string Name, int Count);
+public record CategoryChoice(string Key, string Name, int Count,bool Incomplete=false)
+{
+    public string CountText => Count.ToString("N0",Localization.Culture)+(Incomplete ? "*" : "");
+    public string? CountTip => Incomplete ? Strings.IncompleteHistoryCount : null;
+}
 public record OutcomeDot(string Kind, string Tip);
 
 public sealed class HistoryMatchRow(Battle battle, bool isCurrent,CharacterNames? names=null) : INotifyPropertyChanged

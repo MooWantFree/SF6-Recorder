@@ -12,7 +12,7 @@ public enum CloseAction { Ask, MinimizeToTray, Exit }
 public record ConnectionSettings
 {
     public const int DefaultRefreshReminderSeconds = 24 * 60 * 60;
-    public const double DefaultApiIntervalSeconds = 5;
+    public const double DefaultApiIntervalSeconds = 2;
     public double ApiIntervalSeconds { get; init; } = DefaultApiIntervalSeconds;
     public static bool ValidApiInterval(double seconds) => double.IsFinite(seconds) && seconds is >=0.1 and <=3600;
     public static bool LowApiInterval(double seconds) => ValidApiInterval(seconds) && seconds<DefaultApiIntervalSeconds;

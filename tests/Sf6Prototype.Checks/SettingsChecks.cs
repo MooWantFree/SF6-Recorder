@@ -17,7 +17,7 @@ public static class SettingsChecks
         Check(ConnectionSettings.Load(directory) is {RefreshReminderSeconds:86400,AutoRefreshSeconds:0},"New installations default to a 24-hour reminder and no automatic requests");
         File.WriteAllText(path,"""{"UseProxy":true,"ProxyAddress":"http://127.0.0.1:8888","PlayerId":"1234567890"}""");
         var legacy=ConnectionSettings.Load(directory);
-        Check(legacy.ApiIntervalSeconds==5 && new ConnectionSettings().ApiIntervalSeconds==5,"New and legacy installations use five seconds between Capcom requests");
+        Check(legacy.ApiIntervalSeconds==2 && new ConnectionSettings().ApiIntervalSeconds==2,"New settings and files without an explicit interval default to two seconds");
         foreach(var seconds in new[]{0.1,1,3,5,10,3600,2.5})
         {
             var setting=legacy with {ApiIntervalSeconds=ConnectionSettings.ParseApiIntervalSeconds(seconds.ToString(System.Globalization.CultureInfo.InvariantCulture))};setting.Save(directory);
@@ -25,12 +25,12 @@ public static class SettingsChecks
         }
         foreach(var invalid in new[]{"","0","-1","0.01","3601","NaN","Infinity","1e3","1,5","+5","5s"})
             Reject(()=>ConnectionSettings.ParseApiIntervalSeconds(invalid),"Invalid API interval: "+invalid);
-        Check(ConnectionSettings.LowApiInterval(0.1) && ConnectionSettings.LowApiInterval(3) && !ConnectionSettings.LowApiInterval(5),"Intervals below the five-second default show a risk hint, without silently increasing the value");
+        Check(ConnectionSettings.LowApiInterval(0.1) && ConnectionSettings.LowApiInterval(1.99) && !ConnectionSettings.LowApiInterval(2) && !ConnectionSettings.LowApiInterval(3),"Only intervals below two seconds show a risk hint");
         var validApi=File.ReadAllText(path);
         Reject(()=>(legacy with {ApiIntervalSeconds=double.NaN}).Save(directory),"Invalid API intervals cannot overwrite saved settings");
         Check(File.ReadAllText(path)==validApi,"API interval validation preserves the settings file on failure");
         File.WriteAllText(path,"""{"ApiIntervalSeconds":0,"PlayerId":"1234567890"}""");
-        Check(ConnectionSettings.Load(directory) is {ApiIntervalSeconds:5,PlayerId:"1234567890"},"Invalid stored API intervals fall back without losing the account");
+        Check(ConnectionSettings.Load(directory) is {ApiIntervalSeconds:2,PlayerId:"1234567890"},"Invalid stored API intervals fall back without losing the account");
         Check(legacy is {RefreshReminderSeconds:86400,AutoRefreshSeconds:0,UseProxy:true,ProxyAddress:"http://127.0.0.1:8888",PlayerId:"1234567890"},"Old settings gain safe interval defaults without losing connection or account preferences");
         var custom=legacy with {RefreshReminderSeconds=ConnectionSettings.ParseReminderSeconds("5")}; custom.Save(directory);
         Check(ConnectionSettings.Load(directory) is {RefreshReminderSeconds:5,UseProxy:true,PlayerId:"1234567890"},"A custom reminder survives save and restart alongside existing settings");

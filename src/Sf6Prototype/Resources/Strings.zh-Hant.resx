@@ -67,13 +67,13 @@
     <value>CAPCOM 請求間隔，單位秒</value>
   </data>
   <data name="ApiIntervalHelp" xml:space="preserve">
-    <value>兩次官網請求開始之間的最短間隔；資料和頭像請求共用，登入網頁與 Google 測試不受影響。</value>
+    <value>官網資料請求的最短間隔，不含頭像下載、登入網頁和 Google 測試。</value>
   </data>
   <data name="ApiIntervalPresets" xml:space="preserve">
     <value>CAPCOM 請求間隔預設</value>
   </data>
   <data name="AppTitle" xml:space="preserve">
-    <value>街霸 6 戰績</value>
+    <value>SF6 Recorder</value>
   </data>
   <data name="AskEveryTime" xml:space="preserve">
     <value>每次詢問</value>
@@ -841,6 +841,9 @@
   <data name="RefreshComplete" xml:space="preserve">
     <value>刷新完成</value>
   </data>
+  <data name="RefreshCompleteHint" xml:space="preserve">
+    <value>刷新完畢，上滑或者點擊首頁。</value>
+  </data>
   <data name="RefreshCompleteSummary" xml:space="preserve">
     <value>刷新完成 · 新增 {0} 條 · {1} 頁 · {2} 次 HTTP 請求{3}</value>
   </data>
@@ -998,7 +1001,7 @@
     <value>本場結算未知</value>
   </data>
   <data name="ShortIntervalWarning" xml:space="preserve">
-    <value>間隔過短可能觸發官網風控；建議至少 5 秒。</value>
+    <value>間隔過短可能觸發官網風控；建議至少 2 秒。</value>
   </data>
   <data name="SignIn" xml:space="preserve">
     <value>登入</value>
@@ -1199,5 +1202,53 @@
   </data>
   <data name="SavedCharacterNamesCancelled" xml:space="preserve">
     <value>語言已儲存，已停止取得角色名稱。</value>
+  </data>
+  <data name="IncompleteHistoryCount" xml:space="preserve">
+    <value>戰績尚未下載完整。</value>
+  </data>
+  <data name="TwoSeconds" xml:space="preserve">
+    <value>2秒</value>
+  </data>
+  <data name="ReadingCategoryPageOfTotal" xml:space="preserve">
+    <value>{0} · 第 {1} / {2} 頁</value>
+  </data>
+  <data name="NewMatchesCount" xml:space="preserve">
+    <value>本次新增 {0} 場</value>
+  </data>
+  <data name="MatchInfo" xml:space="preserve">
+    <value>對局資訊</value>
+  </data>
+  <data name="NoRoundInfo" xml:space="preserve">
+    <value>暫無回合資訊</value>
+  </data>
+  <data name="RoundLost" xml:space="preserve">
+    <value>本回合落敗</value>
+  </data>
+  <data name="RoundVictory" xml:space="preserve">
+    <value>普通勝利</value>
+  </data>
+  <data name="RoundChip" xml:space="preserve">
+    <value>削血勝利</value>
+  </data>
+  <data name="RoundTime" xml:space="preserve">
+    <value>時間到勝利</value>
+  </data>
+  <data name="RoundDraw" xml:space="preserve">
+    <value>平手</value>
+  </data>
+  <data name="RoundOverdrive" xml:space="preserve">
+    <value>OD 終結</value>
+  </data>
+  <data name="RoundSuperArt" xml:space="preserve">
+    <value>SA 終結</value>
+  </data>
+  <data name="RoundCriticalArt" xml:space="preserve">
+    <value>CA 終結</value>
+  </data>
+  <data name="RoundPerfect" xml:space="preserve">
+    <value>Perfect 完美勝利</value>
+  </data>
+  <data name="UnknownRoundResult" xml:space="preserve">
+    <value>未知結果（{0}）</value>
   </data>
 </root>

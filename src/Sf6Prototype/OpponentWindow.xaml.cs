@@ -7,7 +7,7 @@ using System.Windows.Threading;
 
 namespace Sf6Prototype;
 
-public partial class OpponentWindow : Window
+public partial class OpponentWindow : ChromeWindow
 {
     private readonly string _opponent;
     private readonly string _signedInId;
@@ -36,7 +36,8 @@ public partial class OpponentWindow : Window
     }
     public OpponentWindow(Window owner,string opponent,string name,ConnectionSettings settings,SavedSession session,CookieVault vault,ProfileCache portraits,Action<CharacterObservation>? observeCharacters=null)
     {
-        InitializeComponent(); Owner=owner; _opponent=opponent; _signedInId=session.AccountId; _initialName=name; _client=new(settings,session,vault); _portraits=portraits;
+        InitializeComponent();InitializeWindowChrome(WindowSurface,TitleBar,MaximizeButton);
+        Owner=owner; _opponent=opponent; _signedInId=session.AccountId; _initialName=name; _client=new(settings,session,vault); _portraits=portraits;
         _client.CharacterObserver=observeCharacters;
         _session=new(_client,opponent);
         PlayerName.Text=new PlayerIdentity(opponent,name).DisplayNameFor(_signedInId); Title=Localization.Format(Strings.PlayerRankHistory, PlayerName.Text); UidText.Text=$"UID {opponent}";

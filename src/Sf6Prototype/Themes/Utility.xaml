@@ -309,6 +309,7 @@
 
   <!-- Underlined tabs distinguish match categories from page navigation. -->
   <Style x:Key="CategoryTab" TargetType="ListBoxItem">
+    <Setter Property="AutomationProperties.HelpText" Value="{Binding CountTip}"/>
     <Setter Property="Padding" Value="2,8"/><Setter Property="Margin" Value="0,0,20,0"/><Setter Property="Foreground" Value="{StaticResource Ink3}"/><Setter Property="Cursor" Value="Hand"/><Setter Property="FocusVisualStyle" Value="{StaticResource FocusRing}"/>
     <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ListBoxItem">
       <Border x:Name="Tab" Padding="{TemplateBinding Padding}" Background="Transparent" BorderBrush="Transparent" BorderThickness="0,0,0,2"><ContentPresenter/></Border>

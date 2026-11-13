@@ -1,25 +1,29 @@
 using System.Runtime.InteropServices;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Shell;
 
 namespace Sf6Prototype;
 
-public partial class MainWindow
+public class ChromeWindow : Window
 {
-    public static readonly DependencyProperty IsMaximizeHotProperty=DependencyProperty.Register(nameof(IsMaximizeHot),typeof(bool),typeof(MainWindow),new PropertyMetadata(false));
+    public static readonly DependencyProperty IsMaximizeHotProperty=DependencyProperty.Register(nameof(IsMaximizeHot),typeof(bool),typeof(ChromeWindow),new PropertyMetadata(false));
     public bool IsMaximizeHot { get=>(bool)GetValue(IsMaximizeHotProperty); private set=>SetValue(IsMaximizeHotProperty,value); }
-    public static readonly DependencyProperty IsMaximizePressedProperty=DependencyProperty.Register(nameof(IsMaximizePressed),typeof(bool),typeof(MainWindow),new PropertyMetadata(false));
+    public static readonly DependencyProperty IsMaximizePressedProperty=DependencyProperty.Register(nameof(IsMaximizePressed),typeof(bool),typeof(ChromeWindow),new PropertyMetadata(false));
     public bool IsMaximizePressed { get=>(bool)GetValue(IsMaximizePressedProperty); private set=>SetValue(IsMaximizePressedProperty,value); }
     private HwndSource? _chromeSource;
+    private FrameworkElement _windowSurface=null!,_titleBar=null!;
+    private Button? _maximizeButton;
     private bool _captionCaptured;
     private const int HtMaxButton=9, WmNcHitTest=0x84, WmNcMouseMove=0xA0, WmNcLeftDown=0xA1,
         WmNcLeftDoubleClick=0xA3, WmMouseMove=0x200, WmLeftUp=0x202, WmCaptureChanged=0x215,
         WmCancelMode=0x1F, WmNcMouseLeave=0x2A2;
 
-    private void InitializeWindowChrome()
+    protected void InitializeWindowChrome(FrameworkElement surface,FrameworkElement titleBar,Button? maximizeButton=null)
     {
+        _windowSurface=surface;_titleBar=titleBar;_maximizeButton=maximizeButton;
         SourceInitialized+=(_,_)=>
         {
             _chromeSource=HwndSource.FromHwnd(new WindowInteropHelper(this).Handle);
@@ -57,13 +61,13 @@ public partial class MainWindow
                     Math.Max(0,origin.Y+client.Bottom-monitor.Work.Bottom)/dpi.DpiScaleY);
             }
         }
-        WindowSurface.Margin=inset;
-        WindowChrome.GetWindowChrome(this).CaptionHeight=TitleBar.Height+inset.Top;
+        _windowSurface.Margin=inset;
+        WindowChrome.GetWindowChrome(this).CaptionHeight=_titleBar.Height+inset.Top;
     }
 
-    private void Minimize_Click(object sender,RoutedEventArgs e)=>SystemCommands.MinimizeWindow(this);
-    private void Maximize_Click(object sender,RoutedEventArgs e)=>ToggleMaximize();
-    private void Close_Click(object sender,RoutedEventArgs e)=>Close();
+    protected void Minimize_Click(object sender,RoutedEventArgs e)=>SystemCommands.MinimizeWindow(this);
+    protected void Maximize_Click(object sender,RoutedEventArgs e)=>ToggleMaximize();
+    protected void Close_Click(object sender,RoutedEventArgs e)=>Close();
     private void ToggleMaximize()
     {
         if(WindowState==WindowState.Maximized) SystemCommands.RestoreWindow(this);
@@ -72,10 +76,10 @@ public partial class MainWindow
 
     private bool IsOverMaximize(NativePoint screen)
     {
-        if(!IsEnabled || !MaximizeButton.IsEnabled || !MaximizeButton.IsVisible) return false;
+        if(!IsEnabled || _maximizeButton is not {IsEnabled:true,IsVisible:true}) return false;
         // PointFromScreen handles monitor offsets (including negative ones) and per-monitor DPI.
-        var point=MaximizeButton.PointFromScreen(new Point(screen.X,screen.Y));
-        return new Rect(MaximizeButton.RenderSize).Contains(point);
+        var point=_maximizeButton.PointFromScreen(new Point(screen.X,screen.Y));
+        return new Rect(_maximizeButton.RenderSize).Contains(point);
     }
 
     private static NativePoint MessagePoint(IntPtr value)=>new()

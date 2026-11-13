@@ -38,6 +38,7 @@ public static class DatabaseTransferChecks
         var newer=Game("newer",400,10300);var foreign=Game("foreign",500,12000,other);
         incoming.SavePage([current with {Lp=99999},newer,foreign]);incoming.SaveRankLinks(owner,[newer,current],new());
         incoming.CompleteCategory(owner,"rank","newer");
+        incoming.CompleteCategory(owner,"","newer");incoming.CompleteCategory(owner,"all-sync","newer");
         var portable=FileAt("portable.sqlite");await DatabaseTransfer.BackupAsync(incomingPath,portable);
         var beforeHash=SHA256.HashData(File.ReadAllBytes(portable));
         var result=await DatabaseTransfer.ImportAsync(portable,livePath,FileAt("Backups"));
@@ -51,6 +52,11 @@ public static class DatabaseTransferChecks
         Check(SHA256.HashData(File.ReadAllBytes(portable)).SequenceEqual(beforeHash),"Import never changes the selected source file");
         var again=await DatabaseTransfer.ImportAsync(portable,livePath,FileAt("Backups"));
         Check(again.Added==0 && again.Existing==3 && store.Query(new(owner)).Count==4,"Repeated imports are idempotent");
+        Check(store.Frontier(owner,"all-sync")=="newer","Import accepts a validated full-account checkpoint without treating it as a battle category");
+        incoming.MarkCategoryPending(owner,"");incoming.MarkCategoryPending(owner,"rank");
+        var partialPath=FileAt("partial.sqlite");var partialStore=new BattleStore(partialPath);
+        await DatabaseTransfer.ImportAsync(incomingPath,partialPath,FileAt("PartialBackups"));
+        Check(!new BattlePager(partialStore,owner).IsComplete("") && !partialStore.HasCategorySnapshot(owner,"rank") && partialStore.IsCategoryPending(owner,""),"Importing an interrupted download retains its records and incomplete markers");
         await Fails<ArgumentException>(()=>DatabaseTransfer.ImportAsync(livePath,livePath,FileAt("Backups")),"Importing the live source into itself is rejected");
         await Fails<OperationCanceledException>(()=>DatabaseTransfer.ImportAsync(portable,livePath,FileAt("Backups"),cancelled.Token),"Cancelled import performs no merge");
         var invalid=FileAt("invalid.sqlite");File.WriteAllText(invalid,"not a database");

@@ -25,7 +25,18 @@ public sealed class ProfileCache(string directory)
         WriteJson(Path.Combine(directory,"profile-"+player.Id+".json"),new ProfileMetadata(player.Id,player.Name,previous?.AvatarPath ?? "",DateTimeOffset.UtcNow));
     }
     public CurrentScores? Scores(string id) => Regex.IsMatch(id, @"^\d{10}$") ? Read<CurrentScores>(Path.Combine(directory, "scores-" + id + ".json")) : null;
-    public string? CharacterImage(int id, string? name = null) => Characters.FirstOrDefault(c => c.Id == id || c.Name == name)?.ImagePath is { } p && File.Exists(p) ? p : null;
+    public string? CharacterImage(int id, string? name = null)
+    {
+        var path=Characters.FirstOrDefault(c=>c.Id==id || c.Name==name)?.ImagePath;
+        if(path==null && Names.Portraits.FirstOrDefault(c=>c.Id==id).ToolName is { } tool)
+            path=Path.Combine(DirectoryPath,"character_"+tool+".png");
+        return path!=null && File.Exists(path) ? path : null;
+    }
+    public IReadOnlyList<ImageDownload> CharacterDownloads() => Characters.Select(c=>(c.Id,c.ToolName))
+        .Concat(Names.Portraits).DistinctBy(c=>c.Id).Where(c=>Regex.IsMatch(c.ToolName,"^[a-z0-9_]+$"))
+        .Select(c=>new ImageDownload($"/6/buckler/assets/images/material/character/character_{c.ToolName}_l.png",
+            Path.Combine(DirectoryPath,"character_"+c.ToolName+".png")))
+        .Where(image=>!File.Exists(image.Destination)).ToArray();
     public static IReadOnlyList<(int Id, string Name, string ToolName)> ParseCharacters(string json)
     {
         using var doc = JsonDocument.Parse(json);
@@ -37,8 +48,15 @@ public sealed class ProfileCache(string directory)
     }
     public async Task<IReadOnlyList<ImageDownload>> RefreshMetadataAsync(IProfileSource client, string owner, CancellationToken token, bool captureScores = false)
     {
+        var characters=await RefreshPlayAsync(client,owner,token,captureScores);
+        var avatar=await RefreshAvatarAsync(client,owner,token);
+        return [..avatar,..characters];
+    }
+    public async Task<IReadOnlyList<ImageDownload>> RefreshPlayAsync(IProfileSource client, string owner, CancellationToken token, bool captureScores=false)
+    {
         Directory.CreateDirectory(DirectoryPath);
         var json = await client.FetchPlayAsync(owner, token);
+        token.ThrowIfCancellationRequested();
         var player = RankProfiles.ParseProfile(json, owner);
         var roster = ParseCharacters(json);
         // Capture scores only after reading the latest ranked head. Login, older-page
@@ -54,21 +72,30 @@ public sealed class ProfileCache(string directory)
         WriteJson(Path.Combine(directory,"characters.json"), Characters);
         // Name discovery is queued by the shared request observer. It must not extend this
         // foreground refresh or turn a name-service failure into a portrait/score failure.
-        var images = Characters.Where(c => !File.Exists(c.ImagePath)).Select(c =>
-            new ImageDownload($"/6/buckler/assets/images/material/character/character_{c.ToolName}_l.png", c.ImagePath)).ToList();
+        var previous=Profile(owner);
+        if((previous==null || previous.Name==owner) && !string.IsNullOrWhiteSpace(player.Name))
+            WriteJson(Path.Combine(directory,"profile-"+owner+".json"),new ProfileMetadata(owner,player.Name,previous?.AvatarPath ?? "",DateTimeOffset.UtcNow));
+        return Characters.Where(c => !File.Exists(c.ImagePath)).Select(c =>
+            new ImageDownload($"/6/buckler/assets/images/material/character/character_{c.ToolName}_l.png", c.ImagePath)).ToArray();
+    }
+    public async Task<IReadOnlyList<ImageDownload>> RefreshAvatarAsync(IProfileSource client,string owner,CancellationToken token)
+    {
         var card = await client.FetchCardAsync(owner, token);
+        token.ThrowIfCancellationRequested();
+        Directory.CreateDirectory(DirectoryPath);
         using var doc = JsonDocument.Parse(card);
         var icon = MatchParser.Text(doc.RootElement,"icon_file_name");
         var name = MatchParser.Text(doc.RootElement,"fighter_name");
         var previous = Profile(owner);
         var avatar = previous?.AvatarPath ?? "";
+        var images=new List<ImageDownload>();
         if (Regex.IsMatch(icon, "^[a-zA-Z0-9_-]+$"))
         {
             avatar = Path.Combine(DirectoryPath, "account_" + owner + ".jpg");
             // Revalidate on every user refresh, even if the icon filename remains unchanged.
-            images.Insert(0, new($"/6/buckler/assets/images/material/icon/{icon}.jpg", avatar, true));
+            images.Add(new($"/6/buckler/assets/images/material/icon/{icon}.jpg", avatar, true));
         }
-        if (string.IsNullOrWhiteSpace(name)) name = string.IsNullOrWhiteSpace(player.Name) ? previous?.Name ?? owner : player.Name;
+        if (string.IsNullOrWhiteSpace(name)) name = previous?.Name ?? owner;
         WriteJson(Path.Combine(directory,"profile-" + owner + ".json"), new ProfileMetadata(owner, name, avatar, DateTimeOffset.UtcNow));
         return images;
     }
@@ -83,6 +110,8 @@ public sealed class ProfileCache(string directory)
     }
     private static void WriteJson<T>(string path, T value)
     {
-        File.WriteAllText(path + ".tmp", JsonSerializer.Serialize(value)); File.Move(path + ".tmp", path, true);
+        File.WriteAllText(path + ".tmp", JsonSerializer.Serialize(value));
+        if(File.Exists(path)) File.Replace(path+".tmp",path,null);
+        else File.Move(path+".tmp",path);
     }
 }

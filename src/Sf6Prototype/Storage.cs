@@ -4,6 +4,8 @@ using Microsoft.Data.Sqlite;
 
 namespace Sf6Prototype;
 
+public sealed record BattlePrefix(IReadOnlyList<string> ReplayIds,int NextPage,int TotalPages);
+
 public sealed partial class BattleStore
 {
     private readonly string _connection;
@@ -36,6 +38,11 @@ public sealed partial class BattleStore
           id INTEGER PRIMARY KEY AUTOINCREMENT, owner_id TEXT NOT NULL, started_at TEXT NOT NULL,
           finished_at TEXT, status TEXT NOT NULL, requests INTEGER NOT NULL DEFAULT 0,
           inserted INTEGER NOT NULL DEFAULT 0, detail TEXT);
+        CREATE TABLE IF NOT EXISTS sync_pending (
+          owner_id TEXT NOT NULL, category TEXT NOT NULL, PRIMARY KEY(owner_id,category));
+        CREATE TABLE IF NOT EXISTS history_prefixes (
+          owner_id TEXT NOT NULL, category TEXT NOT NULL, data_json TEXT NOT NULL,
+          PRIMARY KEY(owner_id,category));
         """;
         cmd.ExecuteNonQuery();
         cmd.CommandText="PRAGMA user_version";
@@ -91,6 +98,17 @@ public sealed partial class BattleStore
             Add(cmd, "$cid", b.CharacterId); Add(cmd, "$char", b.Character); Add(cmd, "$opponent", b.Opponent); Add(cmd, "$outcome", b.Outcome);
             Add(cmd, "$lp", b.Lp); Add(cmd, "$mr", b.Mr); Add(cmd, "$data", JsonSerializer.Serialize(b)); Add(cmd, "$saved", DateTimeOffset.UtcNow.ToString("O"));
             var inserted=cmd.ExecuteNonQuery(); added+=inserted;
+            if(inserted==0 && b.RawJson is {ValueKind:JsonValueKind.Object} raw)
+            {
+                using var payload=db.CreateCommand();payload.Transaction=tx;
+                // Retain the complete replay object, including fields this version does not use.
+                // Account/session metadata belongs to the surrounding response, not this object.
+                payload.CommandText="""
+                    UPDATE battles SET data_json=json_set(data_json,'$.RawJson',json($raw))
+                    WHERE owner_id=$owner AND replay_id=$id AND COALESCE(json_extract(data_json,'$.RawJson'),'')<>json($raw)
+                    """;
+                Add(payload,"$owner",b.OwnerId);Add(payload,"$id",b.ReplayId);Add(payload,"$raw",raw.GetRawText());payload.ExecuteNonQuery();
+            }
             // Older archives did not retain the other player's rank. Enrich only missing
             // fields when a known replay is fetched again, without counting it as new.
             if(inserted==0 && (b.OpponentLeagueRank!=null || b.OpponentMasterLeague!=null || b.MasterRatingRanking!=null || b.OpponentMasterRatingRanking!=null))
@@ -126,10 +144,50 @@ public sealed partial class BattleStore
         cmd.CommandText = "SELECT frontier_id FROM sync_state WHERE owner_id=$owner AND category=$category";
         Add(cmd, "$owner", owner); Add(cmd, "$category", category); return cmd.ExecuteScalar() as string;
     }
+    public BattlePrefix? Prefix(string owner,string category)
+    {
+        using var db=Open();using var cmd=db.CreateCommand();
+        cmd.CommandText="SELECT data_json FROM history_prefixes WHERE owner_id=$owner AND category=$category";
+        Add(cmd,"$owner",owner);Add(cmd,"$category",category);
+        return cmd.ExecuteScalar() is string json ? JsonSerializer.Deserialize<BattlePrefix>(json) : null;
+    }
+    public void SavePrefix(string owner,string category,BattlePrefix prefix)
+    {
+        using var db=Open();using var cmd=db.CreateCommand();
+        cmd.CommandText="INSERT INTO history_prefixes VALUES($owner,$category,$json) ON CONFLICT(owner_id,category) DO UPDATE SET data_json=excluded.data_json";
+        Add(cmd,"$owner",owner);Add(cmd,"$category",category);Add(cmd,"$json",JsonSerializer.Serialize(prefix));cmd.ExecuteNonQuery();
+    }
+    public List<Battle> PrefixBattles(string owner,IReadOnlyList<string> replayIds)
+    {
+        using var db=Open();using var cmd=db.CreateCommand();
+        cmd.CommandText="SELECT b.data_json FROM json_each($ids) p JOIN battles b ON b.owner_id=$owner AND b.replay_id=p.value ORDER BY p.key";
+        Add(cmd,"$owner",owner);Add(cmd,"$ids",JsonSerializer.Serialize(replayIds));
+        using var reader=cmd.ExecuteReader();var rows=new List<Battle>();
+        while(reader.Read()) rows.Add(JsonSerializer.Deserialize<Battle>(reader.GetString(0))!);
+        return rows;
+    }
     public bool HasCategorySnapshot(string owner, string category)
     {
         using var db=Open(); using var cmd=db.CreateCommand();
+        cmd.CommandText="SELECT EXISTS(SELECT 1 FROM sync_state WHERE owner_id=$owner AND category=$category) AND NOT EXISTS(SELECT 1 FROM sync_pending WHERE owner_id=$owner AND category=$category)";
+        Add(cmd,"$owner",owner); Add(cmd,"$category",category); return Convert.ToInt32(cmd.ExecuteScalar())==1;
+    }
+    public bool HasCategoryCheckpoint(string owner,string category)
+    {
+        using var db=Open();using var cmd=db.CreateCommand();
         cmd.CommandText="SELECT EXISTS(SELECT 1 FROM sync_state WHERE owner_id=$owner AND category=$category)";
+        Add(cmd,"$owner",owner);Add(cmd,"$category",category);return Convert.ToInt32(cmd.ExecuteScalar())==1;
+    }
+    public void MarkCategoryPending(string owner,string category)
+    {
+        using var db=Open(); using var cmd=db.CreateCommand();
+        cmd.CommandText="INSERT OR IGNORE INTO sync_pending VALUES($owner,$category)";
+        Add(cmd,"$owner",owner); Add(cmd,"$category",category); cmd.ExecuteNonQuery();
+    }
+    public bool IsCategoryPending(string owner,string category)
+    {
+        using var db=Open(); using var cmd=db.CreateCommand();
+        cmd.CommandText="SELECT EXISTS(SELECT 1 FROM sync_pending WHERE owner_id=$owner AND category=$category)";
         Add(cmd,"$owner",owner); Add(cmd,"$category",category); return Convert.ToInt32(cmd.ExecuteScalar())==1;
     }
     public void SaveRankLinks(string owner, IReadOnlyList<Battle> page, Dictionary<int,string> newer)
@@ -162,7 +220,7 @@ public sealed partial class BattleStore
     public void CompleteCategory(string owner, string category, string? head)
     {
         using var db = Open(); using var cmd = db.CreateCommand();
-        cmd.CommandText = "INSERT INTO sync_state VALUES($owner,$category,$head,$time) ON CONFLICT(owner_id,category) DO UPDATE SET frontier_id=excluded.frontier_id,completed_at=excluded.completed_at";
+        cmd.CommandText = "INSERT INTO sync_state VALUES($owner,$category,$head,$time) ON CONFLICT(owner_id,category) DO UPDATE SET frontier_id=excluded.frontier_id,completed_at=excluded.completed_at; DELETE FROM sync_pending WHERE owner_id=$owner AND category=$category; DELETE FROM history_prefixes WHERE owner_id=$owner AND category=$category";
         Add(cmd, "$owner", owner); Add(cmd, "$category", category); Add(cmd, "$head", head); Add(cmd, "$time", DateTimeOffset.UtcNow.ToString("O")); cmd.ExecuteNonQuery();
     }
     public long BeginRun(string owner)

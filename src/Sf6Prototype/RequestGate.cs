@@ -2,7 +2,7 @@ using System.Diagnostics;
 
 namespace Sf6Prototype;
 
-// One request at a time across foreground queries and background portraits.
+// Serialize official data queries. Independent static image requests bypass this gate.
 public sealed class RequestGate
 {
     public static RequestGate Shared { get; } = new(TimeSpan.FromSeconds(ConnectionSettings.DefaultApiIntervalSeconds));

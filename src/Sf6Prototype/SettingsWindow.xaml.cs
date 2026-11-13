@@ -8,7 +8,7 @@ using Microsoft.Win32;
 
 namespace Sf6Prototype;
 
-public partial class SettingsWindow : Window
+public partial class SettingsWindow : ChromeWindow
 {
     private readonly ConnectionSettings _current;
     private readonly CancellationTokenSource _closing = new();
@@ -22,7 +22,7 @@ public partial class SettingsWindow : Window
     public ConnectionSettings? Result { get; private set; }
     public SettingsWindow(Window owner, ConnectionSettings current)
     {
-        InitializeComponent(); Owner = owner; _current = current;
+        InitializeComponent(); InitializeWindowChrome(WindowSurface,TitleBar); Owner = owner; _current = current;
         ProxyEnabled.IsChecked = current.UseProxy; ProxyAddressBox.Text = current.ProxyAddress;
         ReminderSecondsBox.Text=current.RefreshReminderSeconds.ToString(CultureInfo.InvariantCulture);
         AutoRefreshSecondsBox.Text=current.AutoRefreshSeconds.ToString(CultureInfo.InvariantCulture);

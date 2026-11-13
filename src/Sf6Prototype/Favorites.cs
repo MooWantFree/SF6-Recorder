@@ -18,7 +18,8 @@ public static class Favorites
             LeagueRank=battle.OpponentLeagueRank,MasterLeague=battle.OpponentMasterLeague,
             OpponentLeagueRank=battle.LeagueRank,OpponentMasterLeague=battle.MasterLeague,
             MasterRatingRanking=battle.OpponentMasterRatingRanking,OpponentMasterRatingRanking=battle.MasterRatingRanking,
-            MyRounds=battle.OpponentRounds,OpponentRounds=battle.MyRounds,InputType=null
+            MyRounds=battle.OpponentRounds,OpponentRounds=battle.MyRounds,InputType=null,
+            RoundResults=battle.OpponentRoundResults,OpponentRoundResults=battle.RoundResults
         };
     }
     public static IReadOnlyList<FavoriteRecord> ForPlayer(IEnumerable<FavoriteRecord> records,string player) => records

@@ -54,6 +54,12 @@ internal static class PresentationLayoutChecks
         Check(Math.Abs(search.TranslatePoint(new Point(),history).Y-outcome.TranslatePoint(new Point(),history).Y)<4,"The result filter stays beside the other filters at minimum width");
         var categories=(ListBox)history.FindName("CategoryFilter");
         Check(categories.Items.OfType<CategoryChoice>().Any(c=>c.Key=="casual" && c.Count==0),"Locally empty categories remain available for initial loading");
+        Check(categories.Items.OfType<CategoryChoice>().Where(c=>c.Key!="favorites").All(c=>c.CountText.EndsWith('*') && c.CountTip=="战绩尚未下载完整。"),"Unknown category coverage marks the actual local quantity with a short explanation");
+        Check(categories.Items.OfType<CategoryChoice>().Single(c=>c.Key=="favorites") is {Incomplete:false,CountTip:null},"Favorites are an exact local quantity without an incomplete marker");
+        Check(((TextBlock)history.FindName("TotalMetric")).Text=="5*","The overall statistic remains the five saved matches rather than an estimated official count");
+        store.CompleteCategory(owner,"rank",master.ReplayId);history.Reload();
+        Check(categories.Items.OfType<CategoryChoice>().Single(c=>c.Key=="rank") is {CountText:"2",CountTip:null},"Only a completed category removes its marker without changing the local quantity");
+        Layout(history,716,590);
         Save(history,"history-minimum.png");
         var headers=(HistoryTableGrid)history.FindName("ColumnHeaders");
         var ownHeader=headers.Children.OfType<TextBlock>().Single(t=>Grid.GetColumn(t)==1);
@@ -93,6 +99,17 @@ internal static class PresentationLayoutChecks
         var dates=Descendants<TextBlock>(detail).Where(t=>t.Text.StartsWith($"{BattleDateDisplay.CurrentYear-1}-01-02")).ToList();
         Check(dates.Count>=2 && dates.All(t=>t.ActualWidth>0),"Old dates include their year in the detail header and encounter history");
         Save(detail,"detail-cross-year.png");
+        Check(((TextBlock)detail.FindName("NoRounds")).Visibility==Visibility.Visible,"Missing source round information stays explicitly unavailable");
+        foreach(var codes in new[]{new[]{8,0,1},new[]{8,0,4,0,7}})
+        {
+            var otherCodes=codes.Select(c=>c==0 ? 6 : c==4 ? 4 : 0).ToArray();
+            detail.Show(archive.Row(older with {RoundResults=codes,OpponentRoundResults=otherCodes,MyRounds=codes.Count(c=>c>0),OpponentRounds=otherCodes.Count(c=>c>0)}));Layout(detail,324,650);
+            var list=(ItemsControl)detail.FindName("RoundResultsList");var historySection=(FrameworkElement)detail.FindName("HistorySection");
+            Check(list.Items.Count==codes.Length && ((TextBlock)detail.FindName("NoRounds")).Visibility==Visibility.Collapsed,"Available round codes replace the empty state");
+            Check(list.TranslatePoint(new Point(0,list.ActualHeight),detail).Y<=historySection.TranslatePoint(new Point(),detail).Y && ((ScrollViewer)detail.FindName("HistoryScroll")).ActualHeight>=80,"Round results and encounter history fit together at minimum detail width");
+            Check(Descendants<TextBlock>(list).Any(t=>t.Text=="Perfect" && t.ToolTip?.ToString()==Strings.RoundPerfect),"Perfect results expose their explanation on hover");
+            Save(detail,$"detail-rounds-{codes.Length}.png");
+        }
 
         var settings=new SettingsWindow(null!,new ConnectionSettings {RefreshReminderSeconds=600});
         var settingsContent=(FrameworkElement)settings.Content;

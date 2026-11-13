@@ -46,9 +46,9 @@ public sealed class BucklerClient : IBattleSource, IProfileSource, IRankSource, 
     }
     public async Task<BattlePage> FetchPageAsync(string owner, string category, int page, CancellationToken token)
     {
-        if (!BattleCategory.All.Any(c => c.Key == category)) throw new ArgumentException(Strings.UnknownCategory);
+        if (category.Length>0 && !BattleCategory.All.Any(c => c.Key == category)) throw new ArgumentException(Strings.UnknownCategory);
         if (string.IsNullOrEmpty(_session.BuildId)) await RefreshBuildAsync(owner, token);
-        string Url() => $"/6/buckler/_next/data/{Uri.EscapeDataString(_session.BuildId)}/zh-hans/profile/{owner}/battlelog/{category}.json?page={page}&sid={owner}";
+        string Url() => $"/6/buckler/_next/data/{Uri.EscapeDataString(_session.BuildId)}/zh-hans/profile/{owner}/battlelog{(category.Length==0 ? "" : "/"+category)}.json?page={page}&sid={owner}";
         var (code, body) = await GetAsync(Url(), token);
         if (code == 404)
         {
@@ -131,7 +131,7 @@ public sealed class BucklerClient : IBattleSource, IProfileSource, IRankSource, 
                 if (code == 429)
                 {
                     var after = response.Headers.RetryAfter?.Delta;
-                    throw new HttpRequestException(after != null ? Localization.Format(Strings.RateLimitDelay, Math.Ceiling(after.Value.TotalSeconds)) : Strings.RateLimitPaused);
+                    throw new HttpRequestException(after != null ? Localization.Format(Strings.RateLimitDelay, Math.Ceiling(after.Value.TotalSeconds)) : Strings.RateLimitPaused,null,HttpStatusCode.TooManyRequests);
                 }
                 if (code >= 500 && attempt < 1) {Activity?.Invoke(new(RequestPhase.Retrying)); await Task.Delay(TimeSpan.FromSeconds(5), token); continue; }
                 var body = await response.Content.ReadAsStringAsync(token);

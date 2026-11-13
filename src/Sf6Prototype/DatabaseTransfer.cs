@@ -74,8 +74,17 @@ public static class DatabaseTransfer
                 JOIN battles b ON b.owner_id=s.owner_id AND b.replay_id=s.next_replay_id
                 WHERE a.category='rank' AND b.category='rank' AND a.character_id=b.character_id
                   AND (b.played_at>a.played_at OR (b.played_at=a.played_at AND b.replay_id>a.replay_id));
-                INSERT OR IGNORE INTO sync_state SELECT * FROM incoming.sync_state;
                 """;
+            cmd.ExecuteNonQuery();
+            cmd.CommandText="SELECT EXISTS(SELECT 1 FROM incoming.sqlite_master WHERE type='table' AND name='sync_pending')";
+            var hasPending=Convert.ToInt32(cmd.ExecuteScalar())==1;
+            if(hasPending)
+            {
+                cmd.CommandText="INSERT OR IGNORE INTO sync_pending SELECT p.* FROM incoming.sync_pending p WHERE NOT EXISTS(SELECT 1 FROM sync_state s WHERE s.owner_id=p.owner_id AND s.category=p.category)";
+                cmd.ExecuteNonQuery();
+            }
+            cmd.CommandText="INSERT OR IGNORE INTO sync_state SELECT s.* FROM incoming.sync_state s"+
+                (hasPending ? " WHERE NOT EXISTS(SELECT 1 FROM incoming.sync_pending p WHERE p.owner_id=s.owner_id AND p.category=s.category)" : "");
             cmd.ExecuteNonQuery();
             cmd.CommandText="PRAGMA incoming.user_version";
             if(Convert.ToInt32(cmd.ExecuteScalar())>=4)
@@ -153,9 +162,9 @@ public static class DatabaseTransfer
         cmd.CommandText="PRAGMA foreign_key_check";
         using(var reader=cmd.ExecuteReader()) if(reader.Read()) throw new InvalidDataException(Strings.BackupLinksIncomplete);
         cmd.CommandText="""
-            SELECT COUNT(*) FROM sync_state s WHERE COALESCE(category,'') NOT IN ('rank','casual','custom','hub')
+            SELECT COUNT(*) FROM sync_state s WHERE category IS NULL OR category NOT IN ('','all-sync','rank','casual','custom','hub')
               OR owner_id IS NULL OR length(owner_id)<>10 OR owner_id GLOB '*[^0-9]*' OR julianday(completed_at) IS NULL
-              OR (frontier_id IS NOT NULL AND NOT EXISTS(SELECT 1 FROM battles b WHERE b.owner_id=s.owner_id AND b.category=s.category AND b.replay_id=s.frontier_id));
+              OR (frontier_id IS NOT NULL AND NOT EXISTS(SELECT 1 FROM battles b WHERE b.owner_id=s.owner_id AND (s.category IN ('','all-sync') OR b.category=s.category) AND b.replay_id=s.frontier_id));
             """;
         if(Convert.ToInt64(cmd.ExecuteScalar())!=0) throw new InvalidDataException(Strings.BackupSyncIncomplete);
         cmd.CommandText="""

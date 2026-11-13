@@ -25,8 +25,8 @@ public sealed class RefreshProgressState
         if(progress.Fraction is { } fraction) Advance(.08+.82*Math.Clamp(fraction,0,1));
         RemainingRequests=progress.RemainingPages is { } pages ? Math.Max(0,pages)+metadataRequests : null;
     }
-    public void Metadata()
-    {Stage=Strings.UpdatingCharacterProfiles;Detail=Strings.RecordsSavedImagesBackground;_metadata=true;_metadataDone=0;_metadataTotal=2;RemainingRequests=2;Advance(.92);}
+    public void Metadata(int requests=2)
+    {Stage=Strings.UpdatingCharacterProfiles;Detail=Strings.RecordsSavedImagesBackground;_metadata=true;_metadataDone=0;_metadataTotal=Math.Max(1,requests);RemainingRequests=_metadataTotal;Advance(.92);}
     public void AddMetadataRequests(int count)
     {
         if(!_metadata || count<=0) return;

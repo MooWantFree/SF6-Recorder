@@ -144,6 +144,7 @@ public static class Strings
     public static string ImportHelp => Localization.Get(nameof(ImportHelp));
     public static string Importing => Localization.Get(nameof(Importing));
     public static string IncludeUnranked => Localization.Get(nameof(IncludeUnranked));
+    public static string IncompleteHistoryCount => Localization.Get(nameof(IncompleteHistoryCount));
     public static string InvalidAccountId => Localization.Get(nameof(InvalidAccountId));
     public static string InvalidApiInterval => Localization.Get(nameof(InvalidApiInterval));
     public static string InvalidAutoRefresh => Localization.Get(nameof(InvalidAutoRefresh));
@@ -187,6 +188,7 @@ public static class Strings
     public static string MatchesPreparedOfTotal => Localization.Get(nameof(MatchesPreparedOfTotal));
     public static string MatchesSaved => Localization.Get(nameof(MatchesSaved));
     public static string MatchesSuffix => Localization.Get(nameof(MatchesSuffix));
+    public static string MatchInfo => Localization.Get(nameof(MatchInfo));
     public static string MatchList => Localization.Get(nameof(MatchList));
     public static string MatchQuantity => Localization.Get(nameof(MatchQuantity));
     public static string MatchSuffix => Localization.Get(nameof(MatchSuffix));
@@ -202,6 +204,7 @@ public static class Strings
     public static string Mode => Localization.Get(nameof(Mode));
     public static string MrSettlementUnknown => Localization.Get(nameof(MrSettlementUnknown));
     public static string MyRecords => Localization.Get(nameof(MyRecords));
+    public static string NewMatchesCount => Localization.Get(nameof(NewMatchesCount));
     public static string NextMonth => Localization.Get(nameof(NextMonth));
     public static string NextRequestIn => Localization.Get(nameof(NextRequestIn));
     public static string NicknameCopied => Localization.Get(nameof(NicknameCopied));
@@ -219,6 +222,7 @@ public static class Strings
     public static string NoRankedRecords => Localization.Get(nameof(NoRankedRecords));
     public static string NoRankRecords => Localization.Get(nameof(NoRankRecords));
     public static string NoRecordsRefresh => Localization.Get(nameof(NoRecordsRefresh));
+    public static string NoRoundInfo => Localization.Get(nameof(NoRoundInfo));
     public static string NoScores => Localization.Get(nameof(NoScores));
     public static string NoSearchHistory => Localization.Get(nameof(NoSearchHistory));
     public static string NoSeasonMr => Localization.Get(nameof(NoSeasonMr));
@@ -273,6 +277,7 @@ public static class Strings
     public static string RateLimitDelay => Localization.Get(nameof(RateLimitDelay));
     public static string RateLimitPaused => Localization.Get(nameof(RateLimitPaused));
     public static string ReadingCategoryPage => Localization.Get(nameof(ReadingCategoryPage));
+    public static string ReadingCategoryPageOfTotal => Localization.Get(nameof(ReadingCategoryPageOfTotal));
     public static string ReadingRankedPage => Localization.Get(nameof(ReadingRankedPage));
     public static string ReadyLocalData => Localization.Get(nameof(ReadyLocalData));
     public static string RecentCount => Localization.Get(nameof(RecentCount));
@@ -282,6 +287,7 @@ public static class Strings
     public static string Refresh => Localization.Get(nameof(Refresh));
     public static string RefreshCancelled => Localization.Get(nameof(RefreshCancelled));
     public static string RefreshComplete => Localization.Get(nameof(RefreshComplete));
+    public static string RefreshCompleteHint => Localization.Get(nameof(RefreshCompleteHint));
     public static string RefreshCompleteSummary => Localization.Get(nameof(RefreshCompleteSummary));
     public static string RefreshIncomplete => Localization.Get(nameof(RefreshIncomplete));
     public static string RefreshReminder => Localization.Get(nameof(RefreshReminder));
@@ -300,7 +306,16 @@ public static class Strings
     public static string ResponseRetrying => Localization.Get(nameof(ResponseRetrying));
     public static string Restore => Localization.Get(nameof(Restore));
     public static string Result => Localization.Get(nameof(Result));
+    public static string RoundChip => Localization.Get(nameof(RoundChip));
+    public static string RoundCriticalArt => Localization.Get(nameof(RoundCriticalArt));
+    public static string RoundDraw => Localization.Get(nameof(RoundDraw));
+    public static string RoundLost => Localization.Get(nameof(RoundLost));
+    public static string RoundOverdrive => Localization.Get(nameof(RoundOverdrive));
+    public static string RoundPerfect => Localization.Get(nameof(RoundPerfect));
     public static string RoundScore => Localization.Get(nameof(RoundScore));
+    public static string RoundSuperArt => Localization.Get(nameof(RoundSuperArt));
+    public static string RoundTime => Localization.Get(nameof(RoundTime));
+    public static string RoundVictory => Localization.Get(nameof(RoundVictory));
     public static string Save => Localization.Get(nameof(Save));
     public static string Saved => Localization.Get(nameof(Saved));
     public static string SavedCharacterNamesCancelled => Localization.Get(nameof(SavedCharacterNamesCancelled));
@@ -373,8 +388,10 @@ public static class Strings
     public static string TooManyRequests => Localization.Get(nameof(TooManyRequests));
     public static string TwelveHours => Localization.Get(nameof(TwelveHours));
     public static string TwentyMinutes => Localization.Get(nameof(TwentyMinutes));
+    public static string TwoSeconds => Localization.Get(nameof(TwoSeconds));
     public static string UnexpectedError => Localization.Get(nameof(UnexpectedError));
     public static string UnknownCategory => Localization.Get(nameof(UnknownCategory));
+    public static string UnknownRoundResult => Localization.Get(nameof(UnknownRoundResult));
     public static string UnknownSummarySuffix => Localization.Get(nameof(UnknownSummarySuffix));
     public static string UpdatedAtPrefix => Localization.Get(nameof(UpdatedAtPrefix));
     public static string UpdateFailed => Localization.Get(nameof(UpdateFailed));

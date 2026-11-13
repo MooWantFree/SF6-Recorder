@@ -43,6 +43,9 @@ public record Battle
     public int? OpponentMasterRatingRanking { get; init; }
     public int? MyRounds { get; init; }
     public int? OpponentRounds { get; init; }
+    public int[]? RoundResults { get; init; }
+    public int[]? OpponentRoundResults { get; init; }
+    public JsonElement? RawJson { get; init; }
     public int? InputType { get; init; }
     public int? MasterLeague { get; init; }
     public int? Season { get; init; }
@@ -97,7 +100,7 @@ public static class MatchParser
             if (seconds > 100_000_000_000) seconds /= 1000;
             records.Add(new Battle
             {
-                OwnerId = owner, ReplayId = replayId, Category = category, PlayedAt = seconds,
+                OwnerId = owner, ReplayId = replayId, Category = category.Length>0 ? category : ReplayCategory(r), PlayedAt = seconds,
                 PlayerName = Text(mine.GetProperty("player"), "fighter_id"),
                 CharacterId = Int(mine, "character_id") ?? throw new InvalidDataException(Strings.MissingCharacterId),
                 Character = Text(mine, "character_name"), OpponentId = Id(other.GetProperty("player"), "short_id"),
@@ -110,19 +113,59 @@ public static class MatchParser
                 InputType = Int(mine, "battle_input_type"), MasterLeague = Int(mine, "master_league"),
                 // master_league is a rank badge, not a season ID. Most replay responses omit season_id.
                 Season = Int(r, "season_id"),
-                MyRounds = Rounds(mine), OpponentRounds = Rounds(other)
+                MyRounds = Rounds(mine), OpponentRounds = Rounds(other),
+                RoundResults=ReadRoundResults(mine),OpponentRoundResults=ReadRoundResults(other),RawJson=r.Clone()
             });
         }
         return new(Int(p, "current_page") ?? 1, Int(p, "total_page") ?? throw new InvalidDataException(Strings.MissingPagingData), records);
     }
+    private static string ReplayCategory(JsonElement replay) => Int(replay,"replay_battle_type") switch
+    {
+        // The response's numeric type identifies the mode; its translated name is presentation HTML.
+        1 => "rank", 2 => "casual", 3 => "custom", 4 => "hub",
+        _ => throw new InvalidDataException(Strings.UnknownCategory)
+    };
     public static string Text(JsonElement e, string key) => e.TryGetProperty(key, out var v) ? v.ToString() : "";
     public static string Id(JsonElement e, string key) => e.TryGetProperty(key, out var v) && v.ValueKind == JsonValueKind.Number
         ? v.GetDecimal().ToString("0", System.Globalization.CultureInfo.InvariantCulture) : Text(e, key);
     public static int? Int(JsonElement e, string key) => e.TryGetProperty(key, out var v) && v.ValueKind == JsonValueKind.Number && v.TryGetInt32(out var i) ? i : null;
     private static int? Rounds(JsonElement e)
     {
-        if (!e.TryGetProperty("round_results", out var r) || r.ValueKind != JsonValueKind.Array || r.GetArrayLength() == 0) return null;
-        var values = r.EnumerateArray().Select(v => v.GetInt32()).ToArray();
-        return values.Count(v => v > 0);
+        return ReadRoundResults(e)?.Count(v=>v>0);
     }
+    private static int[]? ReadRoundResults(JsonElement e)
+    {
+        if(!e.TryGetProperty("round_results",out var values) || values.ValueKind!=JsonValueKind.Array || values.GetArrayLength()==0) return null;
+        var result=new List<int>();
+        foreach(var value in values.EnumerateArray())
+        {
+            if(value.ValueKind!=JsonValueKind.Number || !value.TryGetInt32(out var code)) return null;
+            result.Add(code);
+        }
+        return result.ToArray();
+    }
+}
+
+public sealed record RoundResult(int Number,int? OwnCode,int? OpponentCode)
+{
+    public string Label=>$"{Number}R";
+    public string Own=>Symbol(OwnCode);
+    public string Opponent=>Symbol(OpponentCode);
+    public string OwnTip=>Description(OwnCode);
+    public string OpponentTip=>Description(OpponentCode);
+    public string OwnKind=>Kind(OwnCode);
+    public string OpponentKind=>Kind(OpponentCode);
+    // Buckler's round_results codes; preserve unknown values instead of guessing a finish.
+    // Reference: https://sfstats.app/data/reference (round result codes).
+    public static string Symbol(int? code)=>code switch {0=>"—",1=>"V",2=>"C",3=>"T",4=>"D",5=>"OD",6=>"SA",7=>"CA",8=>"Perfect",_=>"?"};
+    public static string Kind(int? code)=>code switch {0=>"loss",1 or 2 or 3 or 5 or 6 or 7 or 8=>"win",_=>"other"};
+    public static string Description(int? code)=>code switch
+    {
+        0=>Strings.RoundLost,1=>Strings.RoundVictory,2=>Strings.RoundChip,3=>Strings.RoundTime,
+        4=>Strings.RoundDraw,5=>Strings.RoundOverdrive,6=>Strings.RoundSuperArt,7=>Strings.RoundCriticalArt,8=>Strings.RoundPerfect,
+        null=>Strings.NoRoundInfo,_=>Localization.Format(Strings.UnknownRoundResult,code)
+    };
+    public static IReadOnlyList<RoundResult> From(Battle battle)=>Enumerable.Range(0,Math.Max(battle.RoundResults?.Length ?? 0,battle.OpponentRoundResults?.Length ?? 0))
+        .Select(i=>new RoundResult(i+1,At(battle.RoundResults,i),At(battle.OpponentRoundResults,i))).ToArray();
+    private static int? At(int[]? results,int index)=>results!=null && index<results.Length ? results[index] : null;
 }

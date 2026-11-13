@@ -1,9 +1,56 @@
+# Local SDKs, dependency caches and build/package output
 .tools/
 .nuget/
 .local/
 artifacts/
 **/bin/
 **/obj/
+TestResults/
+*.nupkg
+*.snupkg
+
+# Portable app data, browser sessions and local databases
 **/Data/
+**/WebView2/
+*.WebView2/
+*.sqlite
+*.sqlite-*
+*.db
+*.db-*
+instance.lock
+.env
+.env.*
+!.env.example
+!.env.template
+*.pfx
+*.p12
+
+# Editor settings and operating-system files
+.vs/
+.vscode/
+.idea/
 *.user
+*.suo
+*.sln.docstates
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Temporary captures, diagnostics and script caches
+.agents/
+.codex/
+/AGENTS.md
+/APP_VERIFICATION.md
+/VERIFICATION.md
+.ui-review-tmp/
+/tmp/
+/temp/
+*.log
+*.tmp
+*.bak
+*.dmp
 __pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/

@@ -10,16 +10,16 @@ public static class RefreshProgressChecks
         var root=Path.Combine(Environment.CurrentDirectory,".local","checks",Guid.NewGuid().ToString("N"));
         BattleStore Store(string name)=>new(Path.Combine(root,name+".sqlite"));
         BattlePage Page(string category,int number,int total=20,int size=10,bool mixed=false)=>new(number,total,
-            Enumerable.Range(0,size).Select(i=>new Battle {OwnerId=owner,ReplayId=$"{category}-{number}-{i}",Category=category,PlayedAt=10000-number*10-i,CharacterId=mixed && i%2==1 ? 2 : 1,Lp=15000}).ToList());
+            Enumerable.Range(0,size).Select(i=>new Battle {OwnerId=owner,ReplayId=$"{category}-{number}-{i}",Category=category.Length==0 ? "rank" : category,PlayedAt=10000-number*10-i,CharacterId=mixed && i%2==1 ? 2 : 1,Lp=15000}).ToList());
         var progress=new List<BattleLoadProgress>();
         var pager=new BattlePager(Store("initial"),owner);pager.ProgressChanged+=progress.Add;
         var source=new Source((c,p)=>Page(c,p));
         await pager.LoadInitialAsync(source,"",CancellationToken.None,()=>Task.CompletedTask);
-        Check(progress.First() is {Fraction:0,RemainingPages:8,Pages:0} && progress.Last() is {Fraction:1,RemainingPages:0,Pages:8},"Four categories start with eight pages and complete after the actual eighth page");
+        Check(progress.First() is {Fraction:0,RemainingPages:2,Pages:0} && progress.Last() is {Fraction:1,RemainingPages:0,Pages:2},"An initial All view reports its two actual requests");
         Check(progress.Select(p=>p.Fraction).SequenceEqual(progress.Select(p=>p.Fraction).Order()),"Paging progress does not run backwards across categories");
         var shortPager=new BattlePager(Store("early"),owner);progress.Clear();shortPager.ProgressChanged+=progress.Add;
         await shortPager.LoadInitialAsync(new Source((c,p)=>c=="rank" ? Page(c,p) : new(p,0,[])),"",CancellationToken.None,()=>Task.CompletedTask);
-        Check(progress.Last() is {Fraction:1,Pages:5,RemainingPages:0},"Empty categories finish early without pretending their skipped second pages were fetched");
+        Check(progress.Last() is {Fraction:1,Pages:1,RemainingPages:0},"An empty All view finishes after one actual request");
         progress.Clear();var scorePager=new BattlePager(Store("scores"),owner);scorePager.ProgressChanged+=progress.Add;
         await scorePager.LoadScoreRangeAsync(new Source((c,p)=>Page(c,p,mixed:true)),new(1,100),CancellationToken.None,()=>Task.CompletedTask);
         Check(progress.Last() is {Fraction:1,Pages:20,RemainingPages:0} && progress.Last().Detail.Contains("100 / 100"),"One hundred selected-character matches produce accurate progress even across twenty mixed-character pages");

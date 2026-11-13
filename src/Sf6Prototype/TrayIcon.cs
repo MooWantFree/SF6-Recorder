@@ -27,7 +27,8 @@ public sealed class TrayIcon : IDisposable
     public void RefreshLanguage() { _tray.Text=Strings.AppTitle; _menu.RefreshLanguage(); }
     private static Drawing.Icon LoadIcon(int size)
     {
-        using var stream=Application.GetResourceStream(new Uri("pack://application:,,,/Sf6Prototype;component/Assets/app.ico")).Stream;
+        var assembly=Uri.EscapeDataString(typeof(TrayIcon).Assembly.GetName().Name!);
+        using var stream=Application.GetResourceStream(new Uri($"pack://application:,,,/{assembly};component/Assets/app.ico")).Stream;
         return new Drawing.Icon(stream,size,size);
     }
     private void UpdateIcons()

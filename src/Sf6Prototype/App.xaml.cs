@@ -35,14 +35,16 @@ public partial class App : Application
         try { _instanceLock = new FileStream(Path.Combine(DataDirectory, "instance.lock"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None); }
         catch (IOException)
         {
-            MessageBox.Show(Strings.DataDirectoryInUse, Strings.AppTitle);
+            MessageWindow.Notice(null,Strings.DataDirectoryInUse,Strings.AppTitle);
             Shutdown();
             return;
         }
         DispatcherUnhandledException += (_, args) =>
         {
             File.WriteAllText(Path.Combine(DataDirectory, "fatal-error.txt"), args.Exception.GetType().Name + " / " + args.Exception.HResult);
-            MessageBox.Show(Strings.UnexpectedError, Strings.AppTitle);
+            // Keep a native fallback if the UI resources themselves caused the failure.
+            try {MessageWindow.Notice(MainWindow,Strings.UnexpectedError,Strings.AppTitle);}
+            catch {MessageBox.Show(Strings.UnexpectedError,Strings.AppTitle);}
             args.Handled = true;
             IsShuttingDown=true;
             Shutdown(1);

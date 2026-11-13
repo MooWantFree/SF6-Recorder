@@ -69,7 +69,7 @@
       <Grid>
         <ListBox x:Name="CategoryFilter" Style="{StaticResource TabStrip}" ItemContainerStyle="{StaticResource CategoryTab}" SelectionChanged="Category_Changed" AutomationProperties.Name="{DynamicResource I18n.MatchCategory}" VerticalAlignment="Bottom">
           <ListBox.ItemTemplate><DataTemplate>
-            <StackPanel Orientation="Horizontal"><Border x:Name="FavoriteDivider" Width="1" Height="16" Background="{StaticResource Line}" Margin="0,0,16,0" Visibility="Collapsed"/><TextBlock Text="{Binding Name}"/><TextBlock Text="{Binding Count}" Style="{StaticResource Number}" FontSize="12" Margin="6,1,0,0" Opacity="0.7"/></StackPanel>
+            <StackPanel Orientation="Horizontal"><Border x:Name="FavoriteDivider" Width="1" Height="16" Background="{StaticResource Line}" Margin="0,0,16,0" Visibility="Collapsed"/><TextBlock Text="{Binding Name}"/><TextBlock Text="{Binding CountText}" ToolTip="{Binding CountTip}" Style="{StaticResource Number}" FontSize="12" Margin="6,1,0,0" Opacity="0.7"/></StackPanel>
             <DataTemplate.Triggers><DataTrigger Binding="{Binding Key}" Value="favorites"><Setter TargetName="FavoriteDivider" Property="Visibility" Value="Visible"/></DataTrigger></DataTemplate.Triggers>
           </DataTemplate></ListBox.ItemTemplate>
         </ListBox>

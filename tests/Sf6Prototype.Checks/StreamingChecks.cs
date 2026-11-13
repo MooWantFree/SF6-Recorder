@@ -59,25 +59,23 @@ public static class StreamingChecks
         Check(profileSource.Calls==2 && profiles.Profile(owner)?.Name=="Current nickname" && profiles.Scores(owner)?.Characters.Single().Lp==20000, "Nickname and current scores are saved before any portrait downloads");
         Check(images.Count==2 && images[0].Refresh && images.All(i=>!File.Exists(i.Destination)), "Metadata refresh returns deferred images without waiting for them");
         var imageSource = new FakeImages(); var saved = 0;
-        await ImageDownloads.RunAsync(images.Concat(images),imageSource,_=>{saved++; return Task.CompletedTask;},CancellationToken.None);
+        await using var downloading=new ImageDownloads(imageSource,_=>saved++,ex=>throw ex);
+        downloading.Start(images.Concat(images));await downloading.PendingWork;
         Check(imageSource.Calls==2 && saved==2 && images.All(i=>File.Exists(i.Destination)), "Background images are deduplicated and announced only after saving");
-        await ImageDownloads.RunAsync(images,imageSource,_=>Task.CompletedTask,CancellationToken.None);
+        downloading.Start(images);await downloading.PendingWork;
         Check(imageSource.Calls==3, "Cached character portraits are skipped while account avatars still refresh");
-        using var stopImages = new CancellationTokenSource(); var pending = new[] {new ImageDownload("/unused",Path.Combine(dir,"one.png")),new ImageDownload("/unused",Path.Combine(dir,"two.png"))};
-        var cancellableSource = new FakeImages();
-        try { await ImageDownloads.RunAsync(pending,cancellableSource,_=>{stopImages.Cancel();return Task.CompletedTask;},stopImages.Token); }
-        catch(OperationCanceledException) { }
-        Check(cancellableSource.Calls==1 && !File.Exists(pending[1].Destination), "Foreground cancellation stops the remaining background image queue");
+        var pending = new[] {new ImageDownload("/unused",Path.Combine(dir,"one.png")),new ImageDownload("/unused",Path.Combine(dir,"two.png"))};
         var failingSource = new FakeImages { Fail=true };
-        try { await ImageDownloads.RunAsync(pending,failingSource,_=>Task.CompletedTask,CancellationToken.None); }
-        catch(HttpRequestException) { }
-        Check(failingSource.Calls==1, "Image request failure stops the batch rather than repeatedly hitting the server");
+        var failures=0;
+        await using var failing=new ImageDownloads(failingSource,_=>{},_=>failures++);
+        failing.Start(pending);await failing.PendingWork;
+        Check(failingSource.Calls==2 && failures==2, "A failed image does not block independent images and is not retried in a loop");
 
         var gate = new RequestGate(TimeSpan.FromMilliseconds(30));
         var started = new List<long>(); var active=0; var peak=0;
         async Task<int> Request() { started.Add(Stopwatch.GetTimestamp()); active++; peak=Math.Max(peak,active); await Task.Delay(5); active--; return 1; }
         await Task.WhenAll(Enumerable.Range(0,3).Select(_=>gate.RunAsync(Request,CancellationToken.None)));
-        Check(peak==1 && started.Count==3, "One shared request gate serializes concurrent foreground/background requests");
+        Check(peak==1 && started.Count==3, "One shared request gate serializes concurrent official data queries");
         Check(Stopwatch.GetElapsedTime(started[0],started[2]).TotalMilliseconds>=55, "The request gate spaces request starts, not just responses");
         var hold = new TaskCompletionSource<int>(); var entered = new TaskCompletionSource();
         var first = gate.RunAsync(()=>{entered.SetResult();return hold.Task;},CancellationToken.None); await entered.Task;

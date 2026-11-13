@@ -8,7 +8,7 @@ using Microsoft.Web.WebView2.Wpf;
 
 namespace Sf6Prototype;
 
-public sealed class LoginWindow : Window
+public sealed class LoginWindow : ChromeContentWindow
 {
     private readonly WebView2 _browser = new();
     private readonly TextBlock _address = new() { Margin = new Thickness(12), Text = Strings.OpeningCapcom, TextTrimming = TextTrimming.CharacterEllipsis };
@@ -21,14 +21,14 @@ public sealed class LoginWindow : Window
     private CoreWebView2Environment? _environment;
     private bool _checking, _finishing, _closed;
 
-    private LoginWindow(Window owner, ConnectionSettings settings, CookieVault vault)
+    private LoginWindow(Window owner, ConnectionSettings settings, CookieVault vault):base(true)
     {
         Owner = owner; _settings = settings; _vault = vault;
         Icon = (System.Windows.Media.ImageSource)FindResource("AppIcon");
         Title = Strings.SignInCapcom; Width = 1100; Height = 820; MinWidth = 800; MinHeight = 650;
-        WindowStartupLocation = WindowStartupLocation.CenterOwner;
+        WindowStartupLocation = WindowStartupLocation.CenterOwner;ShowInTaskbar=true;
         var grid = new Grid(); grid.RowDefinitions.Add(new() { Height = GridLength.Auto }); grid.RowDefinitions.Add(new());
-        grid.Children.Add(_address); Grid.SetRow(_browser, 1); grid.Children.Add(_browser); Content = grid;
+        grid.Children.Add(_address); Grid.SetRow(_browser, 1); grid.Children.Add(_browser); Body = grid;
         Loaded += async (_, _) => await InitializeAsync();
         _timer.Tick += async (_, _) => await CheckAsync();
     }
@@ -73,7 +73,7 @@ public sealed class LoginWindow : Window
             using var deferral = e.GetDeferral(); e.Handled = true;
             if (_closed || !Uri.TryCreate(e.Uri, UriKind.Absolute, out var uri) || uri.Scheme != "https") return;
             var view = new WebView2();
-            var popup = new Window { Owner = this, Icon = this.Icon, Title = Strings.OfficialCapcomSignIn, Width = 1000, Height = 800, Content = view, WindowStartupLocation = WindowStartupLocation.CenterOwner };
+            var popup = new ChromeContentWindow(true) { Owner = this, Icon = this.Icon, Title = Strings.OfficialCapcomSignIn, Width = 1000, Height = 800, MinWidth=640,MinHeight=480,Body = view, ShowInTaskbar=true };
             _popups.Add(popup);
             popup.Closed += (_, _) => { view.Dispose(); _popups.Remove(popup); if (!_closed && !_finishing) _browser.CoreWebView2.Reload(); };
             popup.Show();
