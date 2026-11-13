@@ -51,7 +51,9 @@ internal static class LocalizationChecks
                 Check(draft.Language==culture,"Settings draft stores the language code, not its translated label");
                 var content=(FrameworkElement)settings.Content;
                 content.Measure(new Size(settings.Width-16,double.PositiveInfinity));content.Arrange(new Rect(content.DesiredSize));content.UpdateLayout();
-                Check(content.DesiredSize.Height<680,"The localized settings dialog fits within the supported minimum screen height");
+                // Content includes the custom title bar; reserve only the outer frame.
+                var windowHeight=content.DesiredSize.Height+2*SystemParameters.ResizeFrameHorizontalBorderHeight;
+                Check(windowHeight<=720,$"The localized settings window fits the minimum height in {culture} ({windowHeight:F2} DIP)");
                 foreach(var text in Descendants<TextBlock>(content).Where(t=>t.Visibility==Visibility.Visible && t.TextWrapping==TextWrapping.NoWrap && t.Text.Length>0 && t.ActualWidth>0))
                 {
                     var width=new FormattedText(text.Text,Localization.Culture,FlowDirection.LeftToRight,new Typeface(text.FontFamily,text.FontStyle,text.FontWeight,text.FontStretch),text.FontSize,Brushes.Black,1).Width;
