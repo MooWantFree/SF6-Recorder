@@ -122,7 +122,9 @@ internal static class Program
         Check(((ConnectionSettings)draft.Invoke(settings,[false])!).ApiIntervalSeconds==2,"A partially edited API interval does not block the independent Google proxy test");
         apiPresets.SelectedIndex=2;
         var settingsContent=(FrameworkElement)settings.Content;settingsContent.Measure(new Size(settings.Width-16,double.PositiveInfinity));settingsContent.Arrange(new Rect(settingsContent.DesiredSize));
-        Check(settingsContent.DesiredSize.Height<680 && api.TranslatePoint(new Point(api.ActualWidth,0),settingsContent).X<=apiPresets.TranslatePoint(new Point(0,0),settingsContent).X,"The new settings row fits the compact dialog without overlapping its preset group");
+        var intervalRight=api.TranslatePoint(new Point(api.ActualWidth,0),settingsContent).X;
+        var presetsLeft=apiPresets.TranslatePoint(new Point(0,0),settingsContent).X;
+        Check(settingsContent.DesiredSize.Height<680 && intervalRight<=presetsLeft,$"The new settings row fits the compact dialog without overlapping its preset group (height={settingsContent.DesiredSize.Height:F2}, intervalRight={intervalRight:F2}, presetsLeft={presetsLeft:F2}, font={settings.FontFamily})");
         var choice=new CloseChoiceWindow(null!);
         Check(choice.Choice==CloseAction.Ask && !choice.Remember,"Dismissed close choices cannot silently become a remembered action");
         var loader=typeof(TrayIcon).GetMethod("LoadIcon",BindingFlags.Static|BindingFlags.NonPublic)!;
