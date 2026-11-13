@@ -1,6 +1,8 @@
+[简体中文](README.md) | [日本語](README.ja.md) | [English](README.en.md)
+
 # SF6 Recorder
 
-用于将 CAPCOM Buckler's Boot Camp 上的<Street Fighter 6>对局记录保存到本机. 官网只保留最近一段时间的战绩, 每次刷新会把新增回放写入本地 SQLite 数据库, 旧记录不会随官网历史滚动而消失.
+用于将 [CAPCOM Buckler's Boot Camp](https://www.streetfighter.com/6/buckler/profile/) 上的`Street Fighter 6`对局记录保存到本机. 官网只保留最近一段时间的战绩, `SF6 Recorder`每次刷新会把新增战绩记录写入本地 SQLite 数据库持久保存, 不随官网历史滚动而消失.
 
 ## 运行环境与启动
 
@@ -10,16 +12,18 @@
 
 直接运行 `SF6 Recorder.exe`
 
-![image-20261113233624167](README.assets/image-20261113233624167.png)
+![image-20261113233624167](image/image-20261113233624167.png)
 
 ## 自动构建与发布包
 
-GitHub Actions 的 `Build Windows ZIPs` 工作流会在推送代码、提交 Pull Request 或手动运行时, 执行逻辑检查和无界面桌面检查, 然后生成两个 Windows x64 ZIP. 在运行结果的 Artifacts 中下载:
+### 自动构建下载
+
+在 [release](https://github.com/MooWantFree/SF6-Recorder/releases/latest) 下载
 
 - `SF6-Recorder-win-x64-self-contained.zip`: 带 .NET 运行时
 - `SF6-Recorder-win-x64-framework-dependent.zip`: 不带 .NET 运行时, 需要预装 .NET 10 Windows Desktop Runtime (x64)
 
-两个版本均需 WebView2 Runtime. ZIP 只包含程序及其依赖, 不包含本机的账号、Cookie、设置或战绩. 解压全部文件后运行 `SF6 Recorder.exe`; 更新已有版本时保留原来的 `Data` 文件夹.
+### 本地构建
 
 本地构建并打包两种版本:
 
@@ -28,7 +32,7 @@ pwsh -File .\build.ps1 -ChecksOnly
 pwsh -File .\scripts\Publish-Packages.ps1
 ```
 
-ZIP 默认保存在 `artifacts\packages`. [两种 .NET 发布方式的说明](https://learn.microsoft.com/en-us/dotnet/core/deploying/).
+ZIP 默认保存在 `artifacts\packages`.
 
 ## 登录与账号管理
 
@@ -79,7 +83,7 @@ CAPCOM 官网战绩接口记录的 LP 和 MR 均为开赛前的分数, 单条回
 
 ## 分数走势
 
-![image-20261113234059975](README.assets/image-20261113234059975.png)
+![image-20261113234059975](image/image-20261113234059975.png)
 
 切换到顶部的 "分数" 页可以按角色查看排位赛分数曲线:
 
