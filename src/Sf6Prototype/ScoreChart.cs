@@ -23,6 +23,7 @@ public sealed class ScoreChart : FrameworkElement
     public string? SelectedReplay { get => _selectedReplay; set { _selectedReplay = value; InvalidateVisual(); } }
     public string Unit { get; set; } = "LP";
     public string EmptyText { get; set; } = "";
+    public bool Compact {get;set;}
     public ScoreChart()
     {
         Focusable = true; FocusVisualStyle = null;
@@ -101,7 +102,7 @@ public sealed class ScoreChart : FrameworkElement
             dc.DrawText(empty, new Point((width - empty.Width) / 2, (height - empty.Height) / 2)); return;
         }
         var (low, high, step) = NiceScale(_points.Min(p => p.Value), _points.Max(p => p.Value));
-        const double left = 60, top = 28; var right = width - 12; var bottom = height - 48;
+        const double left = 60; var top=Compact ? 18d : 28; var right = width - 12; var bottom = height - (Compact ? 26 : 48);
         var grid = new Pen(Res("LineSubtle"), 1); var ink3 = Res("Ink3");
         for (var v = low; v <= high + step / 2; v += step)
         {
@@ -149,14 +150,14 @@ public sealed class ScoreChart : FrameworkElement
             var i=extremes[n];var point=_locations[i];var label=Text(_points[i].Value.ToString("N0"),Res("AccentText"));
             label.SetFontWeight(FontWeights.SemiBold);
             var x=Math.Clamp(point.X-label.Width/2,left,right-label.Width);
-            var y=n==0 ? point.Y-label.Height-9 : point.Y+9;
+            var y=Compact ? n==0 ? point.Y+5 : point.Y-label.Height-5 : n==0 ? point.Y-label.Height-9 : point.Y+9;
             dc.DrawRoundedRectangle(Res("Surface"),null,new Rect(x-3,y-1,label.Width+6,label.Height+2),3,3);
             dc.DrawText(label,new Point(x,y));
         }
         string? lastDate = null; var lastX = double.NegativeInfinity;
         for (var i = 0; i < _points.Count; i++)
         {
-            var date = _points[i].Time.Substring(5, 5).Replace('-', '/');
+            var date = Compact ? _points[i].Time.Substring(11,5) : _points[i].Time.Substring(5, 5).Replace('-', '/');
             if (date == lastDate || _locations[i].X - lastX < 48) continue;
             var label = Text(date, ink3); dc.DrawText(label, new Point(Math.Clamp(_locations[i].X - label.Width / 2, left, right - label.Width), height - 16));
             lastDate = date; lastX = _locations[i].X;

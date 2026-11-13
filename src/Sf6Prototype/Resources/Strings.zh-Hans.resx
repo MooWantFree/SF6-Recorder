@@ -1251,4 +1251,51 @@
   <data name="UnknownRoundResult" xml:space="preserve">
     <value>未知结果（{0}）</value>
   </data>
+  <data name="RefreshAfterMatchLabel" xml:space="preserve">
+    <value>对局结束后刷新</value>
+  </data>
+  <data name="RefreshAfterMatchHelp" xml:space="preserve">
+    <value>游戏在前台时检测整场结算。</value>
+  </data>
+  <data name="Sf6Running" xml:space="preserve">
+    <value>SF6 正在运行</value>
+  </data>
+  <data name="Sf6NotRunning" xml:space="preserve">
+    <value>SF6 未运行</value>
+  </data>
+  <data name="MatchEndWait" xml:space="preserve">
+    <value>结束后等待</value>
+  </data>
+  <data name="MatchEndRetry" xml:space="preserve">
+    <value>重试间隔</value>
+  </data>
+  <data name="InvalidMatchEndInterval" xml:space="preserve">
+    <value>等待时间须为 0–3600 秒，重试间隔须为 1–3600 秒。</value>
+  </data>
+  <data name="MatchEndFrequency" xml:space="preserve">
+    <value>采样频率</value>
+  </data>
+  <data name="SamplesPerSecondUnit" xml:space="preserve">
+    <value>次/秒</value>
+  </data>
+  <data name="InvalidMatchEndFrequency" xml:space="preserve">
+    <value>采样频率须为每秒 0.5–10 次。</value>
+  </data>
+  <data name="OpenLogFolder" xml:space="preserve">
+    <value>打开日志目录</value>
+  </data>
+  <data name="OpenLogFolderFailed" xml:space="preserve">
+    <value>无法打开日志目录。</value>
+  </data>
+  <data name="FocusLatestMatch" xml:space="preserve"><value>刷新后定位最新对局</value></data>
+  <data name="FocusLatestMatchHelp" xml:space="preserve"><value>仅滚动并选中当前模式及筛选内的新对局。</value></data>
+  <data name="RecentMatches" xml:space="preserve"><value>最近比赛</value></data>
+  <data name="RecentMatchesScope" xml:space="preserve"><value>本次启动后的排位对局</value></data>
+  <data name="NoRecentRankedMatches" xml:space="preserve"><value>本次启动后暂无排位对局</value></data>
+  <data name="HighestScore" xml:space="preserve"><value>最高分</value></data>
+  <data name="LowestScore" xml:space="preserve"><value>最低分</value></data>
+  <data name="RecentScoresPending" xml:space="preserve"><value>部分对局结算尚未确认。</value></data>
+  <data name="SessionBaseline" xml:space="preserve"><value>首场赛前分数</value></data>
+  <data name="CollapseRecentMatches" xml:space="preserve"><value>折叠最近比赛</value></data>
+  <data name="ExpandRecentMatches" xml:space="preserve"><value>展开最近比赛</value></data>
 </root>

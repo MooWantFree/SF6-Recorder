@@ -24,7 +24,7 @@ public sealed class BattlePager
         public long Oldest=long.MaxValue;
         public readonly HashSet<string> Signatures=[];
     }
-    private const string AccountBoundary="all-sync";
+    public const string AccountBoundary="all-sync";
     private readonly BattleStore _store;
     private readonly Dictionary<string,Window> _windows=[];
     public string Owner { get; }

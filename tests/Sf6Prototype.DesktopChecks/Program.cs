@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using Sf6Prototype;
@@ -8,6 +9,10 @@ internal static class Program
     [STAThread]
     private static void Main()
     {
+        var args=Environment.GetCommandLineArgs();var inspect=Array.IndexOf(args,"--match-end-inspect");
+        if(inspect>=0) {MatchEndVisionChecks.Inspect(args.Skip(inspect+1));return;}
+        if(Environment.GetCommandLineArgs().Contains("--match-end-bench"))
+        {MatchEndVisionChecks.Benchmark(Path.Combine(Environment.CurrentDirectory,".local","match-detection"));return;}
         var count=0;
         void Check(bool value,string message) {if(!value)throw new Exception(message);count++;}
         // Construct compiled controls without Show(), EnsureHandle(), startup, real data or network.
@@ -17,6 +22,7 @@ internal static class Program
         LocalizationWpf.Apply("zh");
         var assembly=Uri.EscapeDataString(typeof(MainWindow).Assembly.GetName().Name!);
         app.Resources.MergedDictionaries.Add(new ResourceDictionary {Source=new Uri($"pack://application:,,,/{assembly};component/Themes/Utility.xaml")});
+        if(args.Contains("--match-end-follow-capture")) {MatchEndFollowChecks.Capture();app.Shutdown();return;}
         var main=new MainWindow();
         main.ApplyTemplate();main.Dispatcher.Invoke(()=>{},System.Windows.Threading.DispatcherPriority.ContextIdle);
         Check(new System.Windows.Interop.WindowInteropHelper(main).Handle==IntPtr.Zero,"Control checks do not create a native window or tray icon");
@@ -117,6 +123,17 @@ internal static class Program
         api.Text="2.5";
         Check(apiPresets.SelectedItem==null && warning.Visibility==Visibility.Collapsed,"Custom intervals above two seconds do not show the warning");
         var draft=typeof(SettingsWindow).GetMethod("Draft",BindingFlags.Instance|BindingFlags.NonPublic)!;
+        var matchSwitch=(CheckBox)settings.FindName("RefreshAfterMatchEnabled");
+        var matchWait=(TextBox)settings.FindName("MatchEndWaitBox");var matchRetry=(TextBox)settings.FindName("MatchEndRetryBox");
+        var matchFrequency=(TextBox)settings.FindName("MatchEndFrequencyBox");
+        Check(matchFrequency.Text=="4","Match detection defaults to four samples per second");
+        Check(matchSwitch.IsChecked==false && matchSwitch.IsEnabled && matchWait.Text=="5" && matchRetry.Text=="8","The match-end switch remains usable without a running game, with requested default delays");
+        matchSwitch.IsChecked=true;matchWait.Text="9";matchRetry.Text="11";
+        matchFrequency.Text="2.5";
+        Check((ConnectionSettings)draft.Invoke(settings,[true])! is {RefreshAfterMatch:true,MatchEndWaitSeconds:9,MatchEndRetrySeconds:11},"Settings save the switch and custom wait/retry intervals");
+        Check(((ConnectionSettings)draft.Invoke(settings,[true])!).MatchEndSamplesPerSecond==2.5,"Settings save a custom sampling frequency");
+        ((CheckBox)settings.FindName("FocusLatestMatchEnabled")).IsChecked=false;
+        Check(!((ConnectionSettings)draft.Invoke(settings,[true])!).FocusLatestMatchAfterRefresh,"The settings switch can independently disable following the new match");
         Check(((ConnectionSettings)draft.Invoke(settings,[true])!).ApiIntervalSeconds==2.5,"Saving settings preserves custom decimal API intervals");
         api.Text="";
         Check(((ConnectionSettings)draft.Invoke(settings,[false])!).ApiIntervalSeconds==2,"A partially edited API interval does not block the independent Google proxy test");
@@ -138,6 +155,10 @@ internal static class Program
         Check(App.DataDirectory=="" && !main.IsVisible && !settings.IsVisible && !choice.IsVisible && new System.Windows.Interop.WindowInteropHelper(main).Handle==IntPtr.Zero && new System.Windows.Interop.WindowInteropHelper(settings).Handle==IntPtr.Zero && new System.Windows.Interop.WindowInteropHelper(choice).Handle==IntPtr.Zero,"Desktop checks never start the application, create native windows or use user data");
         count+=CancellationChecks.Run();
         count+=RefreshReminderChecks.Run();
+        count+=MatchEndFailureImageChecks.Run();
+        count+=MatchEndVisionChecks.Run();
+        count+=MatchEndFollowChecks.Run();
+        count+=RecentMatchesChecks.Run();
         count+=PresentationLayoutChecks.Run();
         count+=HistoryAlignmentChecks.Run();
         count+=TitleBarChecks.Run();

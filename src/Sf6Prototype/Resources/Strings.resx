@@ -1251,4 +1251,51 @@ The saved sign-in will be removed from this device. Local match records will be 
   <data name="UnknownRoundResult" xml:space="preserve">
     <value>Unknown result ({0})</value>
   </data>
+  <data name="RefreshAfterMatchLabel" xml:space="preserve">
+    <value>Refresh after each match</value>
+  </data>
+  <data name="RefreshAfterMatchHelp" xml:space="preserve">
+    <value>Detects the result screen while SF6 is in the foreground.</value>
+  </data>
+  <data name="Sf6Running" xml:space="preserve">
+    <value>SF6 is running</value>
+  </data>
+  <data name="Sf6NotRunning" xml:space="preserve">
+    <value>SF6 is not running</value>
+  </data>
+  <data name="MatchEndWait" xml:space="preserve">
+    <value>Wait after match</value>
+  </data>
+  <data name="MatchEndRetry" xml:space="preserve">
+    <value>Retry interval</value>
+  </data>
+  <data name="InvalidMatchEndInterval" xml:space="preserve">
+    <value>Wait must be 0–3600 seconds; retry must be 1–3600 seconds.</value>
+  </data>
+  <data name="MatchEndFrequency" xml:space="preserve">
+    <value>Sampling frequency</value>
+  </data>
+  <data name="SamplesPerSecondUnit" xml:space="preserve">
+    <value>/ second</value>
+  </data>
+  <data name="InvalidMatchEndFrequency" xml:space="preserve">
+    <value>Sampling frequency must be 0.5–10 per second.</value>
+  </data>
+  <data name="OpenLogFolder" xml:space="preserve">
+    <value>Open log folder</value>
+  </data>
+  <data name="OpenLogFolderFailed" xml:space="preserve">
+    <value>Unable to open the log folder.</value>
+  </data>
+  <data name="FocusLatestMatch" xml:space="preserve"><value>Show latest match after refresh</value></data>
+  <data name="FocusLatestMatchHelp" xml:space="preserve"><value>Scroll to and select the new match when it matches the current mode and filters.</value></data>
+  <data name="RecentMatches" xml:space="preserve"><value>Recent matches</value></data>
+  <data name="RecentMatchesScope" xml:space="preserve"><value>Ranked matches since this app session started</value></data>
+  <data name="NoRecentRankedMatches" xml:space="preserve"><value>No ranked matches in this session</value></data>
+  <data name="HighestScore" xml:space="preserve"><value>Highest score</value></data>
+  <data name="LowestScore" xml:space="preserve"><value>Lowest score</value></data>
+  <data name="RecentScoresPending" xml:space="preserve"><value>Some match settlements are not yet confirmed.</value></data>
+  <data name="SessionBaseline" xml:space="preserve"><value>Score before the first match</value></data>
+  <data name="CollapseRecentMatches" xml:space="preserve"><value>Collapse recent matches</value></data>
+  <data name="ExpandRecentMatches" xml:space="preserve"><value>Expand recent matches</value></data>
 </root>

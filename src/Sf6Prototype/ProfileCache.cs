@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 namespace Sf6Prototype;
 
 public record CharacterAsset(int Id, string Name, string ToolName, string ImagePath);
-public record ProfileMetadata(string AccountId, string Name, string AvatarPath, DateTimeOffset UpdatedAt);
+public record ProfileMetadata(string AccountId, string Name, string AvatarPath, DateTimeOffset UpdatedAt,DateTimeOffset? DailyRefreshedAt=null);
 public interface IProfileSource
 {
     Task<string> FetchPlayAsync(string owner, CancellationToken token);
@@ -18,11 +18,16 @@ public sealed class ProfileCache(string directory)
     public List<CharacterAsset> Characters { get; private set; } = Read<List<CharacterAsset>>(Path.Combine(directory, "characters.json")) ?? [];
     private static T? Read<T>(string path) { try { return File.Exists(path) ? JsonSerializer.Deserialize<T>(File.ReadAllText(path)) : default; } catch (JsonException) { return default; } }
     public ProfileMetadata? Profile(string id) => Regex.IsMatch(id, @"^\d{10}$") ? Read<ProfileMetadata>(Path.Combine(directory, "profile-" + id + ".json")) : null;
+    public void CompleteDailyRefresh(string owner,DateTimeOffset startedAt)
+    {
+        if(Profile(owner) is not { } profile) return;
+        WriteJson(Path.Combine(directory,"profile-"+owner+".json"),profile with {DailyRefreshedAt=startedAt});
+    }
     public void RememberIdentity(PlayerIdentity player)
     {
         if(!player.IsValid) throw new ArgumentException(Strings.InvalidPlayerUid);
         var previous=Profile(player.Id);
-        WriteJson(Path.Combine(directory,"profile-"+player.Id+".json"),new ProfileMetadata(player.Id,player.Name,previous?.AvatarPath ?? "",DateTimeOffset.UtcNow));
+        WriteJson(Path.Combine(directory,"profile-"+player.Id+".json"),new ProfileMetadata(player.Id,player.Name,previous?.AvatarPath ?? "",DateTimeOffset.UtcNow,previous?.DailyRefreshedAt));
     }
     public CurrentScores? Scores(string id) => Regex.IsMatch(id, @"^\d{10}$") ? Read<CurrentScores>(Path.Combine(directory, "scores-" + id + ".json")) : null;
     public string? CharacterImage(int id, string? name = null)
@@ -74,7 +79,7 @@ public sealed class ProfileCache(string directory)
         // foreground refresh or turn a name-service failure into a portrait/score failure.
         var previous=Profile(owner);
         if((previous==null || previous.Name==owner) && !string.IsNullOrWhiteSpace(player.Name))
-            WriteJson(Path.Combine(directory,"profile-"+owner+".json"),new ProfileMetadata(owner,player.Name,previous?.AvatarPath ?? "",DateTimeOffset.UtcNow));
+            WriteJson(Path.Combine(directory,"profile-"+owner+".json"),new ProfileMetadata(owner,player.Name,previous?.AvatarPath ?? "",DateTimeOffset.UtcNow,previous?.DailyRefreshedAt));
         return Characters.Where(c => !File.Exists(c.ImagePath)).Select(c =>
             new ImageDownload($"/6/buckler/assets/images/material/character/character_{c.ToolName}_l.png", c.ImagePath)).ToArray();
     }
@@ -96,7 +101,7 @@ public sealed class ProfileCache(string directory)
             images.Add(new($"/6/buckler/assets/images/material/icon/{icon}.jpg", avatar, true));
         }
         if (string.IsNullOrWhiteSpace(name)) name = previous?.Name ?? owner;
-        WriteJson(Path.Combine(directory,"profile-" + owner + ".json"), new ProfileMetadata(owner, name, avatar, DateTimeOffset.UtcNow));
+        WriteJson(Path.Combine(directory,"profile-" + owner + ".json"), new ProfileMetadata(owner, name, avatar, DateTimeOffset.UtcNow,previous?.DailyRefreshedAt));
         return images;
     }
     public void SaveScores(string owner, string playJson, DateTimeOffset fetchedAt)

@@ -4,7 +4,10 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Globalization;
 using System.ComponentModel;
+using System.Diagnostics;
+using Shape = System.Windows.Shapes.Shape;
 using Microsoft.Win32;
+using System.Windows.Threading;
 
 namespace Sf6Prototype;
 
@@ -15,6 +18,7 @@ public partial class SettingsWindow : ChromeWindow
     private bool _syncingIntervals;
     private Task _transfer=Task.CompletedTask;
     private bool _waitingToClose;
+    private readonly DispatcherTimer _gameStatusTimer=new() {Interval=TimeSpan.FromSeconds(2)};
     public Func<Task>? BeforeImport { get; set; }
     public event Action? DatabaseImported;
     public Task PendingTransfer=>_transfer;
@@ -26,17 +30,55 @@ public partial class SettingsWindow : ChromeWindow
         ProxyEnabled.IsChecked = current.UseProxy; ProxyAddressBox.Text = current.ProxyAddress;
         ReminderSecondsBox.Text=current.RefreshReminderSeconds.ToString(CultureInfo.InvariantCulture);
         AutoRefreshSecondsBox.Text=current.AutoRefreshSeconds.ToString(CultureInfo.InvariantCulture);
+        RefreshAfterMatchEnabled.IsChecked=current.RefreshAfterMatch;
+        FocusLatestMatchEnabled.IsChecked=current.FocusLatestMatchAfterRefresh;
+        MatchEndWaitBox.Text=current.MatchEndWaitSeconds.ToString(CultureInfo.InvariantCulture);
+        MatchEndRetryBox.Text=current.MatchEndRetrySeconds.ToString(CultureInfo.InvariantCulture);
+        MatchEndFrequencyBox.Text=current.MatchEndSamplesPerSecond.ToString(CultureInfo.InvariantCulture);
         ApiIntervalBox.Text=current.ApiIntervalSeconds.ToString(CultureInfo.InvariantCulture);
         CloseActionBox.SelectedIndex=(int)current.WindowCloseAction;
         LanguageBox.SelectedValue=Localization.Normalize(current.Language);
         ContentRendered += (_, _) => UiCapture.SaveLater((FrameworkElement)Content, "ui-settings.png");
-        Closed += (_, _) => { _closing.Cancel(); _closing.Dispose(); };
+        _gameStatusTimer.Tick+=(_,_)=>UpdateGameStatus();
+        RefreshAfterMatchEnabled.Checked+=(_,_)=>UpdateGameStatusTimer();
+        RefreshAfterMatchEnabled.Unchecked+=(_,_)=>UpdateGameStatusTimer();
+        Loaded+=(_,_)=>UpdateGameStatusTimer();
+        Closed += (_, _) => { _gameStatusTimer.Stop();_closing.Cancel(); _closing.Dispose(); };
+    }
+    private void UpdateGameStatusTimer()
+    {
+        _gameStatusTimer.Stop();
+        if(!IsLoaded || RefreshAfterMatchEnabled.IsChecked!=true) return;
+        UpdateGameStatus();_gameStatusTimer.Start();
+    }
+    private void UpdateGameStatus()
+    {
+        if(RefreshAfterMatchEnabled.IsChecked!=true) {_gameStatusTimer.Stop();return;}
+        var running=Sf6GameProbe.Find()!=null;
+        GameRunningHint.Text=running ? Strings.Sf6Running : Strings.Sf6NotRunning;
+        GameRunningLight.SetResourceReference(Shape.FillProperty,running ? "Win" : "Loss");
+    }
+    private void OpenLogs_Click(object sender,RoutedEventArgs e)
+    {
+        if(string.IsNullOrWhiteSpace(App.DataDirectory)) return;
+        try
+        {
+            Directory.CreateDirectory(App.DataDirectory);
+            Process.Start(new ProcessStartInfo {FileName=App.DataDirectory,UseShellExecute=true});
+        }
+        catch(Exception ex) when(ex is Win32Exception or IOException or UnauthorizedAccessException)
+        {ShowError(Strings.OpenLogFolderFailed);}
     }
     private ConnectionSettings Draft(bool includeIntervals=true)
     {
         var settings = _current with { UseProxy = ProxyEnabled.IsChecked == true, ProxyAddress = ProxyAddressBox.Text.Trim(),
             WindowCloseAction=(CloseAction)CloseActionBox.SelectedIndex,
             Language=LanguageBox.SelectedValue as string ?? Localization.SystemLanguage,
+            RefreshAfterMatch=RefreshAfterMatchEnabled.IsChecked==true,
+            FocusLatestMatchAfterRefresh=FocusLatestMatchEnabled.IsChecked==true,
+            MatchEndWaitSeconds=includeIntervals ? ConnectionSettings.ParseMatchEndSeconds(MatchEndWaitBox.Text) : _current.MatchEndWaitSeconds,
+            MatchEndRetrySeconds=includeIntervals ? ConnectionSettings.ParseMatchEndSeconds(MatchEndRetryBox.Text,retry:true) : _current.MatchEndRetrySeconds,
+            MatchEndSamplesPerSecond=includeIntervals ? ConnectionSettings.ParseMatchEndFrequency(MatchEndFrequencyBox.Text) : _current.MatchEndSamplesPerSecond,
             RefreshReminderSeconds=includeIntervals ? ConnectionSettings.ParseReminderSeconds(ReminderSecondsBox.Text) : _current.RefreshReminderSeconds,
             ApiIntervalSeconds=includeIntervals ? ConnectionSettings.ParseApiIntervalSeconds(ApiIntervalBox.Text) : _current.ApiIntervalSeconds,
             AutoRefreshSeconds=includeIntervals ? ConnectionSettings.ParseAutoRefreshSeconds(AutoRefreshSecondsBox.Text) : _current.AutoRefreshSeconds };

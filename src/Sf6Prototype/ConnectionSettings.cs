@@ -18,6 +18,13 @@ public record ConnectionSettings
     public static bool LowApiInterval(double seconds) => ValidApiInterval(seconds) && seconds<DefaultApiIntervalSeconds;
     public int RefreshReminderSeconds { get; init; } = DefaultRefreshReminderSeconds;
     public int AutoRefreshSeconds { get; init; }
+    public bool RefreshAfterMatch { get; init; }
+    public bool FocusLatestMatchAfterRefresh { get; init; } = true;
+    public bool RecentMatchesCollapsed {get;init;}
+    public int MatchEndWaitSeconds { get; init; } = 5;
+    public int MatchEndRetrySeconds { get; init; } = 8;
+    public double MatchEndSamplesPerSecond { get; init; } = 4;
+    public static bool ValidMatchEndFrequency(double value)=>double.IsFinite(value) && value is >=0.5 and <=10;
     public CloseAction WindowCloseAction { get; init; }
     public string Language { get; init; } = Localization.SystemLanguage;
     public bool UseProxy { get; init; }
@@ -58,6 +65,9 @@ public record ConnectionSettings
         {
             RefreshReminderSeconds=settings.RefreshReminderSeconds>=0 ? settings.RefreshReminderSeconds : DefaultRefreshReminderSeconds,
             AutoRefreshSeconds=Math.Max(0,settings.AutoRefreshSeconds),
+            MatchEndWaitSeconds=settings.MatchEndWaitSeconds is >=0 and <=3600 ? settings.MatchEndWaitSeconds : 5,
+            MatchEndRetrySeconds=settings.MatchEndRetrySeconds is >=1 and <=3600 ? settings.MatchEndRetrySeconds : 8,
+            MatchEndSamplesPerSecond=ValidMatchEndFrequency(settings.MatchEndSamplesPerSecond) ? settings.MatchEndSamplesPerSecond : 4,
             ApiIntervalSeconds=ValidApiInterval(settings.ApiIntervalSeconds) ? settings.ApiIntervalSeconds : DefaultApiIntervalSeconds,
             WindowCloseAction=Enum.IsDefined(settings.WindowCloseAction) ? settings.WindowCloseAction : CloseAction.Ask,
             Language=Localization.Normalize(settings.Language)
@@ -68,6 +78,18 @@ public record ConnectionSettings
         return ParseIntervalSeconds(value,Strings.RefreshReminder);
     }
     public static int ParseAutoRefreshSeconds(string value) => ParseIntervalSeconds(value,Strings.AutoRefresh);
+    public static int ParseMatchEndSeconds(string value,bool retry=false)
+    {
+        var seconds=ParseIntervalSeconds(value,retry ? Strings.MatchEndRetry : Strings.MatchEndWait);
+        if(seconds>3600 || retry && seconds<1) throw new ArgumentException(Strings.InvalidMatchEndInterval);
+        return seconds;
+    }
+    public static double ParseMatchEndFrequency(string value)
+    {
+        if(!double.TryParse(value.Trim(),NumberStyles.AllowDecimalPoint,CultureInfo.InvariantCulture,out var frequency) || !ValidMatchEndFrequency(frequency))
+            throw new ArgumentException(Strings.InvalidMatchEndFrequency);
+        return frequency;
+    }
     public static double ParseApiIntervalSeconds(string value)
     {
         if(!double.TryParse(value.Trim(),NumberStyles.AllowDecimalPoint,CultureInfo.InvariantCulture,out var seconds) || !ValidApiInterval(seconds))
@@ -84,6 +106,8 @@ public record ConnectionSettings
     {
         if(RefreshReminderSeconds<0) throw new ArgumentException(Strings.InvalidReminder);
         if(AutoRefreshSeconds<0) throw new ArgumentException(Strings.InvalidAutoRefresh);
+        if(MatchEndWaitSeconds is <0 or >3600 || MatchEndRetrySeconds is <1 or >3600) throw new ArgumentException(Strings.InvalidMatchEndInterval);
+        if(!ValidMatchEndFrequency(MatchEndSamplesPerSecond)) throw new ArgumentException(Strings.InvalidMatchEndFrequency);
         if(!ValidApiInterval(ApiIntervalSeconds)) throw new ArgumentException(Strings.InvalidApiInterval);
         if(!Enum.IsDefined(WindowCloseAction)) throw new ArgumentException(Strings.InvalidCloseAction);
         if(!Localization.IsSupported(Language)) throw new ArgumentException(Strings.InvalidLanguage);

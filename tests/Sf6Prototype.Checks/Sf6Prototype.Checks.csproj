@@ -24,12 +24,18 @@
     <Compile Include="../../src/Sf6Prototype/DatabaseTransfer.cs" Link="DatabaseTransfer.cs"/>
     <Compile Include="../../src/Sf6Prototype/PlayerSearch.cs" Link="PlayerSearch.cs"/>
     <Compile Include="../../src/Sf6Prototype/AutoRefreshSchedule.cs" Link="AutoRefreshSchedule.cs"/>
+    <Compile Include="../../src/Sf6Prototype/MatchEndDetection.cs" Link="MatchEndDetection.cs"/>
+    <Compile Include="../../src/Sf6Prototype/MatchEndPattern.cs" Link="MatchEndPattern.cs"/>
+    <Compile Include="../../src/Sf6Prototype/MatchEndSampleLog.cs" Link="MatchEndSampleLog.cs"/>
+    <Compile Include="../../src/Sf6Prototype/MatchEndFailureTracker.cs" Link="MatchEndFailureTracker.cs"/>
     <Compile Include="../../src/Sf6Prototype/AccountRefresh.cs" Link="AccountRefresh.cs"/>
     <Compile Include="../../src/Sf6Prototype/CookieVault.cs" Link="CookieVault.cs"/>
     <Compile Include="../../src/Sf6Prototype/BucklerClient.cs" Link="BucklerClient.cs"/>
     <Compile Include="../../src/Sf6Prototype/SyncService.cs" Link="SyncService.cs"/>
     <Compile Include="../../src/Sf6Prototype/ProfileCache.cs" Link="ProfileCache.cs"/>
+    <Compile Include="../../src/Sf6Prototype/DailyProfileRefresh.cs" Link="DailyProfileRefresh.cs"/>
     <Compile Include="../../src/Sf6Prototype/DateRanges.cs" Link="DateRanges.cs"/>
+    <Compile Include="../../src/Sf6Prototype/RecentMatchScores.cs" Link="RecentMatchScores.cs"/>
     <Compile Include="../../src/Sf6Prototype/RankProfiles.cs" Link="RankProfiles.cs"/>
     <Compile Include="../../src/Sf6Prototype/RankQuerySession.cs" Link="RankQuerySession.cs"/>
     <Compile Include="../../src/Sf6Prototype/ViewportMath.cs" Link="ViewportMath.cs"/>

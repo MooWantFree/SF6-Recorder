@@ -57,6 +57,7 @@ public partial class MainWindow : ChromeWindow
         InitializeComponent();
         InitializeWindowChrome(WindowSurface,TitleBar,MaximizeButton);
         InitializeRefreshProgress();
+        InitializeMatchEndStatus();
         SourceInitialized+=(_,_)=> { if(!App.Capture) _tray=new TrayIcon(this,ShowMainPanel,()=>_=ExitApplicationAsync()); };
         StateChanged+=(_,_)=> { if(WindowState!=WindowState.Minimized) _restoreState=WindowState; };
         if (App.StartSize is { } size) { Width = size.Width; Height = size.Height; }
@@ -78,7 +79,9 @@ public partial class MainWindow : ChromeWindow
         };
         _refreshReminderTimer.Tick += (_,_)=>UpdateRefreshReminder();
         _autoRefreshTimer.Tick += AutoRefresh_Tick;
-        History.SelectionChanged += row => { if (!_reloadingLocal && PageTabs.SelectedIndex == 0) {if(History.ActiveArchive is { } archive) Detail.Bind(archive);Detail.Show(row);if(_ready) RefreshViewedPlayerUi();} };
+        History.SelectionChanged += row => { if (!_reloadingLocal && PageTabs.SelectedIndex == 0) {if(History.ActiveArchive is { } archive) Detail.Bind(archive);Detail.Show(row);if(_ready) RefreshViewedPlayerUi();RecentMatches.SelectReplay(row?.Battle.ReplayId);} };
+        RecentMatches.SelectionChanged+=row=>{Detail.Bind(_archive);Detail.Show(row);};
+        RecentMatches.CollapsedChanged+=RecentMatchesCollapsedChanged;
         Scores.SelectionChanged += row => { if (!_reloadingLocal && PageTabs.SelectedIndex == 1) {Detail.Bind(_archive);Detail.Show(row);} };
         Detail.RanksRequested += OpenPlayerRanks;
         Detail.PlayerRequested += player => _ = ViewPlayerAsync(player);
@@ -125,6 +128,7 @@ public partial class MainWindow : ChromeWindow
         _ready = true; ReloadLocal();
         ConfigureRefreshReminder();
         ConfigureAutoRefresh();
+        await ConfigureMatchEndDetectionAsync();
         SetStatus("ready", Strings.ReadyLocalData);
         if (App.AutoSync) await SynchronizeAsync();
         if (App.Capture) await CaptureAllAsync();
@@ -143,8 +147,8 @@ public partial class MainWindow : ChromeWindow
         foreach (var window in _opponents.Values) window.Suspended = busy;
         UpdateRefreshReminder();
     }
-    private BucklerClient CreateClient(SavedSession session,string? owner=null)=>new(
-        owner==null ? _settings : _settings with {PlayerId=owner},session,_vault) {CharacterObserver=ObserveCharacterNames};
+    private BucklerClient CreateClient(SavedSession session,string? owner=null,bool observeCharacterNames=true)=>new(
+        owner==null ? _settings : _settings with {PlayerId=owner},session,_vault) {CharacterObserver=observeCharacterNames ? ObserveCharacterNames : null};
     private void ObserveCharacterNames(CharacterObservation observation)
     {
         if(!App.Capture && !_closeRequested) _characterNames?.Observe(observation);
@@ -185,7 +189,7 @@ public partial class MainWindow : ChromeWindow
     private async void AutoRefresh_Tick(object? sender,EventArgs e)
     {
         var now=DateTimeOffset.UtcNow;
-        if(!_autoRefresh.IsDue(now) || !_ready || _busy || _closeRequested || _restoringView ||
+        if(!_autoRefresh.IsDue(now) || !_ready || _busy || _closeRequested || _restoringView || _matchEndRefresh.Owner!=null ||
             !IsEnabled || OwnedWindows.Count>0 || AccountPopup.IsOpen || PlayerSearchPopup.IsOpen || App.Capture) return;
         try
         {
@@ -196,23 +200,27 @@ public partial class MainWindow : ChromeWindow
         }
         catch(Exception ex) { _autoRefresh.Pause(); ReportError(ex); }
     }
-    private async Task AutoRefreshAccountAsync(SavedSession session)
+    private async Task<bool> AutoRefreshAccountAsync(SavedSession session)
     {
         SetBusy(true,quiet:true,background:true);
         _cancellation=new CancellationTokenSource(); _silentCancellation=true;
         var token=_cancellation.Token;
         var owner=session.AccountId;
+        var daily=new DailyProfileRefresh(_profiles,owner,DateTimeOffset.UtcNow);
         var pager=new BattlePager(_store,owner);var completed=false;
-        void Progress(BattleLoadProgress progress) {_refreshProgress.Load(progress,1);UpdateButtonProgress();}
+        void Progress(BattleLoadProgress progress) {_refreshProgress.Load(progress,daily.Required ? 1 : 0);UpdateButtonProgress();}
         pager.ProgressChanged+=Progress;
         try
         {
-            await PrepareImageDownloadsAsync(token);
-            using var client=CreateClient(session,owner);
+            using var client=CreateClient(session,owner,observeCharacterNames:daily.Required);
             client.Activity+=RequestProgress;
-            await client.ValidateAsync(token);
+            if(daily.Required) await client.ValidateAsync(token);
             if(client.AccountId!=owner) throw new LoginRequiredException(Strings.AccountChanged);
-            await StartProfileImagesAsync(client,owner,token);
+            if(daily.Required)
+            {
+                await PrepareImageDownloadsAsync(token);
+                await StartProfileImagesAsync(client,daily,token);
+            }
             _pagers[owner]=pager;
             await pager.LoadAccountAsync(client,token,async ()=>
             {
@@ -223,9 +231,12 @@ public partial class MainWindow : ChromeWindow
             if(_navigation.Current.Id==owner) ReloadLocal(preserveViewport:true,refreshImages:false,automaticRefresh:true);
             try
             {
-                _refreshProgress.Metadata(1);UpdateButtonProgress();
-                var images=await _profiles.RefreshPlayAsync(client,owner,token,captureScores:pager.RankHeadFetched);
-                token.ThrowIfCancellationRequested(); StartImageDownloads(images);
+                if(daily.Required)
+                {
+                    _refreshProgress.Metadata(1);UpdateButtonProgress();
+                    var images=await daily.RefreshPlayAsync(client,token,captureScores:pager.RankHeadFetched);
+                    token.ThrowIfCancellationRequested(); StartImageDownloads(images);
+                }
             }
             catch(Exception ex) when(ex is not OperationCanceledException && ex is not OutOfMemoryException && ex is not LoginRequiredException)
             { /* Keep the saved matches; portraits can be retried on the next refresh. */ }
@@ -249,6 +260,7 @@ public partial class MainWindow : ChromeWindow
             History.ContinueAutoLoad();
             if(_closeRequested) Close();
         }
+        return completed;
     }
 
     private async void Login_Click(object sender, RoutedEventArgs e) { await CancelDownloadsAsync(); await LoginAsync(); }
@@ -269,15 +281,19 @@ public partial class MainWindow : ChromeWindow
             token.ThrowIfCancellationRequested();
             if (session == null) { SetStatus("login_cancelled", Strings.SignInCancelledLocal); return; }
             SetActiveAccount(session, preserveView: session.AccountId == _settings.PlayerId); ReloadLocal();
-            await PrepareImageDownloadsAsync(token);
-            using var client = CreateClient(session);
+            var daily=new DailyProfileRefresh(_profiles,session.AccountId,DateTimeOffset.UtcNow);
+            using var client = CreateClient(session,observeCharacterNames:daily.Required);
             try
             {
-                var avatar=await _profiles.RefreshAvatarAsync(client,session.AccountId,token);
-                StartImageDownloads(avatar);RefreshAccountUi();
-                var images = await _profiles.RefreshPlayAsync(client, session.AccountId, token);
-                token.ThrowIfCancellationRequested();
-                StartImageDownloads(images);
+                if(daily.Required)
+                {
+                    await PrepareImageDownloadsAsync(token);
+                    var avatar=await daily.RefreshAvatarAsync(client,token);
+                    StartImageDownloads(avatar);RefreshAccountUi();
+                    var images = await daily.RefreshPlayAsync(client,token);
+                    token.ThrowIfCancellationRequested();
+                    StartImageDownloads(images);
+                }
             }
             catch (Exception ex) when (ex is not OutOfMemoryException && ex is not OperationCanceledException) { SetStatus("profile_pending", Strings.SessionSavedImagesPending); RefreshAccountUi(); return; }
             RefreshAccountUi(); ReloadLocal(); SetStatus("logged_in", Strings.SessionSaved);
@@ -298,6 +314,7 @@ public partial class MainWindow : ChromeWindow
     }
     private void SetActiveAccount(SavedSession session, bool preserveView = false)
     {
+        _matchEndRefresh.Clear();
         _autoRefresh.Resume(DateTimeOffset.UtcNow);
         var preserveContext=preserveView && session.AccountId==_settings.PlayerId;
         _settings = _settings with { PlayerId = session.AccountId }; _settings.Save(App.DataDirectory);
@@ -347,6 +364,7 @@ public partial class MainWindow : ChromeWindow
             RequestGate.Shared.Interval=TimeSpan.FromSeconds(_settings.ApiIntervalSeconds);
             ConfigureRefreshReminder();
             ConfigureAutoRefresh();
+            await ConfigureMatchEndDetectionAsync();
             var language=Localization.Resolve(_settings.Language,Localization.SystemCulture).Name;
             var languageChanged=language!=Localization.Culture.Name;
             if(languageChanged)
@@ -410,6 +428,8 @@ public partial class MainWindow : ChromeWindow
             History.RefreshLanguage(); Scores.RefreshLanguage();
             Detail.RefreshLanguage(detail);
             RefreshAccountUi(); RefreshViewedPlayerUi(); UpdateSearchEmptyState();
+            PaintMatchEndStatus();
+            UpdateRecentMatches();
             SetSearchError(null); HideNotice(); HideButtonProgress(); UpdateRefreshAction();
             foreach(var window in _opponents.Values) window.RefreshLanguage();
             _tray?.RefreshLanguage();
@@ -557,6 +577,7 @@ public partial class MainWindow : ChromeWindow
     private async Task StopRefreshAsync()
     {
         if(_stoppingRefresh) return;
+        _matchEndRefresh.Clear();
         _stoppingRefresh=true;
         try
         {
@@ -589,11 +610,12 @@ public partial class MainWindow : ChromeWindow
         var fillScores=PageTabs.SelectedIndex==1;
         var requestedScores=Scores.Range;
         var completed=false;
+        DailyProfileRefresh? daily=null;
         BattlePager? observedPager=null;
         void PageProgress(BattleLoadProgress progress)
         {
             if(!_progressVisible)return;
-            _refreshProgress.Load(progress,!more && (!scoreRange || pager.RankHeadFetched) ? 1 : 0);
+            _refreshProgress.Load(progress,daily?.Required==true ? 1 : 0);
             UpdateButtonProgress();
         }
         if(reset) pager.Reset(category);
@@ -626,19 +648,29 @@ public partial class MainWindow : ChromeWindow
                 if(reset) pager.Reset(category);
             }
             _cancellation.Token.ThrowIfCancellationRequested();
-            await PrepareImageDownloadsAsync(token);
-            using var client = CreateClient(session);
+            var profileRefreshAt=DateTimeOffset.UtcNow;
+            if(!more) daily=new(_profiles,pager.Owner,profileRefreshAt);
+            using var client = CreateClient(session,observeCharacterNames:daily?.Required==true);
             client.Activity+=RequestProgress;
-            ProgressStage(Strings.CheckingSession);
-            SetStatus("validating", Strings.CheckingSessionProgress);
-            if(!more) await client.ValidateAsync(token);
+            if(daily?.Required==true)
+            {
+                ProgressStage(Strings.CheckingSession);
+                SetStatus("validating", Strings.CheckingSessionProgress);
+                await client.ValidateAsync(token);
+            }
             if (client.AccountId != _settings.PlayerId && _vault.Load() is { } validated)
-            { await StopBackgroundDownloadsAsync();SetActiveAccount(validated);await PrepareImageDownloadsAsync(token);requestedScores=Scores.Range;if(reset) Pager.Reset(category); }
+            { await StopBackgroundDownloadsAsync();SetActiveAccount(validated);requestedScores=Scores.Range;if(reset) Pager.Reset(category); }
             pager=Pager; var target = pager.Owner;
+            if(!more) daily=new(_profiles,target,profileRefreshAt);
+            client.CharacterObserver=daily?.Required==true ? ObserveCharacterNames : null;
             observedPager=pager;pager.ProgressChanged+=PageProgress;
             RefreshAccountUi();
             var profileMessage="";
-            if(!more && !await StartProfileImagesAsync(client,target,token)) profileMessage=Strings.ImagesPendingSuffix;
+            if(daily?.Required==true)
+            {
+                await PrepareImageDownloadsAsync(token);
+                if(!await StartProfileImagesAsync(client,daily,token)) profileMessage=Strings.ImagesPendingSuffix;
+            }
             var syncAccount=target==_settings.PlayerId && !more && (reset || !scoreRange && category.Length==0);
             if(syncAccount) fillScores=false;
             _lastSync = syncAccount ? await pager.LoadAccountAsync(client,token,PageSaved,()=>PreferredHistoryCategory(target))
@@ -648,11 +680,11 @@ public partial class MainWindow : ChromeWindow
             ReloadLocal(preserveViewport: true, refreshImages: false);
             try
             {
-                SetStatus("profiles", Strings.UpdatingProfilesProgress);
-                if(!more && (!scoreRange || pager.RankHeadFetched))
+                if(daily?.Required==true)
                 {
+                    SetStatus("profiles", Strings.UpdatingProfilesProgress);
                     if(_progressVisible) {_refreshProgress.Metadata(1);UpdateButtonProgress();}
-                    var images = await _profiles.RefreshPlayAsync(client, target, token, captureScores: pager.RankHeadFetched);
+                    var images = await daily.RefreshPlayAsync(client,token,captureScores:pager.RankHeadFetched);
                     token.ThrowIfCancellationRequested();
                     StartImageDownloads(images);
                 }
@@ -726,11 +758,11 @@ public partial class MainWindow : ChromeWindow
         token.ThrowIfCancellationRequested();
         StartImageDownloads(_profiles.CharacterDownloads());
     }
-    private async Task<bool> StartProfileImagesAsync(IProfileSource client,string owner,CancellationToken token)
+    private async Task<bool> StartProfileImagesAsync(IProfileSource client,DailyProfileRefresh daily,CancellationToken token)
     {
         try
         {
-            StartImageDownloads(await _profiles.RefreshAvatarAsync(client,owner,token));
+            StartImageDownloads(await daily.RefreshAvatarAsync(client,token));
             RefreshAccountUi();return true;
         }
         catch(Exception ex) when(ex is not OutOfMemoryException && ex is not OperationCanceledException && ex is not LoginRequiredException
@@ -811,6 +843,7 @@ public partial class MainWindow : ChromeWindow
         _viewingActiveAccount=viewed.Id==signedInId;
         _lastViewedUpdate=lastUpdated; UpdateRefreshReminder();
         UpdatedLabel.Text = lastUpdated == null ? "" : Strings.UpdatedAtPrefix + BattleDateDisplay.Timestamp(lastUpdated.Value.ToOffset(TimeSpan.FromHours(8)).ToString("yyyy-MM-dd HH:mm"));
+        UpdateRecentMatches();
     }
     private async Task ViewPlayerAsync(PlayerIdentity player)
     {
@@ -926,6 +959,7 @@ public partial class MainWindow : ChromeWindow
         if(_ready && !_restoringView && History.FavoritesOnly && History.FavoritePlayer?.Id!=_navigation.Current.Id) RequestCancellation();
         if(_ready) Scores.SetLoading(scores && _busy && !_loadingInBackground);
         History.Visibility = scores ? Visibility.Collapsed : Visibility.Visible;
+        HistoryHost.Visibility = scores ? Visibility.Collapsed : Visibility.Visible;
         Scores.Visibility = scores ? Visibility.Visible : Visibility.Collapsed;
         if(_ready) Detail.Bind(scores ? _archive : History.ActiveArchive ?? _archive);
         Detail.Show(scores ? Scores.Selected : History.Selected);
@@ -1021,6 +1055,7 @@ public partial class MainWindow : ChromeWindow
         if(_exitRequested) return;
         _exitRequested=true;_closeRequested=true;
         _autoRefreshTimer.Stop();_refreshReminderTimer.Stop();
+        await StopMatchEndDetectionAsync();
         AccountPopup.IsOpen=PlayerSearchPopup.IsOpen=false;
         var settings=OwnedWindows.OfType<SettingsWindow>().ToArray();
         foreach(var dialog in settings) dialog.CancelTransfer();
@@ -1030,5 +1065,5 @@ public partial class MainWindow : ChromeWindow
         _exitReady=true;Close();
     }
     protected override void OnClosed(EventArgs e)
-    { _tray?.Dispose();_refreshReminderTimer.Stop();_autoRefreshTimer.Stop();_progressTimer.Stop();base.OnClosed(e); }
+    { _tray?.Dispose();_refreshReminderTimer.Stop();_autoRefreshTimer.Stop();_progressTimer.Stop();_matchEndStatusTimer.Stop();base.OnClosed(e); }
 }

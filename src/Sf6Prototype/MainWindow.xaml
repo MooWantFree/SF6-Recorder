@@ -31,7 +31,15 @@
           </ListBox>
         </StackPanel>
         <StackPanel Grid.Column="1" Margin="16,0" MaxWidth="360" VerticalAlignment="Center">
-          <TextBlock x:Name="ViewedPlayerName" Text="{DynamicResource I18n.MyRecords}" FontSize="16" FontWeight="SemiBold" TextAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,2" AutomationProperties.Name="{DynamicResource I18n.ViewedPlayer}"/>
+          <Grid HorizontalAlignment="Center">
+            <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+            <TextBlock x:Name="ViewedPlayerName" Text="{DynamicResource I18n.MyRecords}" FontSize="16" FontWeight="SemiBold" TextAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,2" AutomationProperties.Name="{DynamicResource I18n.ViewedPlayer}"/>
+            <Border x:Name="MatchEndStatus" Grid.Column="1" Width="22" Height="22" Margin="4,0,0,0" Background="Transparent" VerticalAlignment="Center" shell:WindowChrome.IsHitTestVisibleInChrome="True">
+              <Ellipse x:Name="MatchEndStatusLight" Width="10" Height="10" Fill="Transparent" Stroke="{DynamicResource Ink3}" StrokeThickness="1.5" RenderTransformOrigin="0.5,0.5">
+                <Ellipse.RenderTransform><ScaleTransform x:Name="MatchEndStatusScale"/></Ellipse.RenderTransform>
+              </Ellipse>
+            </Border>
+          </Grid>
           <TextBlock x:Name="UpdatedLabel" FontSize="11" Foreground="{StaticResource Ink3}" Height="16" TextAlignment="Center"/>
         </StackPanel>
         <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" shell:WindowChrome.IsHitTestVisibleInChrome="True">
@@ -125,7 +133,11 @@
 
     <Grid Grid.Row="1" Margin="24,14,24,20" MaxWidth="1480">
       <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="340"/></Grid.ColumnDefinitions>
-      <local:HistoryView x:Name="History"/>
+      <Grid x:Name="HistoryHost">
+        <Grid.RowDefinitions><RowDefinition/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+        <local:HistoryView x:Name="History"/>
+        <local:RecentMatchesView x:Name="RecentMatches" Grid.Row="1" Margin="0,12,0,0" Visibility="Collapsed"/>
+      </Grid>
       <local:ScoresView x:Name="Scores" Visibility="Collapsed"/>
       <local:MatchDetailPanel x:Name="Detail" Grid.Column="1" Margin="16,0,0,0"/>
     </Grid>

@@ -55,6 +55,7 @@ public partial class HistoryView : UserControl
     public HistoryView()
     {
         InitializeComponent();
+        InitializeMatchEndFollow();
         var view=new ListCollectionView(_rows);
         view.GroupDescriptions.Add(new PropertyGroupDescription(nameof(MatchListRow.Group)));
         MatchesList.ItemsSource=view;
@@ -231,6 +232,7 @@ public partial class HistoryView : UserControl
     }
     public void ResetFilters(string category="")
     {
+        InterruptMatchEndFollow();
         _headOnlyRefresh=false;
         StopAutoLoad();
         _pendingRestore=null; _layoutVersion++;
@@ -253,7 +255,7 @@ public partial class HistoryView : UserControl
     {
         if (!_ready || ActiveArchive is not { } a) return;
         var restore=_pendingRestore;
-        if(!preserveViewport) { StopAutoLoad(); _hasScrolled=false; _headOnlyRefresh=false; }
+        if(!preserveViewport) { CancelMatchEndFollow();StopAutoLoad(); _hasScrolled=false; _headOnlyRefresh=false; }
         var viewer = preserveViewport || restore!=null ? FindViewer(MatchesList) : null;
         var offset = restore?.ScrollOffset ?? viewer?.VerticalOffset ?? 0;
         var anchor=restore!=null ? restore.Anchor : CaptureAnchor(viewer);
@@ -356,16 +358,16 @@ public partial class HistoryView : UserControl
     private void Matches_SelectionChanged(object sender, SelectionChangedEventArgs e) { if (!_rebuilding) SelectionChanged?.Invoke(Selected); }
     private void Category_Changed(object sender, SelectionChangedEventArgs e)
     {
-        if(!_ready) return;_pendingRestore=null;ClosePickers();
+        if(!_ready) return;InterruptMatchEndFollow();_pendingRestore=null;ClosePickers();
         var favorites=(CategoryFilter.SelectedItem as CategoryChoice)?.Key=="favorites";
         var previousOwner=FavoritesOnly ? FavoritePlayer?.Id : _archive?.Owner;
         if(favorites && !FavoritesOnly) FavoritePlayer=DefaultFavoritePlayer;
         if(previousOwner!=(favorites ? FavoritePlayer?.Id : _archive?.Owner)) PlayerChanged?.Invoke();
         FavoritesOnly=favorites;Reload();CategoryChanged?.Invoke();
     }
-    private void Filter_Changed(object sender, SelectionChangedEventArgs e) { if(!_ready) return; _pendingRestore=null; ApplyFilter(); }
-    private void Date_Changed(object? sender, EventArgs e) { if(!_ready) return; _pendingRestore=null; ApplyFilter(); }
-    private void Search_Changed(object sender, TextChangedEventArgs e) { if (_ready) { _inputVersion++; _pendingRestore=null; _searchTimer.Stop(); _searchTimer.Start(); } }
+    private void Filter_Changed(object sender, SelectionChangedEventArgs e) { if(!_ready) return; InterruptMatchEndFollow();_pendingRestore=null; ApplyFilter(); }
+    private void Date_Changed(object? sender, EventArgs e) { if(!_ready) return; InterruptMatchEndFollow();_pendingRestore=null; ApplyFilter(); }
+    private void Search_Changed(object sender, TextChangedEventArgs e) { if (_ready) { InterruptMatchEndFollow();_pendingRestore=null; _searchTimer.Stop(); _searchTimer.Start(); } }
     private void Reset_Click(object sender, RoutedEventArgs e)
     {
         _pendingRestore=null;

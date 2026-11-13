@@ -14,6 +14,8 @@
     </Grid>
   <Border Grid.Row="1" Background="{StaticResource Canvas}" Padding="24,4,24,20">
   <StackPanel>
+    <ScrollViewer MaxHeight="560" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,8,0">
+    <StackPanel>
     <Border Style="{StaticResource Card}" Margin="0,0,0,16">
       <Grid Margin="16,12"><Grid.ColumnDefinitions><ColumnDefinition Width="180"/><ColumnDefinition/></Grid.ColumnDefinitions>
         <TextBlock Text="{DynamicResource I18n.LanguageLabel}" VerticalAlignment="Center"/>
@@ -79,6 +81,41 @@
             </ListBox>
           </Grid>
         </Border>
+        <Border BorderBrush="{StaticResource LineSubtle}" BorderThickness="0,1,0,0" Margin="16,0">
+          <StackPanel Margin="0,10">
+            <Grid MinHeight="30"><Grid.ColumnDefinitions><ColumnDefinition Width="180"/><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+              <TextBlock Text="{DynamicResource I18n.RefreshAfterMatchLabel}" VerticalAlignment="Center"/>
+              <StackPanel x:Name="GameRunningStatus" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" ToolTip="{Binding Text,ElementName=GameRunningHint}">
+                <StackPanel.Style>
+                  <Style TargetType="StackPanel"><Setter Property="Visibility" Value="Collapsed"/>
+                    <Style.Triggers><DataTrigger Binding="{Binding IsChecked,ElementName=RefreshAfterMatchEnabled}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+                  </Style>
+                </StackPanel.Style>
+                <Ellipse x:Name="GameRunningLight" Width="8" Height="8" Fill="{StaticResource Loss}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                <TextBlock x:Name="GameRunningHint" Text="{DynamicResource I18n.Sf6NotRunning}" Foreground="{StaticResource Ink2}" VerticalAlignment="Center"/>
+              </StackPanel>
+              <CheckBox x:Name="RefreshAfterMatchEnabled" Grid.Column="2" Style="{StaticResource Switch}" AutomationProperties.Name="{DynamicResource I18n.RefreshAfterMatchLabel}" ToolTip="{DynamicResource I18n.RefreshAfterMatchHelp}"/>
+            </Grid>
+            <Grid MinHeight="30" Margin="0,6,0,0" IsEnabled="{Binding IsChecked,ElementName=RefreshAfterMatchEnabled}">
+              <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+              <TextBlock Text="{DynamicResource I18n.FocusLatestMatch}" VerticalAlignment="Center"/>
+              <CheckBox x:Name="FocusLatestMatchEnabled" Grid.Column="1" Style="{StaticResource Switch}" AutomationProperties.Name="{DynamicResource I18n.FocusLatestMatch}" ToolTip="{DynamicResource I18n.FocusLatestMatchHelp}"/>
+            </Grid>
+            <Grid Margin="0,6,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="180"/><ColumnDefinition Width="64"/><ColumnDefinition Width="Auto"/><ColumnDefinition/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="64"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+              <TextBlock Text="{DynamicResource I18n.MatchEndWait}" VerticalAlignment="Center"/>
+              <TextBox x:Name="MatchEndWaitBox" Grid.Column="1" MaxLength="4" VerticalContentAlignment="Center" AutomationProperties.Name="{DynamicResource I18n.MatchEndWait}"/>
+              <TextBlock Grid.Column="2" Text="{DynamicResource I18n.SecondsUnit}" Foreground="{StaticResource Ink3}" VerticalAlignment="Center" Margin="6,0,0,0"/>
+              <TextBlock Grid.Column="4" Text="{DynamicResource I18n.MatchEndRetry}" VerticalAlignment="Center" Margin="8,0,8,0"/>
+              <TextBox x:Name="MatchEndRetryBox" Grid.Column="5" MaxLength="4" VerticalContentAlignment="Center" AutomationProperties.Name="{DynamicResource I18n.MatchEndRetry}"/>
+              <TextBlock Grid.Column="6" Text="{DynamicResource I18n.SecondsUnit}" Foreground="{StaticResource Ink3}" VerticalAlignment="Center" Margin="6,0,0,0"/>
+            </Grid>
+            <Grid Margin="0,8,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="180"/><ColumnDefinition Width="64"/><ColumnDefinition/></Grid.ColumnDefinitions>
+              <TextBlock Text="{DynamicResource I18n.MatchEndFrequency}" VerticalAlignment="Center"/>
+              <TextBox x:Name="MatchEndFrequencyBox" Grid.Column="1" MaxLength="4" VerticalContentAlignment="Center" AutomationProperties.Name="{DynamicResource I18n.MatchEndFrequency}"/>
+              <TextBlock Grid.Column="2" Text="{DynamicResource I18n.SamplesPerSecondUnit}" Foreground="{StaticResource Ink3}" VerticalAlignment="Center" Margin="6,0,0,0"/>
+            </Grid>
+          </StackPanel>
+        </Border>
       </StackPanel>
     </Border>
     <Border Style="{StaticResource Card}" Margin="0,16,0,0">
@@ -101,11 +138,16 @@
         </Border>
       </StackPanel>
     </Border>
-    <TextBlock x:Name="ErrorText" Foreground="{StaticResource Loss}" Margin="2,10,0,0" TextWrapping="Wrap" Visibility="Collapsed"/>
-    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,18,0,0">
-      <Button Content="{DynamicResource I18n.Cancel}" IsCancel="True" MinWidth="76" Margin="0,0,8,0"/>
-      <Button x:Name="SaveButton" Content="{DynamicResource I18n.Save}" IsDefault="True" Click="Save_Click" Style="{StaticResource AccentButton}" MinWidth="76"/>
     </StackPanel>
+    </ScrollViewer>
+    <TextBlock x:Name="ErrorText" Foreground="{StaticResource Loss}" Margin="2,10,0,0" TextWrapping="Wrap" Visibility="Collapsed"/>
+    <Grid Margin="0,18,0,0"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+      <Button x:Name="OpenLogsButton" Content="{DynamicResource I18n.OpenLogFolder}" Click="OpenLogs_Click" HorizontalAlignment="Left" AutomationProperties.Name="{DynamicResource I18n.OpenLogFolder}"/>
+      <StackPanel Grid.Column="1" Orientation="Horizontal">
+        <Button Content="{DynamicResource I18n.Cancel}" IsCancel="True" MinWidth="76" Margin="0,0,8,0"/>
+        <Button x:Name="SaveButton" Content="{DynamicResource I18n.Save}" IsDefault="True" Click="Save_Click" Style="{StaticResource AccentButton}" MinWidth="76"/>
+      </StackPanel>
+    </Grid>
   </StackPanel>
   </Border>
   </Grid>

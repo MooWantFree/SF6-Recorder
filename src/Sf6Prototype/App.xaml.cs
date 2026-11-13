@@ -12,9 +12,11 @@ public partial class App : Application
     public static bool Capture { get; private set; }
     public static bool IsShuttingDown { get; private set; }
     public static Size? StartSize { get; private set; }
+    public static DateTimeOffset StartedAt {get;private set;}=DateTimeOffset.UtcNow;
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+        using(var process=Process.GetCurrentProcess()) StartedAt=process.StartTime.ToUniversalTime();
         string? Arg(string name)
         {
             var i = Array.IndexOf(e.Args, name);
@@ -29,6 +31,8 @@ public partial class App : Application
         DataDirectory = DataPaths.Resolve(AppContext.BaseDirectory, Arg("--data-dir"));
         AutoSync = e.Args.Contains("--sync-on-start");
         Capture = e.Args.Contains("--capture");
+        if(Capture && DateTimeOffset.TryParse(Arg("--capture-session-start"),System.Globalization.CultureInfo.InvariantCulture,
+            System.Globalization.DateTimeStyles.None,out var captureStart)) StartedAt=captureStart;
         if (Arg("--size")?.Split('x') is [var w, var h] && int.TryParse(w, out var width) && int.TryParse(h, out var height)) StartSize = new(width, height);
         Directory.CreateDirectory(DataDirectory);
         LocalizationWpf.Apply(ConnectionSettings.Load(DataDirectory).Language);

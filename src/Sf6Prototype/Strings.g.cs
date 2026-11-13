@@ -73,6 +73,7 @@ public static class Strings
     public static string CloseActionSaveFailed => Localization.Get(nameof(CloseActionSaveFailed));
     public static string CloseWindow => Localization.Get(nameof(CloseWindow));
     public static string CloseWindowQuestion => Localization.Get(nameof(CloseWindowQuestion));
+    public static string CollapseRecentMatches => Localization.Get(nameof(CollapseRecentMatches));
     public static string CompleteCapcomSignIn => Localization.Get(nameof(CompleteCapcomSignIn));
     public static string ConnectionFailed => Localization.Get(nameof(ConnectionFailed));
     public static string ConnectionTimedOut => Localization.Get(nameof(ConnectionTimedOut));
@@ -114,6 +115,7 @@ public static class Strings
     public static string EnterToCreateTag => Localization.Get(nameof(EnterToCreateTag));
     public static string EstimateTimingHelp => Localization.Get(nameof(EstimateTimingHelp));
     public static string Exit => Localization.Get(nameof(Exit));
+    public static string ExpandRecentMatches => Localization.Get(nameof(ExpandRecentMatches));
     public static string FavoritePlayers => Localization.Get(nameof(FavoritePlayers));
     public static string FavoriteRemoved => Localization.Get(nameof(FavoriteRemoved));
     public static string Favorites => Localization.Get(nameof(Favorites));
@@ -122,12 +124,15 @@ public static class Strings
     public static string FindPlayerShortcut => Localization.Get(nameof(FindPlayerShortcut));
     public static string FiveMinutes => Localization.Get(nameof(FiveMinutes));
     public static string FiveSeconds => Localization.Get(nameof(FiveSeconds));
+    public static string FocusLatestMatch => Localization.Get(nameof(FocusLatestMatch));
+    public static string FocusLatestMatchHelp => Localization.Get(nameof(FocusLatestMatchHelp));
     public static string Forward => Localization.Get(nameof(Forward));
     public static string ForwardShortcut => Localization.Get(nameof(ForwardShortcut));
     public static string GoogleHttpError => Localization.Get(nameof(GoogleHttpError));
     public static string GoogleLatency => Localization.Get(nameof(GoogleLatency));
     public static string HeadToHead => Localization.Get(nameof(HeadToHead));
     public static string HighestReached => Localization.Get(nameof(HighestReached));
+    public static string HighestScore => Localization.Get(nameof(HighestScore));
     public static string HistoryNavigationTitle => Localization.Get(nameof(HistoryNavigationTitle));
     public static string Home => Localization.Get(nameof(Home));
     public static string HomeTooltip => Localization.Get(nameof(HomeTooltip));
@@ -153,6 +158,8 @@ public static class Strings
     public static string InvalidImageUrl => Localization.Get(nameof(InvalidImageUrl));
     public static string InvalidInterval => Localization.Get(nameof(InvalidInterval));
     public static string InvalidLanguage => Localization.Get(nameof(InvalidLanguage));
+    public static string InvalidMatchEndFrequency => Localization.Get(nameof(InvalidMatchEndFrequency));
+    public static string InvalidMatchEndInterval => Localization.Get(nameof(InvalidMatchEndInterval));
     public static string InvalidPlayer => Localization.Get(nameof(InvalidPlayer));
     public static string InvalidPlayerUid => Localization.Get(nameof(InvalidPlayerUid));
     public static string InvalidProxy => Localization.Get(nameof(InvalidProxy));
@@ -176,12 +183,16 @@ public static class Strings
     public static string LoginToLoad => Localization.Get(nameof(LoginToLoad));
     public static string LoginVerificationPage => Localization.Get(nameof(LoginVerificationPage));
     public static string LoginWindowFailed => Localization.Get(nameof(LoginWindowFailed));
+    public static string LowestScore => Localization.Get(nameof(LowestScore));
     public static string LpSettlementUnknown => Localization.Get(nameof(LpSettlementUnknown));
     public static string MatchAllSelectedTags => Localization.Get(nameof(MatchAllSelectedTags));
     public static string MatchAnySelectedTags => Localization.Get(nameof(MatchAnySelectedTags));
     public static string MatchCategory => Localization.Get(nameof(MatchCategory));
     public static string MatchCount => Localization.Get(nameof(MatchCount));
     public static string MatchDescription => Localization.Get(nameof(MatchDescription));
+    public static string MatchEndFrequency => Localization.Get(nameof(MatchEndFrequency));
+    public static string MatchEndRetry => Localization.Get(nameof(MatchEndRetry));
+    public static string MatchEndWait => Localization.Get(nameof(MatchEndWait));
     public static string Matches => Localization.Get(nameof(Matches));
     public static string MatchesAdded => Localization.Get(nameof(MatchesAdded));
     public static string MatchesPrepared => Localization.Get(nameof(MatchesPrepared));
@@ -221,6 +232,7 @@ public static class Strings
     public static string NoProfileToSave => Localization.Get(nameof(NoProfileToSave));
     public static string NoRankedRecords => Localization.Get(nameof(NoRankedRecords));
     public static string NoRankRecords => Localization.Get(nameof(NoRankRecords));
+    public static string NoRecentRankedMatches => Localization.Get(nameof(NoRecentRankedMatches));
     public static string NoRecordsRefresh => Localization.Get(nameof(NoRecordsRefresh));
     public static string NoRoundInfo => Localization.Get(nameof(NoRoundInfo));
     public static string NoScores => Localization.Get(nameof(NoScores));
@@ -233,6 +245,8 @@ public static class Strings
     public static string OneHour => Localization.Get(nameof(OneHour));
     public static string OneSecond => Localization.Get(nameof(OneSecond));
     public static string OpeningCapcom => Localization.Get(nameof(OpeningCapcom));
+    public static string OpenLogFolder => Localization.Get(nameof(OpenLogFolder));
+    public static string OpenLogFolderFailed => Localization.Get(nameof(OpenLogFolderFailed));
     public static string OpenMainPanel => Localization.Get(nameof(OpenMainPanel));
     public static string OperationFailed => Localization.Get(nameof(OperationFailed));
     public static string OpponentCharacter => Localization.Get(nameof(OpponentCharacter));
@@ -281,10 +295,15 @@ public static class Strings
     public static string ReadingRankedPage => Localization.Get(nameof(ReadingRankedPage));
     public static string ReadyLocalData => Localization.Get(nameof(ReadyLocalData));
     public static string RecentCount => Localization.Get(nameof(RecentCount));
+    public static string RecentMatches => Localization.Get(nameof(RecentMatches));
+    public static string RecentMatchesScope => Localization.Get(nameof(RecentMatchesScope));
+    public static string RecentScoresPending => Localization.Get(nameof(RecentScoresPending));
     public static string RecentSearches => Localization.Get(nameof(RecentSearches));
     public static string RecordsSavedImagesBackground => Localization.Get(nameof(RecordsSavedImagesBackground));
     public static string RecordsUpdatedImagesPending => Localization.Get(nameof(RecordsUpdatedImagesPending));
     public static string Refresh => Localization.Get(nameof(Refresh));
+    public static string RefreshAfterMatchHelp => Localization.Get(nameof(RefreshAfterMatchHelp));
+    public static string RefreshAfterMatchLabel => Localization.Get(nameof(RefreshAfterMatchLabel));
     public static string RefreshCancelled => Localization.Get(nameof(RefreshCancelled));
     public static string RefreshComplete => Localization.Get(nameof(RefreshComplete));
     public static string RefreshCompleteHint => Localization.Get(nameof(RefreshCompleteHint));
@@ -316,6 +335,7 @@ public static class Strings
     public static string RoundSuperArt => Localization.Get(nameof(RoundSuperArt));
     public static string RoundTime => Localization.Get(nameof(RoundTime));
     public static string RoundVictory => Localization.Get(nameof(RoundVictory));
+    public static string SamplesPerSecondUnit => Localization.Get(nameof(SamplesPerSecondUnit));
     public static string Save => Localization.Get(nameof(Save));
     public static string Saved => Localization.Get(nameof(Saved));
     public static string SavedCharacterNamesCancelled => Localization.Get(nameof(SavedCharacterNamesCancelled));
@@ -346,6 +366,7 @@ public static class Strings
     public static string SelectDateRange => Localization.Get(nameof(SelectDateRange));
     public static string SelectedTagsCount => Localization.Get(nameof(SelectedTagsCount));
     public static string SelectEndDate => Localization.Get(nameof(SelectEndDate));
+    public static string SessionBaseline => Localization.Get(nameof(SessionBaseline));
     public static string SessionExpired => Localization.Get(nameof(SessionExpired));
     public static string SessionExpiredCloseWindow => Localization.Get(nameof(SessionExpiredCloseWindow));
     public static string SessionSaved => Localization.Get(nameof(SessionSaved));
@@ -355,6 +376,8 @@ public static class Strings
     public static string SettingsSavedProxy => Localization.Get(nameof(SettingsSavedProxy));
     public static string SettingsShortcut => Localization.Get(nameof(SettingsShortcut));
     public static string SettlementUnknown => Localization.Get(nameof(SettlementUnknown));
+    public static string Sf6NotRunning => Localization.Get(nameof(Sf6NotRunning));
+    public static string Sf6Running => Localization.Get(nameof(Sf6Running));
     public static string ShortIntervalWarning => Localization.Get(nameof(ShortIntervalWarning));
     public static string SignedOutLocalKept => Localization.Get(nameof(SignedOutLocalKept));
     public static string SignIn => Localization.Get(nameof(SignIn));

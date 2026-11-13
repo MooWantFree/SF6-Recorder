@@ -1251,4 +1251,51 @@
   <data name="UnknownRoundResult" xml:space="preserve">
     <value>不明な結果（{0}）</value>
   </data>
+  <data name="RefreshAfterMatchLabel" xml:space="preserve">
+    <value>対戦終了後に更新</value>
+  </data>
+  <data name="RefreshAfterMatchHelp" xml:space="preserve">
+    <value>SF6 が最前面のときにリザルト画面を検出します。</value>
+  </data>
+  <data name="Sf6Running" xml:space="preserve">
+    <value>SF6 は起動中</value>
+  </data>
+  <data name="Sf6NotRunning" xml:space="preserve">
+    <value>SF6 は未起動</value>
+  </data>
+  <data name="MatchEndWait" xml:space="preserve">
+    <value>終了後の待機</value>
+  </data>
+  <data name="MatchEndRetry" xml:space="preserve">
+    <value>再試行間隔</value>
+  </data>
+  <data name="InvalidMatchEndInterval" xml:space="preserve">
+    <value>待機時間は 0～3600 秒、再試行間隔は 1～3600 秒で指定してください。</value>
+  </data>
+  <data name="MatchEndFrequency" xml:space="preserve">
+    <value>サンプリング頻度</value>
+  </data>
+  <data name="SamplesPerSecondUnit" xml:space="preserve">
+    <value>回/秒</value>
+  </data>
+  <data name="InvalidMatchEndFrequency" xml:space="preserve">
+    <value>サンプリング頻度は毎秒 0.5～10 回で指定してください。</value>
+  </data>
+  <data name="OpenLogFolder" xml:space="preserve">
+    <value>ログフォルダーを開く</value>
+  </data>
+  <data name="OpenLogFolderFailed" xml:space="preserve">
+    <value>ログフォルダーを開けませんでした。</value>
+  </data>
+  <data name="FocusLatestMatch" xml:space="preserve"><value>更新後に最新の対戦を選択</value></data>
+  <data name="FocusLatestMatchHelp" xml:space="preserve"><value>現在のモードと絞り込み条件に一致する新しい対戦までスクロールして選択します。</value></data>
+  <data name="RecentMatches" xml:space="preserve"><value>最近の対戦</value></data>
+  <data name="RecentMatchesScope" xml:space="preserve"><value>今回の起動以降のランクマッチ</value></data>
+  <data name="NoRecentRankedMatches" xml:space="preserve"><value>今回の起動以降のランクマッチはありません</value></data>
+  <data name="HighestScore" xml:space="preserve"><value>最高スコア</value></data>
+  <data name="LowestScore" xml:space="preserve"><value>最低スコア</value></data>
+  <data name="RecentScoresPending" xml:space="preserve"><value>一部の対戦のスコア変動は未確定です。</value></data>
+  <data name="SessionBaseline" xml:space="preserve"><value>最初の対戦前のスコア</value></data>
+  <data name="CollapseRecentMatches" xml:space="preserve"><value>最近の対戦を折りたたむ</value></data>
+  <data name="ExpandRecentMatches" xml:space="preserve"><value>最近の対戦を展開</value></data>
 </root>

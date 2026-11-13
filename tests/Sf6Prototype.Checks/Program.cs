@@ -1,6 +1,8 @@
 using System.Text.Json;
 using Sf6Prototype;
 
+if(Environment.GetCommandLineArgs().Contains("--match-end-log-bench")) {MatchEndSampleLogChecks.Benchmark();return;}
+
 Localization.Apply("zh");
 var assertions = 0;
 void Check(bool condition, string description)
@@ -68,7 +70,12 @@ assertions += await RankQueryChecks.Run();
 assertions += NavigationChecks.Run();
 assertions += await ScorePagingChecks.Run();
 assertions += SettingsChecks.Run();
+assertions += MatchEndDetectionChecks.Run();
+assertions += await MatchEndRefreshOverlapChecks.Run();
+assertions += MatchEndSampleLogChecks.Run();
 assertions += await AutoRefreshChecks.Run();
+assertions += await DailyProfileRefreshChecks.Run();
+assertions += RecentMatchScoresChecks.Run();
 assertions += await DatabaseTransferChecks.Run();
 assertions += await PlayerSearchChecks.Run();
 assertions += await TagChecks.Run();
