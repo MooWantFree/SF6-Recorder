@@ -55,6 +55,7 @@ internal static class CancellationChecks
             _=coordinator.RunAsync(new(SyncOperation.LoadHistory),async context=>
             {
                 token=context.Token;
+                context.Report(new RequestActivity(RequestPhase.Sending));
                 using var registration=delayed ? default : token.Register(()=>work.TrySetResult());
                 await work.Task;
             });

@@ -25,7 +25,7 @@ public partial class MainWindow
     }
     private void BeginButtonProgress()
     {
-        _progressFinished=false;_progressVisible=true;_refreshProgress.Begin();
+        _progressFinished=false;_progressVisible=true;
         _progressElapsed.Restart();_requestElapsed.Reset();SyncRing.Reset();
         SyncIcon.Visibility=Visibility.Collapsed;SyncRing.Visibility=Visibility.Visible;
         SyncButton.ToolTip=_progressTip;
@@ -36,6 +36,7 @@ public partial class MainWindow
     {
         _progressVisible=_progressFinished=false;_progressTimer.Stop();_progressElapsed.Stop();_requestElapsed.Stop();
         SyncRing.Reset();SyncRing.Visibility=Visibility.Collapsed;SyncIcon.Visibility=Visibility.Visible;
+        CancelButton.Visibility=Visibility.Hidden;
         UpdateRefreshAction();AutomationProperties.SetHelpText(SyncButton,"");
         UpdateRefreshReminder();
     }
@@ -45,12 +46,21 @@ public partial class MainWindow
         if(!_progressVisible) SyncButton.ToolTip=_busy ? Strings.StopDownloadShortcut : Strings.RefreshShortcut;
     }
     private void ProgressStage(string stage)
-    {if(!_progressVisible)return;_refreshProgress.SetStage(stage);UpdateButtonProgress();}
+    {_refreshProgress.SetStage(stage);UpdateButtonProgress();}
     private void RequestProgress(RequestActivity activity)
     {
+        if(!_busy)return;
+        // Local paging and request-gate waits must not impersonate a network refresh.
+        if(!_progressVisible && activity.Phase==RequestPhase.Sending)
+        {
+            BeginButtonProgress();
+            CancelButton.Visibility=Visibility.Visible;
+            UpdateRefreshReminder();
+        }
+        _refreshProgress.Observe(activity);
         if(!_progressVisible)return;
         if(activity.Phase==RequestPhase.Sending)_requestElapsed.Restart();
-        _refreshProgress.Observe(activity);UpdateButtonProgress();
+        UpdateButtonProgress();
     }
     private void UpdateButtonProgress()
     {

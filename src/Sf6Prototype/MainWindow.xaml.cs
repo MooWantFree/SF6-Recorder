@@ -68,7 +68,6 @@ public partial class MainWindow : ChromeWindow
         };
         _sync.ProgressChanged += update =>
         {
-            if(!_progressVisible) return;
             _refreshProgress.Load(update.Progress,update.MetadataRequests);UpdateButtonProgress();
         };
         _imageRefreshTimer.Tick+=(_,_)=>
@@ -160,11 +159,14 @@ public partial class MainWindow : ChromeWindow
         _busy = busy; History.SetLoading(busy && !background); Scores.SetLoading(busy && !background && PageTabs.SelectedIndex==1);
         // Keep hover/keyboard tooltips available while the button displays progress.
         SyncButton.IsHitTestVisible = SyncButton.Focusable = true;
-        var announce=busy;
-        if(announce) BeginButtonProgress();
-        else if(busy || !_progressFinished) HideButtonProgress();
+        if(busy)
+        {
+            HideButtonProgress();
+            _refreshProgress.Begin();
+        }
+        else if(!_progressFinished) HideButtonProgress();
         UpdateRefreshAction();
-        CancelButton.Visibility = announce ? Visibility.Visible : Visibility.Collapsed;
+        CancelButton.Visibility = busy && _progressVisible ? Visibility.Visible : Visibility.Hidden;
         foreach (var window in _opponents.Values) window.Suspended = busy;
         UpdateRefreshReminder();
     }

@@ -20,10 +20,11 @@
               <Button.ContextMenu><ContextMenu Style="{StaticResource NavigationMenu}"/></Button.ContextMenu>
             </Button>
             <Button x:Name="SyncButton" Style="{StaticResource NavigationRefreshButton}" Click="Sync_Click" ToolTip="{DynamicResource I18n.RefreshShortcut}" AutomationProperties.Name="{DynamicResource I18n.Refresh}">
-              <Grid><TextBlock x:Name="SyncIcon" Style="{StaticResource RefreshReminderIcon}" Text="&#xE72C;" FontFamily="Segoe Fluent Icons" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Center"/><local:RefreshProgressGlyph x:Name="SyncRing" Visibility="Collapsed"/></Grid>
+              <Grid Width="28" Height="28"><TextBlock x:Name="SyncIcon" Style="{StaticResource RefreshReminderIcon}" Text="&#xE72C;" FontFamily="Segoe Fluent Icons" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Center"/><local:RefreshProgressGlyph x:Name="SyncRing" Visibility="Collapsed"/></Grid>
             </Button>
             <Button x:Name="HomeButton" Style="{StaticResource IconButton}" Content="&#xE80F;" Click="Home_Click" IsEnabled="False" ToolTip="{DynamicResource I18n.HomeTooltip}" AutomationProperties.Name="{DynamicResource I18n.Home}"/>
-            <Button x:Name="CancelButton" Style="{StaticResource IconButton}" Content="&#xE711;" Click="Cancel_Click" Visibility="Collapsed" ToolTip="{DynamicResource I18n.CancelRefresh}" AutomationProperties.Name="{DynamicResource I18n.CancelRefresh}"/>
+            <!-- Reserve this slot while idle so progress never pushes the title or tabs. -->
+            <Button x:Name="CancelButton" Style="{StaticResource IconButton}" Content="&#xE711;" Click="Cancel_Click" Visibility="Hidden" ToolTip="{DynamicResource I18n.CancelRefresh}" AutomationProperties.Name="{DynamicResource I18n.CancelRefresh}"/>
           </StackPanel>
           <Border Width="1" Height="20" Background="{StaticResource Line}" Margin="12,0"/>
           <ListBox x:Name="PageTabs" Style="{StaticResource Segmented}" VerticalAlignment="Center" SelectedIndex="0" SelectionChanged="PageTabs_Changed" AutomationProperties.Name="{DynamicResource I18n.Pages}">

@@ -33,7 +33,7 @@ internal static class LanguageSelectionChecks
         Set("_ready",true);Call("ReloadLocal",false,true,null,false);
         var held=new TaskCompletionSource();var token=CancellationToken.None;
         var coordinator=Get<SyncCoordinator>("_sync");
-        var work=coordinator.RunAsync(new(SyncOperation.ManualRefresh),async context=>{token=context.Token;await held.Task;context.Complete();});
+        var work=coordinator.RunAsync(new(SyncOperation.ManualRefresh),async context=>{token=context.Token;context.Report(new RequestActivity(RequestPhase.Sending));await held.Task;context.Complete();});
         // A headless WPF window cannot own another window until its native handle exists.
         // Use the production callback with an unowned settings window to keep this test offline.
         var apply=typeof(MainWindow).GetMethod("ChangeLanguage",flags)!.CreateDelegate<Action<string>>(main);

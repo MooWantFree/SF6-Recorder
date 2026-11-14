@@ -81,8 +81,13 @@ internal static class Program
         Check(scores.CaptureState() is {SelectedReplay:"R1"} state && state.Start==day.AddDays(1) && state.End==day.AddDays(1),"Chart selection and dates survive restoring a saved view");
         var setBusy=typeof(MainWindow).GetMethod("SetBusy",BindingFlags.Instance|BindingFlags.NonPublic)!;
         var sync=(Button)main.FindName("SyncButton");var ring=(RefreshProgressGlyph)main.FindName("SyncRing");
+        var requestProgress=typeof(MainWindow).GetMethod("RequestProgress",BindingFlags.Instance|BindingFlags.NonPublic)!;
         setBusy.Invoke(main,[true,false,false]);
-        Check(ring.Visibility==Visibility.Visible && ring.Indeterminate && sync.IsHitTestVisible && sync.Focusable && sync.ToolTip is TextBlock,"Refresh remains hoverable and shows an indeterminate ring before page totals are known");
+        Check(ring.Visibility==Visibility.Collapsed,"Starting local preparation does not display network progress");
+        requestProgress.Invoke(main,[new RequestActivity(RequestPhase.Waiting)]);
+        Check(ring.Visibility==Visibility.Collapsed,"Waiting for the request gate does not start the refresh animation");
+        requestProgress.Invoke(main,[new RequestActivity(RequestPhase.Sending)]);
+        Check(ring.Visibility==Visibility.Visible && ring.Indeterminate && sync.IsHitTestVisible && sync.Focusable && sync.ToolTip is TextBlock,"An actual network send starts hoverable indeterminate progress before page totals are known");
         var model=(RefreshProgressState)typeof(MainWindow).GetField("_refreshProgress",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(main)!;
         model.Load(new("读取排位",.5,1,1,"已准备 10 / 20 场"),2);
         typeof(MainWindow).GetMethod("UpdateButtonProgress",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(main,null);
@@ -93,6 +98,8 @@ internal static class Program
         setBusy.Invoke(main,[false,false,false]);
         Check(ring.Visibility==Visibility.Visible && (double)ring.GetAnimationBaseValue(RefreshProgressGlyph.ValueProperty)==1,"Successful completion briefly retains the full ring");
         setBusy.Invoke(main,[true,true,false]);
+        Check(ring.Visibility==Visibility.Collapsed,"A local load also clears the previous request's completion ring");
+        requestProgress.Invoke(main,[new RequestActivity(RequestPhase.Sending)]);
         Check(ring.Visibility==Visibility.Visible && ring.Indeterminate && sync.ToolTip is TextBlock,"Pagination and implicit history loads expose the same progress and stop action");
         setBusy.Invoke(main,[false,false,false]);
         var opened=0;var exited=0;var settingsOpened=0;
@@ -172,6 +179,7 @@ internal static class Program
         Check(App.DataDirectory=="" && !main.IsVisible && !settings.IsVisible && !choice.IsVisible && new System.Windows.Interop.WindowInteropHelper(main).Handle==IntPtr.Zero && new System.Windows.Interop.WindowInteropHelper(settings).Handle==IntPtr.Zero && new System.Windows.Interop.WindowInteropHelper(choice).Handle==IntPtr.Zero,"Desktop checks never start the application, create native windows or use user data");
         count+=ArchiveSnapshotChecks.Run();
         count+=CancellationChecks.Run();
+        count+=CachedPagingChecks.Run();
         count+=RefreshReminderChecks.Run();
         count+=MatchEndFailureImageChecks.Run();
         count+=MatchEndVisionChecks.Run();
