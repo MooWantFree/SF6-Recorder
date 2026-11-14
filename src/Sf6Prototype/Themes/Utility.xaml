@@ -146,6 +146,8 @@
       <sys:Double x:Key="{x:Static SystemParameters.VerticalScrollBarButtonHeightKey}">48</sys:Double>
       <sys:Double x:Key="{x:Static SystemParameters.HorizontalScrollBarButtonWidthKey}">48</sys:Double>
     </Style.Resources>
+    <!-- Native theme minimums otherwise widen both orientations beyond ScrollBarWidth. -->
+    <Setter Property="MinWidth" Value="0"/><Setter Property="MinHeight" Value="0"/>
     <Setter Property="Width" Value="{StaticResource ScrollBarWidth}"/><Setter Property="Focusable" Value="False"/><Setter Property="Background" Value="Transparent"/>
     <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ScrollBar">
       <Grid Background="{TemplateBinding Background}">

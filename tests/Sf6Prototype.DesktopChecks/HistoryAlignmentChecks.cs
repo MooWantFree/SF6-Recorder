@@ -69,11 +69,27 @@ internal static class HistoryAlignmentChecks
         character.SelectedIndex=0;category.SelectedItem=category.Items.OfType<CategoryChoice>().Single(c=>c.Key=="rank");Layout(980);
         Check(!view.HasTags && view.ShowScoreColumns,"Untagged ranked matches use the compact tag action");Aligned("compact tag column");
         var scrollbar=Descendants<ScrollBar>(list).Single(b=>b.Orientation==Orientation.Vertical);
+        Check(Near(scrollbar.ActualWidth,(double)view.FindResource("ScrollBarWidth")),
+            $"The history scrollbar keeps the shared thin width despite native theme minimums (actual={scrollbar.ActualWidth}, width={scrollbar.Width}, min={scrollbar.MinWidth})");
         scrollbar.MinWidth=scrollbar.Width=29;Layout(980);
         Check(Near(scrollbar.ActualWidth,29),"The fixture changes the actual scrollbar width without changing a theme token");Aligned("wider scrollbar");
         view.Reload(restore:new() {Search="no matching replay"});Layout(720);
         var viewport=Descendants<ScrollContentPresenter>(list).First();
         Check(list.Items.Count==0 && Near(Left(header),Left(viewport)) && Near(header.ActualWidth,viewport.ActualWidth),"An empty list still aligns headers with the actual viewport");
+        var horizontalViewer=new ScrollViewer {HorizontalScrollBarVisibility=ScrollBarVisibility.Auto,VerticalScrollBarVisibility=ScrollBarVisibility.Disabled,
+            Content=new Border {Width=800,Height=40}};
+        void LayoutHorizontal()
+        {
+            horizontalViewer.Measure(new Size(240,80));horizontalViewer.Arrange(new Rect(0,0,240,80));horizontalViewer.UpdateLayout();
+            horizontalViewer.Dispatcher.Invoke(()=>{},DispatcherPriority.ContextIdle);horizontalViewer.UpdateLayout();
+        }
+        LayoutHorizontal();
+        var horizontalBar=Descendants<ScrollBar>(horizontalViewer).Single(b=>b.Orientation==Orientation.Horizontal);
+        Check(horizontalViewer.ComputedHorizontalScrollBarVisibility==Visibility.Visible && Near(horizontalBar.ActualHeight,(double)view.FindResource("ScrollBarWidth")),
+            "Overflowing horizontal content uses the same thin scrollbar without a native minimum height");
+        ScrollBar.PageRightCommand.Execute(null,horizontalBar);LayoutHorizontal();
+        Check(horizontalViewer.HorizontalOffset>0 && Near(horizontalBar.Value,horizontalViewer.HorizontalOffset),
+            "The thin horizontal scrollbar still pages content and tracks its scroll offset");
         Check(App.DataDirectory=="","Alignment checks do not access application data");
         return count;
     }
