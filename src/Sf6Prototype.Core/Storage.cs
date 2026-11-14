@@ -215,7 +215,7 @@ public sealed partial class BattleStore
         .OrderByDescending(c => c.Count).ToList();
     // Official replay scores are recorded before the match, so a ranked match's settlement is the
     // next ranked record of the same character minus this one. Only ranked matches move LP/MR.
-    // The newest match uses the profile score captured after the last completed sync.
+    // The newest match uses the profile score captured after verifying the latest ranked head.
     public static List<ScorePoint> Scores(IEnumerable<Battle> rows, CurrentScores? current = null, bool settlementsComplete = true, IReadOnlyDictionary<string,string>? links = null)
         => ScoreCalculator.Calculate(rows,current,settlementsComplete,links);
     private static void Add(SqliteCommand cmd, string name, object? value) => cmd.Parameters.AddWithValue(name, value ?? DBNull.Value);

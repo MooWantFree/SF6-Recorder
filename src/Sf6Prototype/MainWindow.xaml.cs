@@ -221,9 +221,9 @@ public partial class MainWindow : ChromeWindow
         }
         catch(Exception ex) { _autoRefresh.Pause(); ReportError(ex); }
     }
-    private Task<bool> AutoRefreshAccountAsync(SavedSession session) =>
-        _sync.RunAsync(new(SyncOperation.AutomaticRefresh,Quiet:true,Background:true,SilentCancellation:true), context=>AutoRefreshAccountCoreAsync(session,context));
-    private async Task<bool> AutoRefreshAccountCoreAsync(SavedSession session,SyncContext context)
+    private Task<bool> AutoRefreshAccountAsync(SavedSession session,bool notify=true) =>
+        _sync.RunAsync(new(SyncOperation.AutomaticRefresh,Quiet:true,Background:true,SilentCancellation:true), context=>AutoRefreshAccountCoreAsync(session,context,notify));
+    private async Task<bool> AutoRefreshAccountCoreAsync(SavedSession session,SyncContext context,bool notify)
     {
         var token=context.Token;
         var owner=session.AccountId;
@@ -252,18 +252,25 @@ public partial class MainWindow : ChromeWindow
                 },
                 PreferredCategory=()=>PreferredHistoryCategory(owner),
                 BattlesLoaded=()=> {if(_navigation.Current.Id==owner) ReloadLocal(preserveViewport:true,refreshImages:false,automaticRefresh:true);},
-                BeforeProfile=()=> {_refreshProgress.Metadata(1);UpdateButtonProgress();}
+                BeforeProfile=duringPaging=>
+                {
+                    if(duringPaging) _refreshProgress.SetStage(Strings.UpdatingCharacterProfiles);
+                    else _refreshProgress.Metadata(1);
+                    UpdateButtonProgress();
+                }
             },automatic:true,token);
             if(_navigation.Current.Id==owner) ReloadLocal(preserveViewport:true);
             RefreshAccountUi();
-            ShowNotice(workflow.ScoresPending ? Strings.RecordsUpdatedScoresPending : Strings.RefreshCompleteHint,workflow.ScoresPending);
+            if(notify) ShowNotice(workflow.ScoresPending ? Strings.RecordsUpdatedScoresPending : Strings.RefreshCompleteHint,workflow.ScoresPending);
             completed=true;context.Complete();
         }
         catch(OperationCanceledException) when(token.IsCancellationRequested) { }
         catch(Exception ex)
         {
             if(ex is LoginRequiredException) _autoRefresh.Pause();
-            context.Fail(ex);ReportError(ex);
+            context.Fail(ex);
+            if(notify) ReportError(ex);
+            else Diagnostics.Write("automatic_refresh","failed",ex);
         }
         finally
         {
@@ -652,7 +659,16 @@ public partial class MainWindow : ChromeWindow
                 PrepareImages=()=>PrepareImageDownloadsAsync(token),ImagesReady=StartImageDownloads,AvatarUpdated=RefreshAccountUi,
                 PageSaved=PageSaved,PreferredCategory=()=>PreferredHistoryCategory(pager.Owner),
                 BattlesLoaded=()=>ReloadLocal(preserveViewport:true,refreshImages:false),
-                BeforeProfile=()=> {SetStatus("profiles",Strings.UpdatingProfilesProgress);if(_progressVisible) {_refreshProgress.Metadata(1);UpdateButtonProgress();}}
+                BeforeProfile=duringPaging=>
+                {
+                    SetStatus("profiles",Strings.UpdatingProfilesProgress);
+                    if(_progressVisible)
+                    {
+                        if(duringPaging) _refreshProgress.SetStage(Strings.UpdatingCharacterProfiles);
+                        else _refreshProgress.Metadata(1);
+                        UpdateButtonProgress();
+                    }
+                }
             },automatic:false,token);
             _lastSync=workflow.Sync;
             ReloadLocal(preserveViewport: true); RefreshAccountUi();

@@ -56,6 +56,11 @@ internal static class RecentMatchesChecks
         string? invoked=null;recent.SelectionChanged+=row=>invoked=row.Battle.ReplayId;
         typeof(ScoreChart).GetMethod("Invoke",flags)!.Invoke(chart,[1]);
         Check(invoked=="first","Selecting a chart point exposes that actual match for the detail panel");
+        File.WriteAllText(Path.Combine(path,"scores-"+owner+".json"),System.Text.Json.JsonSerializer.Serialize(
+            new CurrentScores(DateTimeOffset.FromUnixTimeSeconds(at+121),1,[new(1,"RYU",1010,0,24,null)])));
+        archive.Load(owner,false);Update();
+        Check(chart.Points[^1] is {ReplayId:"second",Value:1010,Settled:true,Connect:true} && chart.Points[1].Connect,
+            "Publishing a current score immediately connects the pending last point and retains the confirmed earlier segment");
         Set("_ready",false);((ListBox)main.FindName("PageTabs")).SelectedIndex=1;Set("_ready",true);Update();
         Check(recent.Visibility==Visibility.Collapsed && ((FrameworkElement)main.FindName("HistoryHost")).Visibility==Visibility.Collapsed,"The full Scores page does not overlap the recent-history panel");
         Set("_ready",false);((ListBox)main.FindName("PageTabs")).SelectedIndex=0;Set("_ready",true);navigation.Visit(new("9876543210","Other"));Update();

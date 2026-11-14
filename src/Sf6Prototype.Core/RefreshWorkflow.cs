@@ -22,7 +22,7 @@ public sealed class RefreshCallbacks
     public Func<Task> PageSaved { get; init; } = () => Task.CompletedTask;
     public Func<string?>? PreferredCategory { get; init; }
     public Action BattlesLoaded { get; init; } = () => { };
-    public Action BeforeProfile { get; init; } = () => { };
+    public Action<bool> BeforeProfile { get; init; } = _ => { };
     public Action<BattleLoadProgress,int> Progress { get; init; } = (_,_) => { };
     public Action<RequestActivity> Request { get; init; } = _ => { };
 }
@@ -37,8 +37,34 @@ public static class RefreshWorkflow
         source.Activity += callbacks.Request;
         BattlePager? pager = null;
         DailyProfileRefresh? daily = null;
-        bool NeedsProfile() => daily != null && (daily.Required || pager?.RankHeadFetched == true);
+        var profileAttempted = false;
+        var scoresPending = false;
+        bool NeedsProfile() => !profileAttempted && daily != null && (daily.Required || pager?.RankHeadFetched == true);
         void Progress(BattleLoadProgress progress) => callbacks.Progress(progress, NeedsProfile() ? 1 : 0);
+        async Task<bool> RefreshProfileAsync(bool duringPaging)
+        {
+            if (!NeedsProfile()) return false;
+            token.ThrowIfCancellationRequested();
+            profileAttempted = true;
+            try
+            {
+                callbacks.BeforeProfile(duringPaging);
+                var images = await daily!.RefreshPlayAsync(source,token,captureScores:pager!.RankHeadFetched);
+                token.ThrowIfCancellationRequested(); callbacks.ImagesReady(images);
+                return true;
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException and not OutOfMemoryException && (!automatic || ex is not LoginRequiredException))
+            { Diagnostics.Write("sync", "refresh_profile", ex); scoresPending = pager!.RankHeadFetched; return false; }
+        }
+        async Task PageSaved()
+        {
+            // Publish replay-derived settlements first, then settle the latest match as
+            // soon as its ranked head is verified, before reading unrelated history.
+            await callbacks.PageSaved();
+            token.ThrowIfCancellationRequested();
+            if (pager!.RankHeadFetched && await RefreshProfileAsync(duringPaging:true))
+                await callbacks.PageSaved();
+        }
         try
         {
             token.ThrowIfCancellationRequested();
@@ -46,7 +72,6 @@ public static class RefreshWorkflow
             token.ThrowIfCancellationRequested();
             var plan = await prepare(); pager = plan.Pager; daily = plan.Profile;
             pager.ProgressChanged += Progress;
-            var scoresPending = false;
             if (daily?.Required == true)
             {
                 await callbacks.PrepareImages();
@@ -62,24 +87,14 @@ public static class RefreshWorkflow
             }
             var result = plan.Mode switch
             {
-                RefreshMode.Account => await pager.LoadAccountAsync(source,token,callbacks.PageSaved,callbacks.PreferredCategory),
-                RefreshMode.Scores => await pager.LoadScoreRangeAsync(source,plan.Range!,token,callbacks.PageSaved,plan.ForceHead),
-                RefreshMode.More => await pager.LoadMoreAsync(source,plan.Category,plan.Filtered!,token,callbacks.PageSaved),
-                _ => await pager.LoadInitialAsync(source,plan.Category,token,callbacks.PageSaved)
+                RefreshMode.Account => await pager.LoadAccountAsync(source,token,PageSaved,callbacks.PreferredCategory),
+                RefreshMode.Scores => await pager.LoadScoreRangeAsync(source,plan.Range!,token,PageSaved,plan.ForceHead),
+                RefreshMode.More => await pager.LoadMoreAsync(source,plan.Category,plan.Filtered!,token,PageSaved),
+                _ => await pager.LoadInitialAsync(source,plan.Category,token,PageSaved)
             };
             token.ThrowIfCancellationRequested();
             callbacks.BattlesLoaded();
-            try
-            {
-                if (NeedsProfile())
-                {
-                    callbacks.BeforeProfile();
-                    var images = await daily!.RefreshPlayAsync(source,token,captureScores:pager.RankHeadFetched);
-                    token.ThrowIfCancellationRequested(); callbacks.ImagesReady(images);
-                }
-            }
-            catch (Exception ex) when (ex is not OperationCanceledException and not OutOfMemoryException && (!automatic || ex is not LoginRequiredException))
-            { Diagnostics.Write("sync", "refresh_profile", ex); scoresPending = pager.RankHeadFetched; }
+            await RefreshProfileAsync(duringPaging:false);
             return new(result with {Requests=source.Requests}, scoresPending);
         }
         finally

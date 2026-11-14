@@ -127,7 +127,7 @@ public partial class MainWindow
             var follow=CaptureMatchEndFollow(session!.AccountId);
             version=_matchEndRefresh.Begin();_matchEndMonitor?.ReportRefresh("refreshing");
             _matchEndRefreshInFlight=true;
-            var task=AutoRefreshAccountAsync(session!);
+            var task=AutoRefreshAccountAsync(session!,notify:false);
             var success=await task;
             var changed=_store.Frontier(session!.AccountId,BattlePager.AccountBoundary)!=boundary;
             if(success && changed) FollowRefreshedMatch(follow);
@@ -139,7 +139,7 @@ public partial class MainWindow
         catch(Exception ex)
         {
             if(_matchEndRefresh.Complete(version,false,false,DateTimeOffset.UtcNow)) _matchEndMonitor?.ReportRefresh("refresh_failed");
-            ReportError(ex);
+            Diagnostics.Write("match_end","refresh_failed",ex);
         }
         finally {_matchEndRefreshInFlight=false;UpdateMatchEndStatusAnimation();}
     }

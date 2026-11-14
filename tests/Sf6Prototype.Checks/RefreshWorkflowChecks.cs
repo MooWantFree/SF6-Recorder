@@ -15,11 +15,13 @@ public static class RefreshWorkflowChecks
         public Exception? PlayError;
         public Exception? CardError;
         public string? PlayResponse;
+        public Func<string,CancellationToken,Task>? BeforePage;
         public Task ValidateAsync(CancellationToken token) {Calls.Add("validate");Activity?.Invoke(new(RequestPhase.Sending));return Task.CompletedTask;}
-        public Task<BattlePage> FetchPageAsync(string owner,string category,int page,CancellationToken token)
+        public async Task<BattlePage> FetchPageAsync(string owner,string category,int page,CancellationToken token)
         {
+            if(BeforePage!=null) await BeforePage(category,token);
             token.ThrowIfCancellationRequested();Calls.Add("page");Requests++;
-            return Task.FromResult(new BattlePage(page,1,category is "" or "rank" ? Battles.ToList() : []));
+            return new BattlePage(page,1,category is "" or "rank" ? Battles.ToList() : []);
         }
         public Task<string> FetchCardAsync(string owner,CancellationToken token)
         {Calls.Add("card");return CardError!=null ? Task.FromException<string>(CardError) : Task.FromResult("{\"fighter_name\":\"Fixture\",\"icon_file_name\":\"fixture\"}");}
@@ -49,8 +51,10 @@ public static class RefreshWorkflowChecks
                 BattlesLoaded=()=>source.Calls.Add("loaded")};
             var result=await RefreshWorkflow.RunAsync(source,true,()=>Task.FromResult(new RefreshPlan(new(store,source.AccountId),RefreshMode.Account,Profile:daily)),callbacks,automatic,CancellationToken.None);
             Check(!result.ScoresPending && result.Sync.Inserted==1 && images==2 && requests==1,"Manual and automatic refresh share paging and image delivery");
-            Check(source.Calls[0]=="validate" && source.Calls.IndexOf("card")<source.Calls.IndexOf("page") && source.Calls.IndexOf("play")>source.Calls.IndexOf("loaded"),
-                "Validation and avatar discovery precede paging; current scores are captured only afterwards");
+            Check(source.Calls[0]=="validate" && source.Calls.IndexOf("card")<source.Calls.IndexOf("page") &&
+                source.Calls.IndexOf("play")>source.Calls.IndexOf("page") && source.Calls.IndexOf("play")<source.Calls.IndexOf("loaded") &&
+                source.Calls.Count(c=>c=="play")==1,
+                "Validation and avatar discovery precede paging; verified ranked heads capture scores once before history completes");
             source.LateActivity();Check(requests==1,"A completed workflow detaches request observers");
             Check(profiles.Scores(source.AccountId)?.Characters.Single().Lp==12050,"Completed rank reads capture current scores");
             var later=new DailyProfileRefresh(profiles,source.AccountId,DateTimeOffset.UtcNow);source.Calls.Clear();
@@ -61,7 +65,7 @@ public static class RefreshWorkflowChecks
             source.Battles.Insert(0,source.Battles[0] with {ReplayId="latest",PlayedAt=1120,Lp=12050,MyRounds=1,OpponentRounds=2});
             source.CurrentLp=11930;
             await RefreshWorkflow.RunAsync(source,false,()=>Task.FromResult(new RefreshPlan(new(store,source.AccountId),RefreshMode.Account,Profile:later)),callbacks,automatic,CancellationToken.None);
-            Check(!later.Required && source.Calls.SequenceEqual(["page","loaded","play"]),"Same-day rank refresh reads current scores after the saved battle without repeating daily metadata");
+            Check(!later.Required && source.Calls.SequenceEqual(["page","play","loaded"]),"Same-day rank refresh reads current scores after the saved battle without waiting for history completion or repeating daily metadata");
             var settled=ScoreCalculator.Calculate(store.Query(new(source.AccountId)),profiles.Scores(source.AccountId),links:store.ScoreLinks(source.AccountId));
             Check(settled.Last() is {ReplayId:"latest",LpDelta:-120,LpAfter:11930},"A second match on the same day settles from fresh official scores at the inclusive -120 boundary");
             Check(images==2 && profileBefore==File.ReadAllText(Path.Combine(directory,"profile-"+source.AccountId+".json")) &&
@@ -83,7 +87,7 @@ public static class RefreshWorkflowChecks
             source.PlayError=new LoginRequiredException("fixture");var failedDaily=new DailyProfileRefresh(new ProfileCache(Path.Combine(directory,"expired")),source.AccountId,DateTimeOffset.UtcNow);
             var task=RefreshWorkflow.RunAsync(source,false,()=>Task.FromResult(new RefreshPlan(new(store,source.AccountId),RefreshMode.Account,Profile:failedDaily)),callbacks,automatic,CancellationToken.None);
             if(automatic) {try {await task;throw new Exception("Expected login failure");}catch(LoginRequiredException){count++;}}
-            else Check((await task).ScoresPending,"Manual refresh retains saved matches when the post-sync profile needs login");
+            else Check((await task).ScoresPending,"Manual refresh retains saved matches when the score profile needs login");
             source.PlayError=null;source.CardError=new IOException("portrait unavailable");
             var portraitProfiles=new ProfileCache(Path.Combine(directory,"portrait"));
             var portrait=await RefreshWorkflow.RunAsync(source,false,()=>Task.FromResult(new RefreshPlan(new(store,source.AccountId),RefreshMode.Account,
@@ -99,7 +103,41 @@ public static class RefreshWorkflowChecks
                 throw new Exception("Expected cancellation");
             }
             catch(OperationCanceledException) {count++;}
-            Check(!source.Calls.Contains("play") && store.Query(new(source.AccountId)).Count==2,"Cancellation retains committed battles and never starts post-sync profile requests");
+            Check(!source.Calls.Contains("play") && store.Query(new(source.AccountId)).Count==2,"Cancellation retains committed battles and never starts further profile requests");
+
+            // Hold the next history request open: the latest score must already be
+            // published while the overall refresh is still in progress.
+            var streamingDirectory=Path.Combine(directory,"streaming");var streamingProfiles=new ProfileCache(streamingDirectory);
+            var streamingStore=new BattleStore(Path.Combine(streamingDirectory,"archive.sqlite"));
+            var streamingSource=new Source {CurrentLp=11930};
+            streamingSource.Battles.Insert(0,streamingSource.Battles[0] with {ReplayId="latest",PlayedAt=1120,Lp=12050,MyRounds=1,OpponentRounds=2});
+            var waiting=new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var resume=new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            streamingSource.BeforePage=async (category,token)=>
+            {
+                if(category!="rank")return;
+                waiting.TrySetResult();await resume.Task.WaitAsync(token);
+            };
+            var snapshots=new List<List<ScorePoint>>();
+            var streaming=RefreshWorkflow.RunAsync(streamingSource,false,
+                ()=>Task.FromResult(new RefreshPlan(new(streamingStore,source.AccountId),RefreshMode.Account,
+                    Profile:new(streamingProfiles,source.AccountId,DateTimeOffset.UtcNow))),
+                new(){PageSaved=()=>
+                {
+                    snapshots.Add(ScoreCalculator.Calculate(streamingStore.Query(new(source.AccountId)),streamingProfiles.Scores(source.AccountId),
+                        links:streamingStore.ScoreLinks(source.AccountId)));
+                    return Task.CompletedTask;
+                }},automatic,CancellationToken.None);
+            try
+            {
+                await waiting.Task.WaitAsync(TimeSpan.FromSeconds(10));
+                Check(!streaming.IsCompleted && snapshots[0].First().LpDelta==50 && snapshots[0].Last().LpDelta==null,
+                    "Replay-derived settlements are published immediately while the newest settlement is still pending");
+                Check(snapshots[^1].Last() is {ReplayId:"latest",LpDelta:-120,LpAfter:11930},
+                    "The latest official score is published before the remaining history request completes");
+                Check(streamingSource.Calls.Count(c=>c=="play")==1,"Streaming settlements reuse the refresh's single profile request");
+            }
+            finally {resume.TrySetResult();await streaming;}
         }
         return count;
     }
