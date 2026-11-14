@@ -136,18 +136,17 @@
     </Grid>
 
     <Grid Grid.Row="1" Margin="24,14,24,20" MaxWidth="1480">
+      <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition/></Grid.RowDefinitions>
       <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="340"/></Grid.ColumnDefinitions>
-      <Grid x:Name="HistoryHost">
+      <local:UpdateNotice x:Name="StartupUpdateNotice" Grid.ColumnSpan="2" Margin="0,0,0,12"/>
+      <Grid x:Name="HistoryHost" Grid.Row="1">
         <Grid.RowDefinitions><RowDefinition/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
         <local:HistoryView x:Name="History"/>
         <local:RecentMatchesView x:Name="RecentMatches" Grid.Row="1" Margin="0,12,0,0" Visibility="Collapsed"/>
       </Grid>
-      <local:ScoresView x:Name="Scores" Visibility="Collapsed"/>
-      <local:MatchDetailPanel x:Name="Detail" Grid.Column="1" Margin="16,0,0,0"/>
+      <local:ScoresView x:Name="Scores" Grid.Row="1" Visibility="Collapsed"/>
+      <local:MatchDetailPanel x:Name="Detail" Grid.Row="1" Grid.Column="1" Margin="16,0,0,0"/>
     </Grid>
-    <StackPanel Grid.Row="1" Panel.ZIndex="10" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="24,0,24,28">
-      <local:StatusToast x:Name="StartupUpdateToast" HorizontalAlignment="Center" Margin="0,0,0,8"/>
-      <local:StatusToast x:Name="Toast" HorizontalAlignment="Center"/>
-    </StackPanel>
+    <local:StatusToast x:Name="Toast" Grid.Row="1" Panel.ZIndex="10" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="24,0,24,28"/>
   </Grid>
 </local:ChromeWindow>

@@ -1314,7 +1314,7 @@ The saved sign-in will be removed from this device. Local match records will be 
   <data name="UpdateCheckFailed" xml:space="preserve"><value>Could not check for updates. Try again later.</value></data>
   <data name="OpenWebPageFailed" xml:space="preserve"><value>Unable to open the webpage.</value></data>
   <data name="InstallUpdate" xml:space="preserve"><value>Update now</value></data>
-  <data name="InstallUpdateHelp" xml:space="preserve"><value>Download the update and restart the app.</value></data>
+  <data name="InstallUpdateHelp" xml:space="preserve"><value>The app will restart after the download.</value></data>
   <data name="DownloadingUpdate" xml:space="preserve"><value>Downloading update… {0}%</value></data>
   <data name="ApplyingUpdate" xml:space="preserve"><value>Restarting to update…</value></data>
   <data name="UpdateCancelled" xml:space="preserve"><value>Update cancelled.</value></data>

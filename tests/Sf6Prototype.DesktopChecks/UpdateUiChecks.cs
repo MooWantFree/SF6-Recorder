@@ -23,6 +23,8 @@ internal static class UpdateUiChecks
         var button = (Button)window.FindName("CheckUpdatesButton");
         var toast = (StatusToast)window.FindName("UpdateToast");
         var message = (TextBlock)toast.FindName("MessageText");
+        var notice = (UpdateNotice)window.FindName("AvailableUpdateNotice");
+        var installButton = (Button)window.FindName("InstallUpdateButton");
         Task Start(Func<Task<UpdateCheckResult>> request) => (Task)method.Invoke(window, [request])!;
         try
         {
@@ -46,13 +48,10 @@ internal static class UpdateUiChecks
             response.SetResult(new(UpdateStatus.Available, release));
             window.Dispatcher.Invoke(() => {}, DispatcherPriority.ContextIdle);
             pending.GetAwaiter().GetResult();
-            Check(button.IsEnabled && button.Content?.ToString() == Strings.CheckUpdates && button.Style == window.FindResource("AccentButton"),
-                "An update highlights the check button while preserving manual rechecks");
-            Check(toast.Visibility == Visibility.Visible && message.Text.Contains("v99.0.0") &&
-                ((FrameworkElement)toast.FindName("UpdateActions")).Visibility == Visibility.Visible,
-                "The manual update toast includes the version and update choices");
-            toast.Dismiss();
-            Check(((Button)window.FindName("InstallUpdateButton")).Visibility==Visibility.Visible, "The install action remains available after the toast disappears");
+            Check(button.IsEnabled && button.Content?.ToString() == Strings.CheckUpdates &&
+                button.Style != window.FindResource("AccentButton"), "Manual rechecks remain available as a secondary action");
+            Check(notice.Visibility == Visibility.Visible && ((TextBlock)notice.FindName("MessageText")).Text == release.AvailableMessage &&
+                toast.Visibility == Visibility.Collapsed, "Manual checks display the available version in the inline notice");
             var reopened = new SettingsWindow(null!, new());
             Check(((Button)reopened.FindName("CheckUpdatesButton")).Content?.ToString() == Strings.CheckUpdates &&
                 ((Button)reopened.FindName("InstallUpdateButton")).Visibility==Visibility.Visible,
@@ -63,15 +62,24 @@ internal static class UpdateUiChecks
             Directory.CreateDirectory(captureDirectory);
             foreach(var language in new[]{"en","zh-Hans","zh-Hant","ja"})
             {
-                LocalizationWpf.Apply(language);
+                LocalizationWpf.Apply(language); notice.RefreshLanguage();
                 var surface=(FrameworkElement)window.Content;
                 surface.Measure(new Size(window.Width-16,double.PositiveInfinity));surface.Arrange(new Rect(surface.DesiredSize));surface.UpdateLayout();
                 var github=(Button)window.FindName("GitHubButton");
                 var actions=(FrameworkElement)((Button)window.FindName("SaveButton")).Parent;
                 Check(github.TranslatePoint(new Point(github.ActualWidth,0),surface).X+8 <= actions.TranslatePoint(new Point(),surface).X,
                     $"Available-update controls fit beside Save/Cancel in {language}: right={github.TranslatePoint(new Point(github.ActualWidth,0),surface).X}, actions={actions.TranslatePoint(new Point(),surface).X}");
+                var pages = (FrameworkElement)window.FindName("Pages");
+                Check(notice.TranslatePoint(new Point(0,notice.ActualHeight),pages).Y <= 0 &&
+                    ((FrameworkElement)installButton.Parent).Visibility == Visibility.Collapsed,
+                    $"The notice has its own space in settings and exposes one install action in {language}");
+                CheckNoticeLayout(notice, language, Check);
                 Capture(surface, Path.Combine(captureDirectory,language+"-available.png"));
             }
+            notice.Dismiss();
+            ((FrameworkElement)window.Content).UpdateLayout();
+            Check(installButton.Visibility == Visibility.Visible && ((FrameworkElement)installButton.Parent).Visibility == Visibility.Visible,
+                "The install action remains available in About after the notice closes");
             LocalizationWpf.Apply("zh-Hans");
             Start(() => Task.FromResult(new UpdateCheckResult(UpdateStatus.UpToDate))).GetAwaiter().GetResult();
             Check(message.Text == Strings.NoUpdates && button.IsEnabled && button.Content?.ToString() == Strings.CheckUpdates,
@@ -90,8 +98,8 @@ internal static class UpdateUiChecks
             closingResponse.SetResult(new(UpdateStatus.Available, release));
             window.Dispatcher.Invoke(() => {}, DispatcherPriority.ContextIdle);
             closingTask.GetAwaiter().GetResult();
-            Check(available.GetValue(null) == null && toast.Visibility == Visibility.Collapsed,
-                "A late response after closing settings does not display a toast or replace update state");
+            Check(available.GetValue(null) == null && notice.Visibility == Visibility.Collapsed && toast.Visibility == Visibility.Collapsed,
+                "A late response after closing settings leaves both notifications and update state alone");
             var downloading=new SettingsWindow(null!,new());
             var download=new TaskCompletionSource();
             typeof(SettingsWindow).GetField("_updateDownload",BindingFlags.NonPublic|BindingFlags.Instance)!.SetValue(downloading,download.Task);
@@ -122,15 +130,35 @@ internal static class UpdateUiChecks
         png.Save(file);
     }
 
+    private static void CheckNoticeLayout(UpdateNotice notice, string language, Action<bool,string> check)
+    {
+        Rect Bounds(string name)
+        {
+            var element = (FrameworkElement)notice.FindName(name);
+            return new Rect(element.TranslatePoint(new Point(), notice), element.RenderSize);
+        }
+        var title = Bounds("MessageText");
+        var hint = Bounds("HintText");
+        var ignore = Bounds("IgnoreUpdateButton");
+        var later = Bounds("LaterButton");
+        var install = Bounds("InstallPromptButton");
+        var close = Bounds("ClosePromptButton");
+        var frame = new Rect(notice.RenderSize);
+        check(new[] { title, hint, ignore, later, install, close }.All(r => r.Width > 0 && r.Height > 0 && frame.Contains(r)) &&
+            title.Bottom <= hint.Top && Math.Max(title.Right,hint.Right) <= ignore.Left &&
+            ignore.Right < later.Left && later.Right < install.Left && install.Right < close.Left && close.Top <= install.Top,
+            $"Update text and four distinct controls fit inside the {notice.ActualWidth}-wide {language} notice");
+    }
+
     private static void CheckStartupUpdates(UpdateRelease release, string captureDirectory, Action<bool, string> check)
     {
         var main = new MainWindow();
-        var toast = (StatusToast)main.FindName("StartupUpdateToast");
-        var message = (TextBlock)toast.FindName("MessageText");
-        var update = (Button)toast.FindName("InstallPromptButton");
-        var later = (Button)toast.FindName("LaterButton");
-        var ignore = (Button)toast.FindName("IgnoreUpdateButton");
-        var close = (Button)toast.FindName("ClosePromptButton");
+        var notice = (UpdateNotice)main.FindName("StartupUpdateNotice");
+        var message = (TextBlock)notice.FindName("MessageText");
+        var update = (Button)notice.FindName("InstallPromptButton");
+        var later = (Button)notice.FindName("LaterButton");
+        var ignore = (Button)notice.FindName("IgnoreUpdateButton");
+        var close = (Button)notice.FindName("ClosePromptButton");
         const BindingFlags instance = BindingFlags.NonPublic | BindingFlags.Instance;
         var method = typeof(MainWindow).GetMethod("CheckForAutomaticUpdateAsync", instance)!;
         var settingsField = typeof(MainWindow).GetField("_settings", instance)!;
@@ -147,61 +175,62 @@ internal static class UpdateUiChecks
             return Task.FromResult(new UpdateCheckResult(UpdateStatus.Available, release));
         }
         Start(Available).GetAwaiter().GetResult();
-        check(requests == 0 && toast.Visibility == Visibility.Collapsed, "Opting out skips the update request entirely");
+        check(requests == 0 && notice.Visibility == Visibility.Collapsed, "Opting out skips the update request entirely");
         settingsField.SetValue(main, settings);
         foreach (var status in new[] { UpdateStatus.UpToDate, UpdateStatus.NoRelease, UpdateStatus.NotInstalled })
         {
             Start((_, _) => Task.FromResult(new UpdateCheckResult(status))).GetAwaiter().GetResult();
-            check(toast.Visibility == Visibility.Collapsed, $"Startup stays quiet for {status}");
+            check(notice.Visibility == Visibility.Collapsed, $"Startup stays quiet for {status}");
         }
         Start((_, _) => Task.FromException<UpdateCheckResult>(new HttpRequestException("offline"))).GetAwaiter().GetResult();
-        check(toast.Visibility == Visibility.Collapsed, "An offline update check leaves startup usable and quiet");
+        check(notice.Visibility == Visibility.Collapsed, "An offline update check leaves startup usable and quiet");
         Start(Available).GetAwaiter().GetResult();
-        check(requests == 1 && toast.Visibility == Visibility.Visible && message.Text == release.AvailableMessage &&
+        check(requests == 1 && notice.Visibility == Visibility.Visible && message.Text == release.AvailableMessage &&
             update.Content?.ToString() == Strings.InstallUpdate && later.Visibility == Visibility.Visible &&
             later.Content?.ToString() == Strings.UpdateLater && ignore.Content?.ToString() == Strings.IgnoreUpdate &&
             close.Visibility == Visibility.Visible, "A new version offers install, skip, snooze and close");
         var surface = (FrameworkElement)main.Content;
+        var history = (FrameworkElement)main.FindName("History");
         foreach (var language in new[] { "en", "zh-Hant", "ja", "zh-Hans" })
         foreach (var size in new[] { new Size(1380, 880), new Size(1120, 720) })
         {
-            LocalizationWpf.Apply(language); toast.RefreshUpdatePrompt();
+            LocalizationWpf.Apply(language); notice.RefreshLanguage();
             surface.Measure(size); surface.Arrange(new Rect(size)); surface.UpdateLayout();
-            Rect Bounds(FrameworkElement e) => new(e.TranslatePoint(new Point(), toast),e.RenderSize);
-            var buttons = new[] { Bounds(ignore), Bounds(later), Bounds(update), Bounds(close) };
-            check(buttons.All(b => b.Width > 0 && b.Height > 0 && new Rect(toast.RenderSize).Contains(b)) &&
-                buttons[0].Right < buttons[1].Left && buttons[1].Right < buttons[2].Left &&
-                buttons[3].Bottom <= buttons[2].Top && buttons[3].Right >= buttons[2].Right - 1 &&
-                !Bounds(message).IntersectsWith(buttons[3]), $"All four update controls fit in {language} at {size}");
+            CheckNoticeLayout(notice, language, check);
+            check(notice.TranslatePoint(new Point(0,notice.ActualHeight),history).Y <= 0,
+                $"The update notice sits above the match list in {language} at {size}");
             Capture(surface, Path.Combine(captureDirectory, $"startup-{language}-{size.Width}x{size.Height}.png"));
         }
+        var historyTop = history.TranslatePoint(new Point(),surface).Y;
         close.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        surface.UpdateLayout();
+        check(history.TranslatePoint(new Point(),surface).Y < historyTop,"Closing the notice returns its space to the match list");
         var reopened = new SettingsWindow(null!, settings);
-        check(toast.Visibility == Visibility.Collapsed && !File.Exists(Path.Combine(App.DataDirectory,"settings.json")) &&
+        check(notice.Visibility == Visibility.Collapsed && !File.Exists(Path.Combine(App.DataDirectory,"settings.json")) &&
             ((Button)reopened.FindName("InstallUpdateButton")).Visibility == Visibility.Visible,
             "Closing the prompt keeps the update available and does not write a reminder preference");
         reopened.Close();
         Start(Available).GetAwaiter().GetResult();
         ignore.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
         var saved = ConnectionSettings.Load(App.DataDirectory);
-        check(toast.Visibility == Visibility.Collapsed && saved.UpdateReminder.IgnoredVersion == release.Version.ToString(3),
+        check(notice.Visibility == Visibility.Collapsed && saved.UpdateReminder.IgnoredVersion == release.Version.ToString(3),
             "Clicking Skip persists the offered version immediately");
         settingsField.SetValue(main,saved);
         Start(Available).GetAwaiter().GetResult();
-        check(toast.Visibility == Visibility.Collapsed, "Automatic checks respect the skipped version");
+        check(notice.Visibility == Visibility.Collapsed, "Automatic checks respect the skipped version");
         var newer = release with { Version = new Version(100,0,0) };
         Start((_,_)=>Task.FromResult(new UpdateCheckResult(UpdateStatus.Available,newer))).GetAwaiter().GetResult();
-        check(toast.Visibility == Visibility.Visible && message.Text == newer.AvailableMessage,"A newer release is still offered");
+        check(notice.Visibility == Visibility.Visible && message.Text == newer.AvailableMessage,"A newer release is still offered");
         var before = DateTimeOffset.UtcNow;
         later.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
         saved = ConnectionSettings.Load(App.DataDirectory);
         var timer = (DispatcherTimer)typeof(MainWindow).GetField("_updateReminderTimer",instance)!.GetValue(main)!;
-        check(toast.Visibility == Visibility.Collapsed && saved.UpdateReminder.RemindAfterUtc >= before.AddDays(5) &&
+        check(notice.Visibility == Visibility.Collapsed && saved.UpdateReminder.RemindAfterUtc >= before.AddDays(5) &&
             saved.UpdateReminder.RemindAfterUtc <= DateTimeOffset.UtcNow.AddDays(5) && timer.IsEnabled,
             "Snooze saves the exact deadline and schedules a check while the app stays open");
         settingsField.SetValue(main,saved);
         Start(Available).GetAwaiter().GetResult();
-        check(toast.Visibility==Visibility.Collapsed,"Startup respects a saved five-day snooze");
+        check(notice.Visibility==Visibility.Collapsed,"Startup respects a saved five-day snooze");
         var dueCheck=typeof(MainWindow).GetMethod("CheckDueUpdateAsync",instance)!;
         var callsBeforeDue=requests;
         void Tick() => ((Task)dueCheck.Invoke(main,[(Func<ConnectionSettings,CancellationToken,Task<UpdateCheckResult>>)Available])!).GetAwaiter().GetResult();
@@ -209,14 +238,15 @@ internal static class UpdateUiChecks
         check(requests==callsBeforeDue && timer.IsEnabled,"An early timer tick waits for the saved UTC deadline");
         settingsField.SetValue(main,saved with {UpdateReminder=new(RemindAfterUtc:DateTimeOffset.UtcNow.AddSeconds(-1))});
         Tick();
-        check(requests==callsBeforeDue+1 && !timer.IsEnabled && toast.Visibility==Visibility.Visible,
+        check(requests==callsBeforeDue+1 && !timer.IsEnabled && notice.Visibility==Visibility.Visible,
             "An open app rechecks the current release when the five-day reminder is due");
         close.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
         var dialog = new SettingsWindow(null!, saved);
         var manual=typeof(SettingsWindow).GetMethod("CheckForUpdatesAsync",instance)!;
         Func<Task<UpdateCheckResult>> available=()=>Task.FromResult(new UpdateCheckResult(UpdateStatus.Available,release));
         ((Task)manual.Invoke(dialog,[available])!).GetAwaiter().GetResult();
-        check(((StatusToast)dialog.FindName("UpdateToast")).Visibility==Visibility.Visible,"A manual check still offers a snoozed update");
+        var dialogNotice = (UpdateNotice)dialog.FindName("AvailableUpdateNotice");
+        check(dialogNotice.Visibility==Visibility.Visible,"A manual check still offers a snoozed update");
         settingsField.SetValue(main,settings);
         typeof(MainWindow).GetMethod("ConfigureUpdateReminder",instance)!.Invoke(main,null);
         check(!timer.IsEnabled,"Removing a reminder stops its timer");
@@ -225,9 +255,9 @@ internal static class UpdateUiChecks
         dialog.ApplyUpdate = _ => { applied = true; return Task.CompletedTask; };
         typeof(SettingsWindow).GetMethod("OfferStartupUpdate", instance)!.Invoke(dialog, [release]);
         var dialogToast = (StatusToast)dialog.FindName("UpdateToast");
-        check(dialogToast.Visibility == Visibility.Visible && ((FrameworkElement)dialog.FindName("GeneralPage")).Visibility == Visibility.Visible,
+        check(dialogNotice.Visibility == Visibility.Visible && ((FrameworkElement)dialog.FindName("GeneralPage")).Visibility == Visibility.Visible,
             "A startup response received in settings offers the update without navigating away");
-        ((Button)dialogToast.FindName("InstallPromptButton")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        ((Button)dialogNotice.FindName("InstallPromptButton")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
         dialog.Dispatcher.Invoke(() => {}, DispatcherPriority.ContextIdle);
         check(!applied && ((FrameworkElement)dialog.FindName("AboutPage")).Visibility == Visibility.Visible &&
             ((TextBlock)dialogToast.FindName("MessageText")).Text == Strings.UpdateInstallFailed,
@@ -242,7 +272,7 @@ internal static class UpdateUiChecks
         response.SetResult(new(UpdateStatus.Available, release));
         main.Dispatcher.Invoke(() => {}, DispatcherPriority.ContextIdle);
         pending.GetAwaiter().GetResult();
-        check(checkToken.IsCancellationRequested && toast.Visibility == Visibility.Collapsed,
+        check(checkToken.IsCancellationRequested && notice.Visibility == Visibility.Collapsed,
             "Cancelling a startup check suppresses its late response");
     }
 }

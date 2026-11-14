@@ -1314,7 +1314,7 @@
   <data name="UpdateCheckFailed" xml:space="preserve"><value>檢查更新失敗, 請稍後重試</value></data>
   <data name="OpenWebPageFailed" xml:space="preserve"><value>無法開啟網頁</value></data>
   <data name="InstallUpdate" xml:space="preserve"><value>立即更新</value></data>
-  <data name="InstallUpdateHelp" xml:space="preserve"><value>下載完成後自動重新啟動更新</value></data>
+  <data name="InstallUpdateHelp" xml:space="preserve"><value>下載完成後，應用程式會自動重新啟動。</value></data>
   <data name="DownloadingUpdate" xml:space="preserve"><value>正在下載更新… {0}%</value></data>
   <data name="ApplyingUpdate" xml:space="preserve"><value>正在重新啟動更新…</value></data>
   <data name="UpdateCancelled" xml:space="preserve"><value>已取消更新</value></data>

@@ -1314,7 +1314,7 @@
   <data name="UpdateCheckFailed" xml:space="preserve"><value>更新を確認できませんでした。時間をおいて再試行してください。</value></data>
   <data name="OpenWebPageFailed" xml:space="preserve"><value>ウェブページを開けません。</value></data>
   <data name="InstallUpdate" xml:space="preserve"><value>今すぐ更新</value></data>
-  <data name="InstallUpdateHelp" xml:space="preserve"><value>ダウンロード後に再起動して更新します。</value></data>
+  <data name="InstallUpdateHelp" xml:space="preserve"><value>ダウンロード後、アプリが自動的に再起動します。</value></data>
   <data name="DownloadingUpdate" xml:space="preserve"><value>更新をダウンロード中… {0}%</value></data>
   <data name="ApplyingUpdate" xml:space="preserve"><value>再起動して更新中…</value></data>
   <data name="UpdateCancelled" xml:space="preserve"><value>更新をキャンセルしました。</value></data>

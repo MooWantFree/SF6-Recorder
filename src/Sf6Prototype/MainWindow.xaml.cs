@@ -430,7 +430,7 @@ public partial class MainWindow : ChromeWindow
             {
                 SettingsWindow.AvailableUpdate = null;
                 dialog?.UpdateReleaseButton();
-                StartupUpdateToast.Dismiss();
+                StartupUpdateNotice.Dismiss();
                 return;
             }
             SettingsWindow.AvailableUpdate = release;
@@ -440,7 +440,7 @@ public partial class MainWindow : ChromeWindow
                 return;
             }
             if (dialog?.OfferStartupUpdate(release) != true)
-                StartupUpdateToast.ShowUpdatePrompt(release, () => OpenSettings(installUpdate: true), SaveUpdateReminder);
+                StartupUpdateNotice.Show(release, () => OpenSettings(installUpdate: true), SaveUpdateReminder);
         }
         catch (OperationCanceledException) when (token.IsCancellationRequested) { }
         catch (Exception error) { Diagnostics.Write("updates", "automatic_check_failed", error); }
@@ -449,7 +449,7 @@ public partial class MainWindow : ChromeWindow
     private void CancelAutomaticUpdateCheck()
     {
         _automaticUpdateCheck?.Cancel();
-        StartupUpdateToast.Dismiss();
+        StartupUpdateNotice.Dismiss();
     }
     private async void OpenSettings(bool installUpdate = false)
     {
@@ -500,7 +500,7 @@ public partial class MainWindow : ChromeWindow
         try
         {
             LocalizationWpf.Apply(_settings.Language);
-            StartupUpdateToast.RefreshUpdatePrompt();
+            StartupUpdateNotice.RefreshLanguage();
             History.RefreshLanguage(); Scores.RefreshLanguage();
             Detail.RefreshLanguage(detail);
             RefreshAccountUi(); RefreshViewedPlayerUi(); UpdateSearchEmptyState();

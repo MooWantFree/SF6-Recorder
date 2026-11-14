@@ -117,7 +117,7 @@ public partial class SettingsWindow : ChromeWindow
             else LocalizationWpf.Apply(language);
             _current=_current with {Language=language};
             CheckUpdatesButton.ToolTip = AvailableUpdate?.AvailableMessage;
-            UpdateToast.RefreshUpdatePrompt();
+            AvailableUpdateNotice.RefreshLanguage();
         }
         catch(Exception error) when(error is IOException or UnauthorizedAccessException or ArgumentException)
         {
@@ -157,8 +157,7 @@ public partial class SettingsWindow : ChromeWindow
     {
         CheckUpdatesButton.SetResourceReference(ContentControl.ContentProperty,
             "I18n.CheckUpdates");
-        CheckUpdatesButton.SetResourceReference(StyleProperty,
-            AvailableUpdate == null ? typeof(Button) : "AccentButton");
+        if (AvailableUpdate == null) AvailableUpdateNotice.Dismiss();
         CheckUpdatesButton.ToolTip = AvailableUpdate?.AvailableMessage;
         InstallUpdateButton.Visibility = AvailableUpdate == null ? Visibility.Collapsed : Visibility.Visible;
     }
@@ -169,12 +168,15 @@ public partial class SettingsWindow : ChromeWindow
         ShowUpdatePrompt(release);
         return true;
     }
-    private void ShowUpdatePrompt(UpdateRelease release) =>
-        UpdateToast.ShowUpdatePrompt(release, () => _ = InstallAvailableUpdateAsync(), reminder =>
+    private void ShowUpdatePrompt(UpdateRelease release)
+    {
+        UpdateToast.Dismiss();
+        AvailableUpdateNotice.Show(release, () => _ = InstallAvailableUpdateAsync(), reminder =>
         {
             UpdateReminderChanged?.Invoke(reminder);
             _current = _current with { UpdateReminder = reminder };
         });
+    }
     private async void CheckUpdates_Click(object sender,RoutedEventArgs e)
     {
         if (!CheckUpdatesButton.IsEnabled) return;
@@ -187,6 +189,7 @@ public partial class SettingsWindow : ChromeWindow
     {
         _checkingUpdates = true;
         UpdateRequested?.Invoke();
+        AvailableUpdateNotice.Dismiss();
         UpdateToast.Dismiss();
         CheckUpdatesButton.IsEnabled = false;
         InstallUpdateButton.IsEnabled = false;
@@ -231,6 +234,7 @@ public partial class SettingsWindow : ChromeWindow
     {
         if(AvailableUpdate is not { } release || ApplyUpdate == null || !InstallUpdateButton.IsEnabled || _updateCancellation != null) return;
         UpdateRequested?.Invoke();
+        AvailableUpdateNotice.Dismiss();
         ShowCategory(AboutPage);
         ConnectionSettings settings;
         try {settings=Draft(includeIntervals:false);}
