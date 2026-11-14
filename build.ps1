@@ -16,7 +16,7 @@ if ($LASTEXITCODE -ne 0) { throw 'Checks failed.' }
 if ($LASTEXITCODE -ne 0) { throw 'Headless desktop checks failed.' }
 if ($ChecksOnly) { return }
 & (Join-Path $PSScriptRoot 'scripts\Publish-Update.ps1') -OutputDirectory '.local\delivered-update' -FrameworkDependent
-& (Join-Path $PSScriptRoot 'scripts\Install-PortableBuild.ps1') -Package '.local\delivered-update\SF6Recorder-win-Portable.zip'
+& (Join-Path $PSScriptRoot 'scripts\Install-PortableBuild.ps1') -Package '.local\delivered-update\SF6Recorder-win-framework-dependent-Portable.zip'
 # Remove the former application identity after a successful publish; keep Data intact.
 $legacyFiles = @('Sf6Prototype.exe', 'Sf6Prototype.dll', 'Sf6Prototype.pdb', 'Sf6Prototype.deps.json', 'Sf6Prototype.runtimeconfig.json')
 $legacyFiles += @('ja', 'zh-Hans', 'zh-Hant') | ForEach-Object { "$_\Sf6Prototype.resources.dll" }

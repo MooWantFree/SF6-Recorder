@@ -10,14 +10,17 @@ namespace Sf6Prototype;
 
 // Public Release redirects and assets avoid the unauthenticated REST API.
 // Package URLs remain pinned even if Latest changes during a download.
-public sealed class GitHubReleaseSource(HttpClient client, CancellationToken checkToken, string? tag = null) : IUpdateSource
+public sealed class GitHubReleaseSource(HttpClient client, CancellationToken checkToken, string? tag = null,
+    string channel = GitHubUpdates.SelfContainedChannel) : IUpdateSource
 {
     public string? Tag { get; private set; } = tag;
+    public string Channel { get; } = channel;
     public Uri? ReleasePage => Tag == null ? null : new($"{GitHubUpdates.RepositoryUrl}/releases/tag/{Uri.EscapeDataString(Tag)}");
     public async Task<VelopackAssetFeed> GetReleaseFeed(IVelopackLogger logger, string? appId, string channel,
         Guid? stagingId = null, VelopackAsset? latestLocalRelease = null)
     {
-        if (channel != "win" || appId != GitHubUpdates.PackageId) throw new InvalidDataException("Unexpected update channel or application.");
+        if (channel != Channel || !SupportedChannel(channel) || appId != GitHubUpdates.PackageId)
+            throw new InvalidDataException("Unexpected update channel or application.");
         if (Tag == null)
         {
             using var request = new HttpRequestMessage(HttpMethod.Head, GitHubUpdates.RepositoryUrl + "/releases/latest");
@@ -29,7 +32,7 @@ public sealed class GitHubReleaseSource(HttpClient client, CancellationToken che
             }
             else Tag = ReadTag(response);
         }
-        using var feedResponse = await client.GetAsync(AssetUrl("releases.win.json"), HttpCompletionOption.ResponseHeadersRead, checkToken).ConfigureAwait(false);
+        using var feedResponse = await client.GetAsync(AssetUrl($"releases.{Channel}.json"), HttpCompletionOption.ResponseHeadersRead, checkToken).ConfigureAwait(false);
         feedResponse.EnsureSuccessStatusCode();
         await feedResponse.Content.LoadIntoBufferAsync(2 * 1024 * 1024, checkToken).ConfigureAwait(false);
         VelopackAssetFeed feed;
@@ -37,7 +40,7 @@ public sealed class GitHubReleaseSource(HttpClient client, CancellationToken che
         catch(Exception ex) when(ex is ArgumentException or FormatException) {throw new InvalidDataException("Invalid release feed.",ex);}
         var packages = (feed.Assets ?? []).Where(a => a?.Type == VelopackAssetType.Full).ToArray();
         if (packages.Length == 0) throw new InvalidDataException("No full update package in the release feed.");
-        foreach (var asset in packages) ValidateAsset(asset);
+        foreach (var asset in packages) ValidateAsset(asset, Channel);
         return new() { Assets = packages };
     }
     private static string ReadTag(HttpResponseMessage response)
@@ -56,7 +59,9 @@ public sealed class GitHubReleaseSource(HttpClient client, CancellationToken che
         if (Tag == null) throw new InvalidOperationException("No release selected.");
         return new($"{GitHubUpdates.RepositoryUrl}/releases/download/{Uri.EscapeDataString(Tag)}/{Uri.EscapeDataString(name)}");
     }
-    public static void ValidateAsset(VelopackAsset asset)
+    private static bool SupportedChannel(string channel) =>
+        channel is GitHubUpdates.SelfContainedChannel or GitHubUpdates.FrameworkDependentChannel;
+    public static void ValidateAsset(VelopackAsset asset, string channel = GitHubUpdates.SelfContainedChannel)
     {
         if (asset.PackageId != GitHubUpdates.PackageId || asset.Version == null || asset.Version.IsPrerelease ||
             asset.Type != VelopackAssetType.Full || asset.Size <= 0 ||
@@ -64,11 +69,16 @@ public sealed class GitHubReleaseSource(HttpClient client, CancellationToken che
             asset.FileName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0 || !asset.FileName.EndsWith("-full.nupkg", StringComparison.OrdinalIgnoreCase) ||
             !Regex.IsMatch(asset.SHA256 ?? "", @"\A[0-9a-fA-F]{64}\z"))
             throw new InvalidDataException("Invalid update package metadata.");
+        // Channel-specific package names prevent feed mistakes or cached downloads
+        // from silently switching an installation to the other runtime variant.
+        var suffix = channel == GitHubUpdates.SelfContainedChannel ? "" : "-" + channel;
+        if (!SupportedChannel(channel) || asset.FileName != $"{GitHubUpdates.PackageId}-{asset.Version}{suffix}-full.nupkg")
+            throw new InvalidDataException("The update package does not match its channel or version.");
     }
     public async Task DownloadReleaseEntry(IVelopackLogger logger, VelopackAsset releaseEntry, string localFile,
         Action<int> progress, CancellationToken cancelToken = default)
     {
-        ValidateAsset(releaseEntry);
+        ValidateAsset(releaseEntry, Channel);
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancelToken);
         timeout.CancelAfter(TimeSpan.FromMinutes(30));
         using var response = await client.GetAsync(AssetUrl(releaseEntry.FileName), HttpCompletionOption.ResponseHeadersRead, timeout.Token).ConfigureAwait(false);

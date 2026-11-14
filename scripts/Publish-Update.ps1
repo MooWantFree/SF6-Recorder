@@ -26,10 +26,17 @@ $output=[IO.Path]::GetFullPath($OutputDirectory,$repoRoot)
 New-Item -ItemType Directory -Path $publish,$packed,$output -Force | Out-Null
 try {
     $selfContained=if($FrameworkDependent){'false'}else{'true'}
+    $channel=if($FrameworkDependent){'win-framework-dependent'}else{'win'}
+    $frameworkArgs=@()
+    if($FrameworkDependent) {
+        $targetFramework=[string]$project.Project.PropertyGroup.TargetFramework
+        if($targetFramework -notmatch '^net(\d+\.\d+)-windows') {throw 'Expected a Windows Desktop target framework.'}
+        $frameworkArgs=@('--framework',("net"+$Matches[1]+'-x64-desktop'))
+    }
     & $dotnetPath publish 'src\Sf6Prototype\Sf6Prototype.csproj' -c Release -r win-x64 --self-contained $selfContained -o $publish "-p:Version=$Version" -p:DebugType=None -p:DebugSymbols=false
     if($LASTEXITCODE -ne 0) {throw 'Update publish failed.'}
     if(Test-Path -LiteralPath (Join-Path $publish 'Data')) {throw 'User data must never be packaged.'}
-    & $vpk pack --packId SF6Recorder --packTitle 'SF6 Recorder' --packAuthors MooWantFree --packVersion $Version --packDir $publish --mainExe 'SF6 Recorder.exe' --channel win --runtime win-x64 --delta None --noInst --icon 'src\Sf6Prototype\Assets\app.ico' --outputDir $packed
+    & $vpk pack --packId SF6Recorder --packTitle 'SF6 Recorder' --packAuthors MooWantFree --packVersion $Version --packDir $publish --mainExe 'SF6 Recorder.exe' --channel $channel --runtime win-x64 @frameworkArgs --delta None --noInst --icon 'src\Sf6Prototype\Assets\app.ico' --outputDir $packed
     if($LASTEXITCODE -ne 0) {throw 'Velopack packaging failed.'}
     foreach($file in Get-ChildItem -LiteralPath $packed -File) {Copy-Item -LiteralPath $file.FullName -Destination $output -Force}
     Write-Host "Update packages: $output"
