@@ -16,13 +16,13 @@
     <value>账号</value>
   </data>
   <data name="AccountChanged" xml:space="preserve">
-    <value>登录账号已变更，请重新登录。</value>
+    <value>登录账号已变更, 请重新登录</value>
   </data>
   <data name="AccountSignedOut" xml:space="preserve">
-    <value>此账号已登出，请重新登录。</value>
+    <value>此账号已登出, 请重新登录</value>
   </data>
   <data name="AccountSwitched" xml:space="preserve">
-    <value>已切换账号。</value>
+    <value>已切换账号</value>
   </data>
   <data name="ActivatePlayerSearch" xml:space="preserve">
     <value>激活玩家搜索</value>
@@ -64,10 +64,10 @@
     <value>CAPCOM 请求间隔</value>
   </data>
   <data name="ApiIntervalAccessible" xml:space="preserve">
-    <value>CAPCOM 请求间隔，单位秒</value>
+    <value>CAPCOM 请求间隔, 单位秒</value>
   </data>
   <data name="ApiIntervalHelp" xml:space="preserve">
-    <value>官网数据请求的最短间隔，不含头像下载、登录网页和 Google 测试。</value>
+    <value>官网数据请求的最短间隔</value>
   </data>
   <data name="ApiIntervalPresets" xml:space="preserve">
     <value>CAPCOM 请求间隔预设</value>
@@ -82,7 +82,7 @@
     <value>自动刷新</value>
   </data>
   <data name="AutoRefreshAccessible" xml:space="preserve">
-    <value>自动刷新间隔，单位秒，0 关闭</value>
+    <value>自动刷新间隔, 单位秒, 0 关闭</value>
   </data>
   <data name="AutoRefreshHelp" xml:space="preserve">
     <value>0 表示关闭；仅刷新当前登录账号</value>
@@ -110,37 +110,37 @@
     <value>备份数据库</value>
   </data>
   <data name="BackupFailed" xml:space="preserve">
-    <value>备份失败，请检查保存位置和目录权限。</value>
+    <value>备份失败, 请检查保存位置和目录权限</value>
   </data>
   <data name="BackupHelp" xml:space="preserve">
-    <value>包含战绩与分数，不包含登录信息、设置和头像</value>
+    <value>包含战绩与分数, 不包含登录信息、设置和头像</value>
   </data>
   <data name="BackupInconsistentMatches" xml:space="preserve">
-    <value>备份中的战绩信息不一致。</value>
+    <value>备份中的战绩信息不一致</value>
   </data>
   <data name="BackupJournalExists" xml:space="preserve">
-    <value>目标文件仍有数据库日志，请选择新的备份文件名。</value>
+    <value>目标文件仍有数据库日志, 请选择新的备份文件名</value>
   </data>
   <data name="BackupLinksIncomplete" xml:space="preserve">
-    <value>备份中的关联记录不完整。</value>
+    <value>备份中的关联记录不完整</value>
   </data>
   <data name="BackupScoreLinksIncomplete" xml:space="preserve">
-    <value>备份中的分数关联记录不完整。</value>
+    <value>备份中的分数关联记录不完整</value>
   </data>
   <data name="BackupScoresInconsistent" xml:space="preserve">
-    <value>备份中的分数记录与战绩不一致。</value>
+    <value>备份中的分数记录与战绩不一致</value>
   </data>
   <data name="BackupSyncIncomplete" xml:space="preserve">
-    <value>备份中的同步记录不完整。</value>
+    <value>备份中的同步记录不完整</value>
   </data>
   <data name="BackupTagLinksIncomplete" xml:space="preserve">
-    <value>备份中的标签关联不完整。</value>
+    <value>备份中的标签关联不完整</value>
   </data>
   <data name="BackupTagsInvalid" xml:space="preserve">
-    <value>备份中的标签无效。</value>
+    <value>备份中的标签无效</value>
   </data>
   <data name="BackupUnreadableMatches" xml:space="preserve">
-    <value>备份中有无法读取的战绩。</value>
+    <value>备份中有无法读取的战绩</value>
   </data>
   <data name="BattleHub" xml:space="preserve">
     <value>格斗中心对战</value>
@@ -155,13 +155,13 @@
     <value>取消刷新</value>
   </data>
   <data name="CancelledFetchedSaved" xml:space="preserve">
-    <value>已取消，已获取的战绩已保存。</value>
+    <value>已取消, 已获取的战绩已保存</value>
   </data>
   <data name="CancelledLoadedSaved" xml:space="preserve">
-    <value>已取消，已加载的战绩已保存。</value>
+    <value>已取消, 已加载的战绩已保存</value>
   </data>
   <data name="CapcomSessionExpired" xml:space="preserve">
-    <value>登录已失效，请重新登录 CAPCOM ID。</value>
+    <value>登录已失效, 请重新登录 CAPCOM ID</value>
   </data>
   <data name="CasualMatch" xml:space="preserve">
     <value>休闲赛</value>
@@ -176,7 +176,7 @@
     <value>角色</value>
   </data>
   <data name="ChartHelp" xml:space="preserve">
-    <value>点击分数点查看对局；也可使用左右方向键。</value>
+    <value>点击分数点查看对局；也可使用左右方向键</value>
   </data>
   <data name="CheckingSession" xml:space="preserve">
     <value>检查登录状态</value>
@@ -185,10 +185,10 @@
     <value>正在检查登录状态…</value>
   </data>
   <data name="ChooseAppBackup" xml:space="preserve">
-    <value>请选择街霸 6 战绩的数据库备份。</value>
+    <value>请选择街霸 6 战绩的数据库备份</value>
   </data>
   <data name="ChooseDifferentDatabase" xml:space="preserve">
-    <value>请选择当前数据库之外的文件。</value>
+    <value>请选择当前数据库之外的文件</value>
   </data>
   <data name="Clear" xml:space="preserve">
     <value>清空</value>
@@ -204,25 +204,25 @@
 再次点击停止 · Ctrl+R</value>
   </data>
   <data name="ClipboardUnavailable" xml:space="preserve">
-    <value>剪贴板暂时不可用，请重试。</value>
+    <value>剪贴板暂时不可用, 请重试</value>
   </data>
   <data name="Close" xml:space="preserve">
     <value>关闭</value>
   </data>
   <data name="CloseActionSaveFailed" xml:space="preserve">
-    <value>无法保存关闭方式，下次仍会询问。</value>
+    <value>无法保存关闭方式, 下次仍会询问</value>
   </data>
   <data name="CloseWindow" xml:space="preserve">
     <value>关闭窗口</value>
   </data>
   <data name="CloseWindowQuestion" xml:space="preserve">
-    <value>退出，还是最小化到托盘？</value>
+    <value>退出, 还是最小化到托盘？</value>
   </data>
   <data name="CompleteCapcomSignIn" xml:space="preserve">
-    <value>请完成 CAPCOM 登录。</value>
+    <value>请完成 CAPCOM 登录</value>
   </data>
   <data name="ConnectionFailed" xml:space="preserve">
-    <value>连接失败，请检查代理设置</value>
+    <value>连接失败, 请检查代理设置</value>
   </data>
   <data name="ConnectionTimedOut" xml:space="preserve">
     <value>连接超时</value>
@@ -258,25 +258,25 @@
     <value>比赛间</value>
   </data>
   <data name="DataDirectoryInUse" xml:space="preserve">
-    <value>这个数据目录已有运行中的战绩窗口。</value>
+    <value>这个数据目录已有运行中的战绩窗口</value>
   </data>
   <data name="Database" xml:space="preserve">
     <value>数据库</value>
   </data>
   <data name="DatabaseCorrupt" xml:space="preserve">
-    <value>数据库文件损坏，无法使用。</value>
+    <value>数据库文件损坏, 无法使用</value>
   </data>
   <data name="DatabaseFileFilter" xml:space="preserve">
     <value>SQLite 数据库|*.sqlite;*.db</value>
   </data>
   <data name="DatabaseLinksIncomplete" xml:space="preserve">
-    <value>数据库中的关联记录不完整。</value>
+    <value>数据库中的关联记录不完整</value>
   </data>
   <data name="DatabaseSchemaUnsupported" xml:space="preserve">
-    <value>数据库结构不兼容。</value>
+    <value>数据库结构不兼容</value>
   </data>
   <data name="DatabaseVersionUnsupported" xml:space="preserve">
-    <value>此数据库版本不兼容，请选择当前应用生成的备份。</value>
+    <value>此数据库版本不兼容, 请选择当前应用生成的备份</value>
   </data>
   <data name="DateRange" xml:space="preserve">
     <value>日期范围</value>
@@ -297,16 +297,16 @@
     <value> {0} 平</value>
   </data>
   <data name="DuplicateContent" xml:space="preserve">
-    <value>官网返回了重复内容。</value>
+    <value>官网返回了重复内容</value>
   </data>
   <data name="DuplicateContentStopped" xml:space="preserve">
-    <value>官网分页内容重复，已停止同步。</value>
+    <value>官网分页内容重复, 已停止同步</value>
   </data>
   <data name="DuplicatePage" xml:space="preserve">
-    <value>官网返回了重复页码。</value>
+    <value>官网返回了重复页码</value>
   </data>
   <data name="DuplicatePageStopped" xml:space="preserve">
-    <value>官网返回了重复页码，已停止以避免重复请求。</value>
+    <value>官网返回了重复页码, 已停止以避免重复请求</value>
   </data>
   <data name="DurationMinutesSeconds" xml:space="preserve">
     <value>{0} 分 {1} 秒</value>
@@ -330,7 +330,7 @@
     <value>输入标签名称</value>
   </data>
   <data name="EnterTenDigitUid" xml:space="preserve">
-    <value>请输入 10 位数字 UID。</value>
+    <value>请输入 10 位数字 UID</value>
   </data>
   <data name="EnterToCreateTag" xml:space="preserve">
     <value>Enter 创建标签</value>
@@ -345,7 +345,7 @@
     <value>收藏用户</value>
   </data>
   <data name="FavoriteRemoved" xml:space="preserve">
-    <value>这条收藏已被移除。</value>
+    <value>这条收藏已被移除</value>
   </data>
   <data name="Favorites" xml:space="preserve">
     <value>收藏</value>
@@ -394,10 +394,10 @@
     <value>主页 · 我的战绩</value>
   </data>
   <data name="HttpSyncStopped" xml:space="preserve">
-    <value>官网返回 HTTP {0}，已停止同步。</value>
+    <value>官网返回 HTTP {0}, 已停止同步</value>
   </data>
   <data name="HttpVerificationRequired" xml:space="preserve">
-    <value>官网要求重新验证（HTTP {0}），请重新登录。</value>
+    <value>官网要求重新验证（HTTP {0}）, 请重新登录</value>
   </data>
   <data name="HubShort" xml:space="preserve">
     <value>格斗中心</value>
@@ -406,10 +406,10 @@
     <value>头像下载待重试：{0}</value>
   </data>
   <data name="ImageTooLarge" xml:space="preserve">
-    <value>头像文件过大。</value>
+    <value>头像文件过大</value>
   </data>
   <data name="ImagesPendingSuffix" xml:space="preserve">
-    <value> · 头像更新未完成，下次刷新重试</value>
+    <value> · 头像更新未完成, 下次刷新重试</value>
   </data>
   <data name="Import" xml:space="preserve">
     <value>导入</value>
@@ -422,10 +422,10 @@
 导入前备份：{1}</value>
   </data>
   <data name="ImportFailed" xml:space="preserve">
-    <value>导入失败，请检查数据库文件和目录权限。现有战绩未被替换。</value>
+    <value>导入失败, 请检查数据库文件和目录权限. 现有战绩未被替换</value>
   </data>
   <data name="ImportHelp" xml:space="preserve">
-    <value>合并战绩，保留现有记录</value>
+    <value>合并战绩, 保留现有记录</value>
   </data>
   <data name="Importing" xml:space="preserve">
     <value>导入中…</value>
@@ -434,52 +434,52 @@
     <value>包含未定级</value>
   </data>
   <data name="InvalidAccountId" xml:space="preserve">
-    <value>无效的账号 ID。</value>
+    <value>无效的账号 ID</value>
   </data>
   <data name="InvalidApiInterval" xml:space="preserve">
-    <value>CAPCOM 请求间隔请输入 0.1–3600 秒，可用小数。</value>
+    <value>CAPCOM 请求间隔请输入 0.1–3600 秒, 可用小数</value>
   </data>
   <data name="InvalidAutoRefresh" xml:space="preserve">
-    <value>自动刷新请输入非负整数秒数，0 表示关闭。</value>
+    <value>自动刷新请输入非负整数秒数, 0 表示关闭</value>
   </data>
   <data name="InvalidCloseAction" xml:space="preserve">
-    <value>请选择关闭窗口时的操作。</value>
+    <value>请选择关闭窗口时的操作</value>
   </data>
   <data name="InvalidImageFormat" xml:space="preserve">
-    <value>官网头像格式无效。</value>
+    <value>官网头像格式无效</value>
   </data>
   <data name="InvalidImageUrl" xml:space="preserve">
-    <value>无效的官网图片地址。</value>
+    <value>无效的官网图片地址</value>
   </data>
   <data name="InvalidInterval" xml:space="preserve">
-    <value>{0}请输入非负整数秒数，0 表示关闭。</value>
+    <value>{0}请输入非负整数秒数, 0 表示关闭</value>
   </data>
   <data name="InvalidLanguage" xml:space="preserve">
-    <value>请选择支持的语言。</value>
+    <value>请选择支持的语言</value>
   </data>
   <data name="InvalidPlayer" xml:space="preserve">
-    <value>无效的玩家。</value>
+    <value>无效的玩家</value>
   </data>
   <data name="InvalidPlayerUid" xml:space="preserve">
-    <value>无效的玩家 UID。</value>
+    <value>无效的玩家 UID</value>
   </data>
   <data name="InvalidProxy" xml:space="preserve">
-    <value>请输入 http://主机:端口 或 socks5://主机:端口；此版本支持无认证代理。</value>
+    <value>请输入 http://主机:端口 或 socks5://主机:端口；此版本支持无认证代理</value>
   </data>
   <data name="InvalidReminder" xml:space="preserve">
-    <value>更新提醒请输入非负整数秒数，0 表示关闭。</value>
+    <value>更新提醒请输入非负整数秒数, 0 表示关闭</value>
   </data>
   <data name="InvalidReplayJson" xml:space="preserve">
-    <value>官网返回的战绩 JSON 无法解析，已停止同步。</value>
+    <value>官网返回的战绩 JSON 无法解析, 已停止同步</value>
   </data>
   <data name="InvalidSeasonFilter" xml:space="preserve">
-    <value>无效的赛季筛选。</value>
+    <value>无效的赛季筛选</value>
   </data>
   <data name="InvalidTagName" xml:space="preserve">
-    <value>标签名称须为 1–32 个字符。</value>
+    <value>标签名称须为 1–32 个字符</value>
   </data>
   <data name="InvalidUserCode" xml:space="preserve">
-    <value>无效的用户代码。</value>
+    <value>无效的用户代码</value>
   </data>
   <data name="LanguageLabel" xml:space="preserve">
     <value>语言 (Language)</value>
@@ -512,19 +512,19 @@
     <value>正在加载分数</value>
   </data>
   <data name="LoginPopupFailed" xml:space="preserve">
-    <value>登录弹窗未能打开，请重试。</value>
+    <value>登录弹窗未能打开, 请重试</value>
   </data>
   <data name="LoginSaveFailed" xml:space="preserve">
-    <value>登录状态未能保存，请重试。</value>
+    <value>登录状态未能保存, 请重试</value>
   </data>
   <data name="LoginToLoad" xml:space="preserve">
-    <value>需要登录后继续加载。</value>
+    <value>需要登录后继续加载</value>
   </data>
   <data name="LoginVerificationPage" xml:space="preserve">
-    <value>官网返回验证页面，请重新登录。</value>
+    <value>官网返回验证页面, 请重新登录</value>
   </data>
   <data name="LoginWindowFailed" xml:space="preserve">
-    <value>登录窗口无法启动：{0}。请检查 WebView2 Runtime 和代理设置。</value>
+    <value>登录窗口无法启动：{0}. 请检查 WebView2 Runtime 和代理设置</value>
   </data>
   <data name="LpSettlementUnknown" xml:space="preserve">
     <value>本场 LP 结算未知</value>
@@ -584,16 +584,16 @@
     <value>最小化到托盘</value>
   </data>
   <data name="MismatchedRecords" xml:space="preserve">
-    <value>战绩与所选玩家或分类不一致。</value>
+    <value>战绩与所选玩家或分类不一致</value>
   </data>
   <data name="MissingCharacterId" xml:space="preserve">
-    <value>角色 ID 缺失。</value>
+    <value>角色 ID 缺失</value>
   </data>
   <data name="MissingPagingData" xml:space="preserve">
-    <value>官网分页信息缺失。</value>
+    <value>官网分页信息缺失</value>
   </data>
   <data name="MissingReplayId" xml:space="preserve">
-    <value>战绩缺少回放 ID，已停止同步。</value>
+    <value>战绩缺少回放 ID, 已停止同步</value>
   </data>
   <data name="Mode" xml:space="preserve">
     <value>模式</value>
@@ -641,10 +641,10 @@
     <value>这些对局没有 MR</value>
   </data>
   <data name="NoPlayerUid" xml:space="preserve">
-    <value>没有可用的玩家 UID。</value>
+    <value>没有可用的玩家 UID</value>
   </data>
   <data name="NoProfileToSave" xml:space="preserve">
-    <value>没有可保存的玩家资料。</value>
+    <value>没有可保存的玩家资料</value>
   </data>
   <data name="NoRankRecords" xml:space="preserve">
     <value>暂无段位记录</value>
@@ -653,7 +653,7 @@
     <value>暂无排位记录</value>
   </data>
   <data name="NoRecordsRefresh" xml:space="preserve">
-    <value>暂无战绩，点击「刷新」开始保存</value>
+    <value>暂无战绩, 点击「刷新」开始保存</value>
   </data>
   <data name="NoScores" xml:space="preserve">
     <value>暂无可显示的分数</value>
@@ -689,7 +689,7 @@
     <value>正在打开 CAPCOM 官网…</value>
   </data>
   <data name="OperationFailed" xml:space="preserve">
-    <value>操作失败：{0}。已保存的数据不会丢失。</value>
+    <value>操作失败：{0}. 已保存的数据不会丢失</value>
   </data>
   <data name="OpponentCharacter" xml:space="preserve">
     <value>对手角色</value>
@@ -707,7 +707,7 @@
     <value>胜</value>
   </data>
   <data name="PageNotVerified" xml:space="preserve">
-    <value>页面尚未通过验证，请重新登录。</value>
+    <value>页面尚未通过验证, 请重新登录</value>
   </data>
   <data name="Pages" xml:space="preserve">
     <value>页面</value>
@@ -728,34 +728,34 @@
     <value>用户 ▾</value>
   </data>
   <data name="PlayerNotFound" xml:space="preserve">
-    <value>未找到该玩家，请检查 UID。</value>
+    <value>未找到该玩家, 请检查 UID</value>
   </data>
   <data name="PlayerNotInMatch" xml:space="preserve">
-    <value>玩家不属于这场对局。</value>
+    <value>玩家不属于这场对局</value>
   </data>
   <data name="PlayerProfileUnavailable" xml:space="preserve">
-    <value>暂时无法读取该玩家资料，请稍后重试。</value>
+    <value>暂时无法读取该玩家资料, 请稍后重试</value>
   </data>
   <data name="PlayerRankHistory" xml:space="preserve">
     <value>{0} · 历史段位</value>
   </data>
   <data name="PlayerUidEnterToSearch" xml:space="preserve">
-    <value>玩家 UID，按回车查询</value>
+    <value>玩家 UID, 按回车查询</value>
   </data>
   <data name="PortraitsNotUpdated" xml:space="preserve">
-    <value>头像暂未更新，可稍后刷新。</value>
+    <value>头像暂未更新, 可稍后刷新</value>
   </data>
   <data name="PostMatchScore" xml:space="preserve">
     <value>赛后分数</value>
   </data>
   <data name="PreMatchLpUnknown" xml:space="preserve">
-    <value>LP 为赛前分数，本场结算未知</value>
+    <value>LP 为赛前分数, 本场结算未知</value>
   </data>
   <data name="PreMatchMrUnknown" xml:space="preserve">
-    <value>MR 为赛前分数，本场结算未知</value>
+    <value>MR 为赛前分数, 本场结算未知</value>
   </data>
   <data name="PreMatchScoreUnknown" xml:space="preserve">
-    <value>赛前分数，本场结算未知</value>
+    <value>赛前分数, 本场结算未知</value>
   </data>
   <data name="PreparingRefresh" xml:space="preserve">
     <value>准备刷新</value>
@@ -764,7 +764,7 @@
     <value>上个月日历</value>
   </data>
   <data name="PreviousProcessRunning" xml:space="preserve">
-    <value>上一次浏览器进程尚未退出，请稍后重试。</value>
+    <value>上一次浏览器进程尚未退出, 请稍后重试</value>
   </data>
   <data name="ProxyAddress" xml:space="preserve">
     <value>代理地址</value>
@@ -785,13 +785,13 @@
     <value>段位积分</value>
   </data>
   <data name="RankFormatChanged" xml:space="preserve">
-    <value>官网段位数据格式已改变。</value>
+    <value>官网段位数据格式已改变</value>
   </data>
   <data name="RankHistory" xml:space="preserve">
     <value>历史段位</value>
   </data>
   <data name="RankLookupFailed" xml:space="preserve">
-    <value>暂时无法获取段位，请稍后重试。</value>
+    <value>暂时无法获取段位, 请稍后重试</value>
   </data>
   <data name="RankLp" xml:space="preserve">
     <value>段位 / LP</value>
@@ -806,10 +806,10 @@
     <value>排位</value>
   </data>
   <data name="RateLimitDelay" xml:space="preserve">
-    <value>官网限流，请至少 {0} 秒后再同步。</value>
+    <value>官网限流, 请至少 {0} 秒后再同步</value>
   </data>
   <data name="RateLimitPaused" xml:space="preserve">
-    <value>官网限流，本次同步已暂停，请稍后再试。</value>
+    <value>官网限流, 本次同步已暂停, 请稍后再试</value>
   </data>
   <data name="ReadingCategoryPage" xml:space="preserve">
     <value>读取{0} · 第 {1} 页</value>
@@ -827,10 +827,10 @@
     <value>最近查询</value>
   </data>
   <data name="RecordsSavedImagesBackground" xml:space="preserve">
-    <value>战绩已保存，头像将在后台更新</value>
+    <value>战绩已保存</value>
   </data>
   <data name="RecordsUpdatedImagesPending" xml:space="preserve">
-    <value>战绩已更新，头像可稍后刷新。</value>
+    <value>战绩已更新</value>
   </data>
   <data name="Refresh" xml:space="preserve">
     <value>刷新</value>
@@ -842,7 +842,7 @@
     <value>刷新完成</value>
   </data>
   <data name="RefreshCompleteHint" xml:space="preserve">
-    <value>刷新完毕，上滑或者点击主页。</value>
+    <value>刷新完毕, 上滑或者点击主页</value>
   </data>
   <data name="RefreshCompleteSummary" xml:space="preserve">
     <value>刷新完成 · 新增 {0} 条 · {1} 页 · {2} 次 HTTP 请求{3}</value>
@@ -866,7 +866,7 @@
     <value>不再询问</value>
   </data>
   <data name="ReminderAccessible" xml:space="preserve">
-    <value>更新提醒间隔，单位秒，0 关闭</value>
+    <value>更新提醒间隔, 单位秒, 0 关闭</value>
   </data>
   <data name="ReminderOffHelp" xml:space="preserve">
     <value>0 表示不再晃动提醒</value>
@@ -881,16 +881,16 @@
     <value>回放</value>
   </data>
   <data name="ReplayFormatChanged" xml:space="preserve">
-    <value>官网战绩结构已改变。</value>
+    <value>官网战绩结构已改变</value>
   </data>
   <data name="ReplayStructureChanged" xml:space="preserve">
-    <value>官网战绩结构已改变，已停止同步。</value>
+    <value>官网战绩结构已改变, 已停止同步</value>
   </data>
   <data name="RequestTimedOut" xml:space="preserve">
-    <value>请求超时，请检查代理或网络连接后重试。</value>
+    <value>请求超时, 请检查代理或网络连接后重试</value>
   </data>
   <data name="ResponseRetrying" xml:space="preserve">
-    <value>响应暂未完成，稍后重试</value>
+    <value>响应暂未完成, 稍后重试</value>
   </data>
   <data name="Restore" xml:space="preserve">
     <value>还原</value>
@@ -911,7 +911,7 @@
     <value>正在保存战绩</value>
   </data>
   <data name="ScoreEstimateExplanation" xml:space="preserve">
-    <value>推算：尚无下一场同角色排位记录，使用刷新时保存的官网当前分数与本局赛前分数计算差值，可能包含未收录对局的变化。</value>
+    <value>按官网当前分数计算</value>
   </data>
   <data name="ScoreNavigationTitle" xml:space="preserve">
     <value>{0} - 分数 - {1}</value>
@@ -929,7 +929,7 @@
     <value>搜索</value>
   </data>
   <data name="SearchFailed" xml:space="preserve">
-    <value>查询失败，请检查网络后重试。</value>
+    <value>查询失败, 请检查网络后重试</value>
   </data>
   <data name="SearchFavoritePlayers" xml:space="preserve">
     <value>搜索收藏中的用户昵称或 UID</value>
@@ -944,7 +944,7 @@
     <value>搜索玩家</value>
   </data>
   <data name="SearchSaveFailed" xml:space="preserve">
-    <value>无法保存查询结果，请检查数据目录权限。</value>
+    <value>无法保存查询结果, 请检查数据目录权限</value>
   </data>
   <data name="SearchTags" xml:space="preserve">
     <value>搜索标签</value>
@@ -956,7 +956,7 @@
     <value>赛季</value>
   </data>
   <data name="SeasonDataUnavailable" xml:space="preserve">
-    <value>该赛季的数据暂时无法读取。</value>
+    <value>该赛季的数据暂时无法读取</value>
   </data>
   <data name="SeasonNumber" xml:space="preserve">
     <value>赛季 {0}</value>
@@ -974,25 +974,25 @@
     <value>标签 · {0} ▾</value>
   </data>
   <data name="SessionExpired" xml:space="preserve">
-    <value>登录已失效，请重新登录。</value>
+    <value>登录已失效, 请重新登录</value>
   </data>
   <data name="SessionExpiredCloseWindow" xml:space="preserve">
-    <value>登录已失效，请关闭此窗口后重新登录。</value>
+    <value>登录已失效, 请关闭此窗口后重新登录</value>
   </data>
   <data name="SessionSaved" xml:space="preserve">
-    <value>登录已保存。</value>
+    <value>登录已保存</value>
   </data>
   <data name="SessionSavedImagesPending" xml:space="preserve">
-    <value>登录已保存；头像暂未更新，下次刷新重试。</value>
+    <value>登录已保存</value>
   </data>
   <data name="Settings" xml:space="preserve">
     <value>设置</value>
   </data>
   <data name="SettingsSavedDirect" xml:space="preserve">
-    <value>设置已保存。下次登录和同步均直连。</value>
+    <value>设置已保存. 下次登录和同步均直连</value>
   </data>
   <data name="SettingsSavedProxy" xml:space="preserve">
-    <value>设置已保存。下次登录和同步均通过所选代理。</value>
+    <value>设置已保存. 下次登录和同步均通过所选代理</value>
   </data>
   <data name="SettingsShortcut" xml:space="preserve">
     <value>设置 · Ctrl+,</value>
@@ -1001,7 +1001,7 @@
     <value>本场结算未知</value>
   </data>
   <data name="ShortIntervalWarning" xml:space="preserve">
-    <value>间隔过短可能触发官网风控；建议至少 2 秒。</value>
+    <value>间隔过短可能触发官网风控；建议至少 2 秒</value>
   </data>
   <data name="SignIn" xml:space="preserve">
     <value>登录</value>
@@ -1010,19 +1010,19 @@
     <value>重新登录</value>
   </data>
   <data name="SignInBeforeSearch" xml:space="preserve">
-    <value>请先登录，再查询玩家。</value>
+    <value>请先登录, 再查询玩家</value>
   </data>
   <data name="SignInCancelled" xml:space="preserve">
-    <value>登录已取消。</value>
+    <value>登录已取消</value>
   </data>
   <data name="SignInCancelledLocal" xml:space="preserve">
-    <value>登录已取消，本地战绩仍可查看。</value>
+    <value>登录已取消, 本地战绩仍可查看</value>
   </data>
   <data name="SignInCapcom" xml:space="preserve">
     <value>登录 CAPCOM ID</value>
   </data>
   <data name="SignInFirst" xml:space="preserve">
-    <value>请先登录。</value>
+    <value>请先登录</value>
   </data>
   <data name="SignOut" xml:space="preserve">
     <value>登出</value>
@@ -1033,10 +1033,10 @@
   <data name="SignOutConfirmation" xml:space="preserve">
     <value>是否登出「{0}」？
 
-将移除此设备保存的登录，本地战绩保留。</value>
+将移除此设备保存的登录, 本地战绩保留</value>
   </data>
   <data name="SignedOutLocalKept" xml:space="preserve">
-    <value>账号已登出，本地战绩已保留。</value>
+    <value>账号已登出, 本地战绩已保留</value>
   </data>
   <data name="StopDownload" xml:space="preserve">
     <value>停止下载</value>
@@ -1045,7 +1045,7 @@
     <value>停止下载 · Ctrl+R</value>
   </data>
   <data name="StoppedRecordsKept" xml:space="preserve">
-    <value>已停止，已下载的战绩已保留。</value>
+    <value>已停止, 已下载的战绩已保留</value>
   </data>
   <data name="Stopping" xml:space="preserve">
     <value>正在停止</value>
@@ -1060,10 +1060,10 @@
     <value>标签筛选</value>
   </data>
   <data name="TagNameEnterToAdd" xml:space="preserve">
-    <value>输入标签名称，Enter 添加</value>
+    <value>输入标签名称, Enter 添加</value>
   </data>
   <data name="TagSaveFailed" xml:space="preserve">
-    <value>标签保存失败，请重试。</value>
+    <value>标签保存失败, 请重试</value>
   </data>
   <data name="Tags" xml:space="preserve">
     <value>标签</value>
@@ -1093,7 +1093,7 @@
     <value>时间</value>
   </data>
   <data name="TooManyRequests" xml:space="preserve">
-    <value>请求过于频繁，请稍后刷新。</value>
+    <value>请求过于频繁, 请稍后刷新</value>
   </data>
   <data name="TwelveHours" xml:space="preserve">
     <value>12小时</value>
@@ -1102,22 +1102,22 @@
     <value>20分钟</value>
   </data>
   <data name="UnexpectedError" xml:space="preserve">
-    <value>应用遇到错误，请查看数据目录中的诊断记录。</value>
+    <value>应用遇到错误, 请查看数据目录中的诊断记录</value>
   </data>
   <data name="UnknownCategory" xml:space="preserve">
-    <value>未知战绩类别。</value>
+    <value>未知战绩类别</value>
   </data>
   <data name="UnknownSummarySuffix" xml:space="preserve">
     <value> · {0} 场待确认</value>
   </data>
   <data name="UpdateFailed" xml:space="preserve">
-    <value>暂时无法更新，请检查网络后重试。</value>
+    <value>暂时无法更新, 请检查网络后重试</value>
   </data>
   <data name="UpdatedAtPrefix" xml:space="preserve">
     <value>更新于 </value>
   </data>
   <data name="UpdatingCharacterProfiles" xml:space="preserve">
-    <value>更新角色资料</value>
+    <value>正在完成刷新</value>
   </data>
   <data name="UpdatingProfilesProgress" xml:space="preserve">
     <value>正在更新角色资料和头像…</value>
@@ -1126,7 +1126,7 @@
     <value>使用代理</value>
   </data>
   <data name="VerificationRequired" xml:space="preserve">
-    <value>官网返回验证页面，请打开登录窗口完成验证。</value>
+    <value>官网返回验证页面, 请打开登录窗口完成验证</value>
   </data>
   <data name="ViewMatches" xml:space="preserve">
     <value>查看战绩</value>
@@ -1165,10 +1165,10 @@
     <value>胜率 {0}</value>
   </data>
   <data name="WrongOpponentProfile" xml:space="preserve">
-    <value>玩家资料与所选对手不一致。</value>
+    <value>玩家资料与所选对手不一致</value>
   </data>
   <data name="WrongPlayerRecords" xml:space="preserve">
-    <value>官网返回了不匹配的用户战绩，已停止同步。</value>
+    <value>官网返回了不匹配的用户战绩, 已停止同步</value>
   </data>
   <data name="Yesterday" xml:space="preserve">
     <value>昨天</value>
@@ -1177,7 +1177,7 @@
     <value>己方角色</value>
   </data>
   <data name="CharacterNamesIncomplete" xml:space="preserve">
-    <value>多语言角色名单不完整，下次刷新时将重试。</value>
+    <value>多语言角色名单不完整, 下次刷新时将重试</value>
   </data>
   <data name="RankHistoryAction" xml:space="preserve">
     <value>历史段位</value>
@@ -1186,25 +1186,25 @@
     <value> 场</value>
   </data>
   <data name="SavedLoadingCharacterNames" xml:space="preserve">
-    <value>语言已保存，正在获取角色名…</value>
+    <value>语言已保存, 正在获取角色名…</value>
   </data>
   <data name="SavedWaitingCharacterNames" xml:space="preserve">
-    <value>语言已保存，等待获取角色名…</value>
+    <value>语言已保存, 等待获取角色名…</value>
   </data>
   <data name="SavedCharacterNamesReady" xml:space="preserve">
     <value>语言和角色名已更新</value>
   </data>
   <data name="SavedCharacterNamesFailed" xml:space="preserve">
-    <value>语言已保存，角色名获取失败，请稍后刷新。</value>
+    <value>语言已保存, 角色名获取失败, 请稍后刷新</value>
   </data>
   <data name="SavedCharacterNamesSignIn" xml:space="preserve">
-    <value>语言已保存，登录后可获取角色名。</value>
+    <value>语言已保存, 登录后可获取角色名</value>
   </data>
   <data name="SavedCharacterNamesCancelled" xml:space="preserve">
-    <value>语言已保存，已停止获取角色名。</value>
+    <value>语言已保存, 已停止获取角色名</value>
   </data>
   <data name="IncompleteHistoryCount" xml:space="preserve">
-    <value>战绩尚未下载完整。</value>
+    <value>战绩尚未下载完整</value>
   </data>
   <data name="TwoSeconds" xml:space="preserve">
     <value>2秒</value>
@@ -1255,7 +1255,7 @@
     <value>对局结束后刷新</value>
   </data>
   <data name="RefreshAfterMatchHelp" xml:space="preserve">
-    <value>游戏在前台时检测整场结算。</value>
+    <value>游戏在前台时检测整场结算</value>
   </data>
   <data name="Sf6Running" xml:space="preserve">
     <value>SF6 正在运行</value>
@@ -1270,7 +1270,7 @@
     <value>重试间隔</value>
   </data>
   <data name="InvalidMatchEndInterval" xml:space="preserve">
-    <value>等待时间须为 0–3600 秒，重试间隔须为 1–3600 秒。</value>
+    <value>等待时间须为 0–3600 秒, 重试间隔须为 1–3600 秒</value>
   </data>
   <data name="MatchEndFrequency" xml:space="preserve">
     <value>采样频率</value>
@@ -1279,22 +1279,22 @@
     <value>次/秒</value>
   </data>
   <data name="InvalidMatchEndFrequency" xml:space="preserve">
-    <value>采样频率须为每秒 0.5–10 次。</value>
+    <value>采样频率须为每秒 0.5–10 次</value>
   </data>
   <data name="OpenLogFolder" xml:space="preserve">
     <value>打开日志目录</value>
   </data>
   <data name="OpenLogFolderFailed" xml:space="preserve">
-    <value>无法打开日志目录。</value>
+    <value>无法打开日志目录</value>
   </data>
   <data name="FocusLatestMatch" xml:space="preserve"><value>刷新后定位最新对局</value></data>
-  <data name="FocusLatestMatchHelp" xml:space="preserve"><value>仅滚动并选中当前模式及筛选内的新对局。</value></data>
+  <data name="FocusLatestMatchHelp" xml:space="preserve"><value>仅滚动并选中当前模式及筛选内的新对局</value></data>
   <data name="RecentMatches" xml:space="preserve"><value>最近比赛</value></data>
   <data name="RecentMatchesScope" xml:space="preserve"><value>本次启动后的排位对局</value></data>
   <data name="NoRecentRankedMatches" xml:space="preserve"><value>本次启动后暂无排位对局</value></data>
   <data name="HighestScore" xml:space="preserve"><value>最高分</value></data>
   <data name="LowestScore" xml:space="preserve"><value>最低分</value></data>
-  <data name="RecentScoresPending" xml:space="preserve"><value>部分对局结算尚未确认。</value></data>
+  <data name="RecentScoresPending" xml:space="preserve"><value>部分对局结算尚未确认</value></data>
   <data name="SessionBaseline" xml:space="preserve"><value>首场赛前分数</value></data>
   <data name="CollapseRecentMatches" xml:space="preserve"><value>折叠最近比赛</value></data>
   <data name="ExpandRecentMatches" xml:space="preserve"><value>展开最近比赛</value></data>
@@ -1303,18 +1303,20 @@
   <data name="ViewUpdate" xml:space="preserve"><value>查看更新</value></data>
   <data name="CurrentVersion" xml:space="preserve"><value>当前版本</value></data>
   <data name="OpenGitHub" xml:space="preserve"><value>打开 GitHub 项目</value></data>
-  <data name="UpdateAvailable" xml:space="preserve"><value>发现新版本 {0}。</value></data>
-  <data name="NoUpdates" xml:space="preserve"><value>暂无更新。</value></data>
-  <data name="NoPublishedRelease" xml:space="preserve"><value>未找到已发布的正式版本。</value></data>
-  <data name="UpdateCheckRateLimited" xml:space="preserve"><value>GitHub 请求受限，请稍后重试。</value></data>
-  <data name="UpdateCheckFailed" xml:space="preserve"><value>检查更新失败，请稍后重试。</value></data>
-  <data name="OpenWebPageFailed" xml:space="preserve"><value>无法打开网页。</value></data>
+  <data name="UpdateAvailable" xml:space="preserve"><value>发现新版本 {0}</value></data>
+  <data name="NoUpdates" xml:space="preserve"><value>暂无更新</value></data>
+  <data name="NoPublishedRelease" xml:space="preserve"><value>未找到已发布的正式版本</value></data>
+  <data name="UpdateCheckRateLimited" xml:space="preserve"><value>GitHub 请求受限, 请稍后重试</value></data>
+  <data name="UpdateCheckFailed" xml:space="preserve"><value>检查更新失败, 请稍后重试</value></data>
+  <data name="OpenWebPageFailed" xml:space="preserve"><value>无法打开网页</value></data>
   <data name="InstallUpdate" xml:space="preserve"><value>立即更新</value></data>
-  <data name="InstallUpdateHelp" xml:space="preserve"><value>下载完成后自动重启更新。</value></data>
+  <data name="InstallUpdateHelp" xml:space="preserve"><value>下载完成后自动重启更新</value></data>
   <data name="DownloadingUpdate" xml:space="preserve"><value>正在下载更新… {0}%</value></data>
   <data name="ApplyingUpdate" xml:space="preserve"><value>正在重启更新…</value></data>
-  <data name="UpdateCancelled" xml:space="preserve"><value>已取消更新。</value></data>
-  <data name="UpdateInstallFailed" xml:space="preserve"><value>更新失败，已保留当前版本和数据。</value></data>
-  <data name="NoUpdatePackage" xml:space="preserve"><value>尚未发布自动更新包。</value></data>
-  <data name="UpdatePortableRequired" xml:space="preserve"><value>请使用支持自动更新的便携版。</value></data>
+  <data name="UpdateCancelled" xml:space="preserve"><value>已取消更新</value></data>
+  <data name="UpdateInstallFailed" xml:space="preserve"><value>更新失败, 已保留当前版本和数据</value></data>
+  <data name="NoUpdatePackage" xml:space="preserve"><value>尚未发布自动更新包</value></data>
+  <data name="UpdatePortableRequired" xml:space="preserve"><value>请使用支持自动更新的便携版</value></data>
+  <data name="LanguageSaveFailed" xml:space="preserve"><value>语言设置未能保存. 请重试</value></data>
+  <data name="RecordsUpdatedScoresPending" xml:space="preserve"><value>战绩已更新, 当前分数更新失败. 请稍后刷新</value></data>
 </root>

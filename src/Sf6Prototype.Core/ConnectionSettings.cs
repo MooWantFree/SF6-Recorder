@@ -11,23 +11,24 @@ public enum CloseAction { Ask, MinimizeToTray, Exit }
 
 public record ConnectionSettings
 {
-    public const int DefaultRefreshReminderSeconds = 24 * 60 * 60;
+    public const int DefaultRefreshReminderSeconds = 0;
     public const double DefaultApiIntervalSeconds = 2;
+    public const int DefaultMatchEndWaitSeconds = 1;
     public double ApiIntervalSeconds { get; init; } = DefaultApiIntervalSeconds;
     public static bool ValidApiInterval(double seconds) => double.IsFinite(seconds) && seconds is >=0.1 and <=3600;
     public static bool LowApiInterval(double seconds) => ValidApiInterval(seconds) && seconds<DefaultApiIntervalSeconds;
     public int RefreshReminderSeconds { get; init; } = DefaultRefreshReminderSeconds;
-    public int AutoRefreshSeconds { get; init; }
-    public bool RefreshAfterMatch { get; init; }
+    public int AutoRefreshSeconds { get; init; } = 0;
+    public bool RefreshAfterMatch { get; init; } = true;
     public bool FocusLatestMatchAfterRefresh { get; init; } = true;
-    public bool RecentMatchesCollapsed {get;init;}
-    public int MatchEndWaitSeconds { get; init; } = 5;
+    public bool RecentMatchesCollapsed {get;init;} = false;
+    public int MatchEndWaitSeconds { get; init; } = DefaultMatchEndWaitSeconds;
     public int MatchEndRetrySeconds { get; init; } = 8;
     public double MatchEndSamplesPerSecond { get; init; } = 4;
     public static bool ValidMatchEndFrequency(double value)=>double.IsFinite(value) && value is >=0.5 and <=10;
-    public CloseAction WindowCloseAction { get; init; }
+    public CloseAction WindowCloseAction { get; init; } = CloseAction.Ask;
     public string Language { get; init; } = Localization.SystemLanguage;
-    public bool UseProxy { get; init; }
+    public bool UseProxy { get; init; } = false;
     public string ProxyAddress { get; init; } = "http://127.0.0.1:7890";
     public string PlayerId { get; init; } = "3396336472";
     public string RouteKey => UseProxy ? ValidateProxy().AbsoluteUri : "direct";
@@ -80,7 +81,7 @@ public record ConnectionSettings
         catch (JsonException error)
         {
             Diagnostics.Write("settings", "corrupt", error);
-            settings = new();
+            settings = new() {RefreshAfterMatch=false}; // Damaged preferences must not opt into background requests.
             try { if (File.Exists(path + ".bak")) settings = ReadSettings(path + ".bak"); }
             catch (Exception backupError) when (backupError is JsonException or IOException or UnauthorizedAccessException)
             { Diagnostics.Write("settings", "backup_unavailable", backupError); }
@@ -98,7 +99,7 @@ public record ConnectionSettings
         {
             RefreshReminderSeconds=settings.RefreshReminderSeconds>=0 ? settings.RefreshReminderSeconds : DefaultRefreshReminderSeconds,
             AutoRefreshSeconds=Math.Max(0,settings.AutoRefreshSeconds),
-            MatchEndWaitSeconds=settings.MatchEndWaitSeconds is >=0 and <=3600 ? settings.MatchEndWaitSeconds : 5,
+            MatchEndWaitSeconds=settings.MatchEndWaitSeconds is >=0 and <=3600 ? settings.MatchEndWaitSeconds : DefaultMatchEndWaitSeconds,
             MatchEndRetrySeconds=settings.MatchEndRetrySeconds is >=1 and <=3600 ? settings.MatchEndRetrySeconds : 8,
             MatchEndSamplesPerSecond=ValidMatchEndFrequency(settings.MatchEndSamplesPerSecond) ? settings.MatchEndSamplesPerSecond : 4,
             ApiIntervalSeconds=ValidApiInterval(settings.ApiIntervalSeconds) ? settings.ApiIntervalSeconds : DefaultApiIntervalSeconds,

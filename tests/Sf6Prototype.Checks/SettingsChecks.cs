@@ -14,7 +14,16 @@ public static class SettingsChecks
         var directory=Path.Combine(Environment.CurrentDirectory,".local","checks",Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(directory);
         var path=Path.Combine(directory,"settings.json");
-        Check(ConnectionSettings.Load(directory) is {RefreshReminderSeconds:86400,AutoRefreshSeconds:0},"New installations default to a 24-hour reminder and no automatic requests");
+        var defaults=ConnectionSettings.Load(directory);
+        Check(defaults is {Language:Localization.SystemLanguage,UseProxy:false,ApiIntervalSeconds:2,WindowCloseAction:CloseAction.Ask},
+            "Fresh settings use system language, direct requests every two seconds and ask before closing");
+        Check(defaults is {RefreshAfterMatch:true,FocusLatestMatchAfterRefresh:true,RecentMatchesCollapsed:false,MatchEndWaitSeconds:1,MatchEndRetrySeconds:8,MatchEndSamplesPerSecond:4},
+            "Fresh match-end settings match the selected baseline without copying account or proxy state");
+        var existing=defaults with {Language="ja",UseProxy=true,RefreshReminderSeconds=86400,AutoRefreshSeconds=600,
+            RefreshAfterMatch=false,MatchEndWaitSeconds=5,WindowCloseAction=CloseAction.MinimizeToTray};
+        existing.Save(directory);
+        Check(ConnectionSettings.Load(directory)==existing,"New defaults preserve every explicitly saved preference");
+        Check(defaults is {RefreshReminderSeconds:0,AutoRefreshSeconds:0},"New installations disable periodic refresh and update reminders");
         File.WriteAllText(path,"""{"UseProxy":true,"ProxyAddress":"http://127.0.0.1:8888","PlayerId":"1234567890"}""");
         var legacy=ConnectionSettings.Load(directory);
         Check(legacy.ApiIntervalSeconds==2 && new ConnectionSettings().ApiIntervalSeconds==2,"New settings and files without an explicit interval default to two seconds");
@@ -31,7 +40,7 @@ public static class SettingsChecks
         Check(File.ReadAllText(path)==validApi,"API interval validation preserves the settings file on failure");
         File.WriteAllText(path,"""{"ApiIntervalSeconds":0,"PlayerId":"1234567890"}""");
         Check(ConnectionSettings.Load(directory) is {ApiIntervalSeconds:2,PlayerId:"1234567890"},"Invalid stored API intervals fall back without losing the account");
-        Check(legacy is {RefreshReminderSeconds:86400,AutoRefreshSeconds:0,UseProxy:true,ProxyAddress:"http://127.0.0.1:8888",PlayerId:"1234567890"},"Old settings gain safe interval defaults without losing connection or account preferences");
+        Check(legacy is {RefreshReminderSeconds:0,AutoRefreshSeconds:0,UseProxy:true,ProxyAddress:"http://127.0.0.1:8888",PlayerId:"1234567890"},"Old settings gain safe interval defaults without losing connection or account preferences");
         var custom=legacy with {RefreshReminderSeconds=ConnectionSettings.ParseReminderSeconds("5")}; custom.Save(directory);
         Check(ConnectionSettings.Load(directory) is {RefreshReminderSeconds:5,UseProxy:true,PlayerId:"1234567890"},"A custom reminder survives save and restart alongside existing settings");
         foreach(var seconds in new[]{0,86400,43200,3600,600})
@@ -55,7 +64,7 @@ public static class SettingsChecks
         Reject(()=>(custom with {AutoRefreshSeconds=-1}).Save(directory),"Negative automatic refresh intervals must not overwrite valid settings");
         Check(File.ReadAllText(path)==before,"Failed validation leaves the previous settings file intact");
         File.WriteAllText(path,"""{"RefreshReminderSeconds":-5,"AutoRefreshSeconds":-10,"PlayerId":"1234567890"}""");
-        Check(ConnectionSettings.Load(directory) is {RefreshReminderSeconds:86400,AutoRefreshSeconds:0,PlayerId:"1234567890"},"Invalid persisted intervals fall back safely without resetting the account");
+        Check(ConnectionSettings.Load(directory) is {RefreshReminderSeconds:0,AutoRefreshSeconds:0,PlayerId:"1234567890"},"Invalid persisted intervals fall back safely without resetting the account");
         var now=new DateTimeOffset(2026,11,12,12,0,0,TimeSpan.FromHours(8));
         Check(!DateRanges.IsRefreshOverdue(now.AddSeconds(-5),now,5) && DateRanges.IsRefreshOverdue(now.AddSeconds(-6),now,5),"A five-second custom interval uses seconds, not the former fixed 24-hour threshold");
         Check(!DateRanges.IsRefreshOverdue(now.AddHours(-2),now,86400) && DateRanges.IsRefreshOverdue(now.AddHours(-2),now,3600),"Changing the saved interval immediately changes whether the same player needs a reminder");

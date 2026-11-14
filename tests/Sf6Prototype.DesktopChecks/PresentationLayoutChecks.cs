@@ -54,7 +54,7 @@ internal static class PresentationLayoutChecks
         Check(Math.Abs(search.TranslatePoint(new Point(),history).Y-outcome.TranslatePoint(new Point(),history).Y)<4,"The result filter stays beside the other filters at minimum width");
         var categories=(ListBox)history.FindName("CategoryFilter");
         Check(categories.Items.OfType<CategoryChoice>().Any(c=>c.Key=="casual" && c.Count==0),"Locally empty categories remain available for initial loading");
-        Check(categories.Items.OfType<CategoryChoice>().Where(c=>c.Key!="favorites").All(c=>c.CountText.EndsWith('*') && c.CountTip=="战绩尚未下载完整。"),"Unknown category coverage marks the actual local quantity with a short explanation");
+        Check(categories.Items.OfType<CategoryChoice>().Where(c=>c.Key!="favorites").All(c=>c.CountText.EndsWith('*') && c.CountTip==Strings.IncompleteHistoryCount),"Unknown category coverage marks the actual local quantity with a short explanation");
         Check(categories.Items.OfType<CategoryChoice>().Single(c=>c.Key=="favorites") is {Incomplete:false,CountTip:null},"Favorites are an exact local quantity without an incomplete marker");
         Check(((TextBlock)history.FindName("TotalMetric")).Text=="5*","The overall statistic remains the five saved matches rather than an estimated official count");
         store.CompleteCategory(owner,"rank",master.ReplayId);history.Reload();

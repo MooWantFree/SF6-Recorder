@@ -67,7 +67,7 @@
     <value>CAPCOM リクエスト間隔（秒）</value>
   </data>
   <data name="ApiIntervalHelp" xml:space="preserve">
-    <value>公式データの取得間隔です。画像のダウンロード、ログイン画面、Google テストには適用されません。</value>
+    <value>公式データ取得の最短間隔</value>
   </data>
   <data name="ApiIntervalPresets" xml:space="preserve">
     <value>CAPCOM リクエスト間隔のプリセット</value>
@@ -827,10 +827,10 @@
     <value>最近の検索</value>
   </data>
   <data name="RecordsSavedImagesBackground" xml:space="preserve">
-    <value>戦績を保存しました。ポートレートはバックグラウンドで更新します。</value>
+    <value>戦績を保存しました</value>
   </data>
   <data name="RecordsUpdatedImagesPending" xml:space="preserve">
-    <value>戦績を更新しました。ポートレートは後で更新できます。</value>
+    <value>戦績を更新しました</value>
   </data>
   <data name="Refresh" xml:space="preserve">
     <value>更新</value>
@@ -911,7 +911,7 @@
     <value>戦績を保存中</value>
   </data>
   <data name="ScoreEstimateExplanation" xml:space="preserve">
-    <value>推定値：同じキャラクターの次のランクマッチがないため、更新時に保存した公式サイトの現在スコアとこの対戦の開始前スコアから算出しています。未収録の対戦による変動を含む場合があります。</value>
+    <value>公式サイトの現在スコアから算出</value>
   </data>
   <data name="ScoreNavigationTitle" xml:space="preserve">
     <value>{0} - スコア - {1}</value>
@@ -983,7 +983,7 @@
     <value>ログイン状態を保存しました。</value>
   </data>
   <data name="SessionSavedImagesPending" xml:space="preserve">
-    <value>ログイン状態を保存しました。ポートレートは次回の更新時に再取得します。</value>
+    <value>ログイン状態を保存しました</value>
   </data>
   <data name="Settings" xml:space="preserve">
     <value>設定</value>
@@ -1117,7 +1117,7 @@
     <value>更新：</value>
   </data>
   <data name="UpdatingCharacterProfiles" xml:space="preserve">
-    <value>キャラクター情報を更新中</value>
+    <value>更新を完了しています</value>
   </data>
   <data name="UpdatingProfilesProgress" xml:space="preserve">
     <value>キャラクター情報とポートレートを更新しています…</value>
@@ -1317,4 +1317,6 @@
   <data name="UpdateInstallFailed" xml:space="preserve"><value>更新できませんでした。現在のバージョンとデータは保持されます。</value></data>
   <data name="NoUpdatePackage" xml:space="preserve"><value>自動更新用のパッケージはまだ公開されていません。</value></data>
   <data name="UpdatePortableRequired" xml:space="preserve"><value>自動更新対応のポータブル版を使用してください。</value></data>
+  <data name="LanguageSaveFailed" xml:space="preserve"><value>言語設定を保存できませんでした。もう一度お試しください</value></data>
+  <data name="RecordsUpdatedScoresPending" xml:space="preserve"><value>戦績は更新済みです。現在のスコアを取得できませんでした。後でもう一度更新してください</value></data>
 </root>

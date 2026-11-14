@@ -1,6 +1,7 @@
 namespace Sf6Prototype;
 
-// One successful profile update per account and local day, with a 06:00 boundary.
+// One successful metadata update per account and local day, with a 06:00 boundary.
+// Current scores are refreshed separately after reading the latest ranked head.
 // The captured start time keeps a refresh crossing 06:00 in its original day.
 public sealed class DailyProfileRefresh(ProfileCache profiles,string owner,DateTimeOffset startedAt,TimeZoneInfo? timeZone=null)
 {
@@ -18,7 +19,11 @@ public sealed class DailyProfileRefresh(ProfileCache profiles,string owner,DateT
     }
     public async Task<IReadOnlyList<ImageDownload>> RefreshPlayAsync(IProfileSource source,CancellationToken token,bool captureScores=false)
     {
-        if(!Required) return [];
+        if(!Required)
+        {
+            if(captureScores) await profiles.RefreshScoresAsync(source,owner,token);
+            return [];
+        }
         var images=await profiles.RefreshPlayAsync(source,owner,token,captureScores);
         token.ThrowIfCancellationRequested();
         if(_avatarUpdated) profiles.CompleteDailyRefresh(owner,startedAt);

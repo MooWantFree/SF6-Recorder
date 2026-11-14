@@ -26,13 +26,20 @@ public static class ScoreCalculator
             linked ? MrDelta(b,next.Mr,next.Season) : null,b.ReplayId);
         var now=current!=null && current.FetchedAt.ToUnixTimeSeconds()>b.PlayedAt
             ? current.Characters.FirstOrDefault(c=>c.CharacterId==b.CharacterId && c.Lp>=0) : null;
-        int? lp=Plausible(b,LpDelta(b.Lp,now?.Lp)),mr=Plausible(b,now==null ? null : MrDelta(b,now.Mr,current!.Season));
+        int? lp=LpDelta(b.Lp,now?.Lp),mr=Plausible(b,now==null ? null : MrDelta(b,now.Mr,current!.Season));
         return new(b.PlayedAt,b.Time,b.Lp,b.Mr,lp,mr,b.ReplayId,lp!=null || mr!=null);
     }
-    private static int? LpDelta(int? before,int? after) => before>=0 && after>=0 ? after-before : null;
+    private static int? LpDelta(int? before,int? after)
+    {
+        if(before is not >=0 || after is not >=0) return null;
+        var delta=after-before;
+        // Official scores are authoritative regardless of the match outcome. Losses of
+        // exactly 120 LP are valid; gains have no upper bound.
+        return delta < -120 ? null : delta;
+    }
     private static int? MrDelta(Battle b, int? nextMr, int? nextSeason) =>
         b.Mr > 0 && nextMr > 0 && b.Season != null && b.Season == nextSeason ? nextMr - b.Mr : null;
-    // Rejects an estimate that disagrees with the result, e.g. when a newer match is not yet listed.
+    // MR retains its existing outcome check in addition to the season boundary.
     private static int? Plausible(Battle b, int? delta) =>
         delta == null || b.Outcome switch { "胜" => delta > 0, "负" => delta <= 0, _ => true } ? delta : null;
 }

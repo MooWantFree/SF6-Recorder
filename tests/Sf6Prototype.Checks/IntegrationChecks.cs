@@ -143,7 +143,7 @@ public static class IntegrationChecks
         CurrentScores Now(int lp,long at)=>new(DateTimeOffset.FromUnixTimeSeconds(at),14,[new CharacterRank(16,"韩蛛俐",lp,0,30,0)]);
         Assert(BattleStore.Scores([lost],Now(1060,lost.PlayedAt+60)).Single() is {LpDelta:-40,Estimated:true},"The newest match is estimated from current profile scores");
         Assert(BattleStore.Scores([lost],Now(1060,lost.PlayedAt-60)).Single().LpDelta==null,"A profile captured before the match cannot settle it");
-        Assert(BattleStore.Scores([lost],Now(1150,lost.PlayedAt+60)).Single() is {LpDelta:null,Estimated:false},"An estimate contradicting the result is discarded");
+        Assert(BattleStore.Scores([lost],Now(1150,lost.PlayedAt+60)).Single() is {LpDelta:50,Estimated:true},"Official LP differences remain valid independently of the recorded outcome");
         var mrA=Row("MA","rank",25000) with {Mr=1500,Season=13,MasterLeague=36};
         var mrB=Row("MB","rank",25010) with {Mr=1510,Season=13,MasterLeague=40};
         Assert(BattleStore.Scores([mrA,mrB])[0].MrDelta==10,"A Master badge change must not be mistaken for a season boundary");
@@ -201,7 +201,8 @@ public static class IntegrationChecks
         var playJson="{\"pageProps\":{\"fighter_banner_info\":{\"personal_info\":{\"short_id\":3396336472,\"fighter_id\":\"Me\"}},\"play\":{\"current_season_id\":14,\"season_ids\":[14],\"character_league_infos\":[{\"character_id\":16,\"character_name\":\"韩蛛俐\",\"league_info\":{\"league_point\":23539,\"league_rank\":34,\"master_rating\":0,\"master_league\":0}}]}}}";
         var cache=new ProfileCache(dir); cache.SaveScores(owner,playJson,DateTimeOffset.UnixEpoch.AddDays(1));
         Assert(cache.Scores(owner) is {Season:14} saved && saved.Characters.Single().Lp==23539,"Current own scores persist for the newest-match estimate");
-        cache.SaveScores(owner,playJson.Replace("3396336472","1111111111"),DateTimeOffset.UtcNow);
+        try {cache.SaveScores(owner,playJson.Replace("3396336472","1111111111"),DateTimeOffset.UtcNow);throw new Exception("Expected wrong-player score rejection");}
+        catch(InvalidDataException) {count++;}
         Assert(cache.Scores(owner)!.FetchedAt==DateTimeOffset.UnixEpoch.AddDays(1),"Another player's profile never replaces own current scores");
         cache.SaveScores(guest,playJson.Replace(owner,guest).Replace("23539","18000"),DateTimeOffset.UnixEpoch.AddDays(2));
         Assert(cache.Scores(guest)!.Characters.Single().Lp==18000 && cache.Scores(owner)!.Characters.Single().Lp==23539,"Current score snapshots are isolated by the viewed player's UID");

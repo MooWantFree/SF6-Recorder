@@ -144,7 +144,7 @@ internal static class Program
         var matchWait=(TextBox)settings.FindName("MatchEndWaitBox");var matchRetry=(TextBox)settings.FindName("MatchEndRetryBox");
         var matchFrequency=(TextBox)settings.FindName("MatchEndFrequencyBox");
         Check(matchFrequency.Text=="4","Match detection defaults to four samples per second");
-        Check(matchSwitch.IsChecked==false && matchSwitch.IsEnabled && matchWait.Text=="5" && matchRetry.Text=="8","The match-end switch remains usable without a running game, with requested default delays");
+        Check(matchSwitch.IsChecked==true && matchSwitch.IsEnabled && matchWait.Text=="1" && matchRetry.Text=="8","The match-end switch remains usable without a running game, with requested default delays");
         matchSwitch.IsChecked=true;matchWait.Text="9";matchRetry.Text="11";
         matchFrequency.Text="2.5";
         Check((ConnectionSettings)draft.Invoke(settings,[true])! is {RefreshAfterMatch:true,MatchEndWaitSeconds:9,MatchEndRetrySeconds:11},"Settings save the switch and custom wait/retry intervals");
@@ -183,6 +183,7 @@ internal static class Program
         count+=OpponentChromeChecks.Run();
         count+=AuxiliaryChromeChecks.Run();
         count+=LocalizationChecks.Run();
+        count+=LanguageSelectionChecks.Run();
         count+=ToastChecks.Run();
         count+=UpdateUiChecks.Run();
         Console.WriteLine($"Passed {count} headless desktop checks.");

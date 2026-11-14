@@ -67,7 +67,7 @@
     <value>CAPCOM request interval in seconds</value>
   </data>
   <data name="ApiIntervalHelp" xml:space="preserve">
-    <value>Minimum interval between official data requests. Image downloads, sign-in pages and Google tests are excluded.</value>
+    <value>Minimum interval between official data requests</value>
   </data>
   <data name="ApiIntervalPresets" xml:space="preserve">
     <value>CAPCOM request interval presets</value>
@@ -827,10 +827,10 @@ Backup before import: {1}</value>
     <value>Recent searches</value>
   </data>
   <data name="RecordsSavedImagesBackground" xml:space="preserve">
-    <value>Records saved. Portraits will update in the background.</value>
+    <value>Records saved</value>
   </data>
   <data name="RecordsUpdatedImagesPending" xml:space="preserve">
-    <value>Records updated. Portraits can be refreshed later.</value>
+    <value>Records updated</value>
   </data>
   <data name="Refresh" xml:space="preserve">
     <value>Refresh</value>
@@ -911,7 +911,7 @@ Backup before import: {1}</value>
     <value>Saving match records</value>
   </data>
   <data name="ScoreEstimateExplanation" xml:space="preserve">
-    <value>Estimated: no next ranked match with this character is available. The change uses the official current score saved during refresh and this match’s pre-match score; it may include unrecorded matches.</value>
+    <value>Calculated from the official current score</value>
   </data>
   <data name="ScoreNavigationTitle" xml:space="preserve">
     <value>{0} - Scores - {1}</value>
@@ -983,7 +983,7 @@ Backup before import: {1}</value>
     <value>Session saved.</value>
   </data>
   <data name="SessionSavedImagesPending" xml:space="preserve">
-    <value>Session saved. Portraits will be retried on the next refresh.</value>
+    <value>Session saved</value>
   </data>
   <data name="Settings" xml:space="preserve">
     <value>Settings</value>
@@ -1117,7 +1117,7 @@ The saved sign-in will be removed from this device. Local match records will be 
     <value>Updated </value>
   </data>
   <data name="UpdatingCharacterProfiles" xml:space="preserve">
-    <value>Updating character profiles</value>
+    <value>Finishing refresh</value>
   </data>
   <data name="UpdatingProfilesProgress" xml:space="preserve">
     <value>Updating character profiles and portraits…</value>
@@ -1317,4 +1317,6 @@ The saved sign-in will be removed from this device. Local match records will be 
   <data name="UpdateInstallFailed" xml:space="preserve"><value>Update failed. Your current version and data are kept.</value></data>
   <data name="NoUpdatePackage" xml:space="preserve"><value>No automatic update package has been published yet.</value></data>
   <data name="UpdatePortableRequired" xml:space="preserve"><value>Use the auto-updating portable package to enable updates.</value></data>
+  <data name="LanguageSaveFailed" xml:space="preserve"><value>Could not save the language setting. Please try again</value></data>
+  <data name="RecordsUpdatedScoresPending" xml:space="preserve"><value>Records updated. Current scores could not be updated. Try refreshing again</value></data>
 </root>

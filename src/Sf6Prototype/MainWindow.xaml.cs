@@ -232,7 +232,7 @@ public partial class MainWindow : ChromeWindow
         try
         {
             using var client=CreateClient(session,owner,observeCharacterNames:daily.Required);
-            await RefreshWorkflow.RunAsync(client,daily.Required,()=>
+            var workflow=await RefreshWorkflow.RunAsync(client,daily.Required,()=>
             {
                 if(client.AccountId!=owner) throw new LoginRequiredException(Strings.AccountChanged);
                 _pagers[owner]=pager;
@@ -256,7 +256,7 @@ public partial class MainWindow : ChromeWindow
             },automatic:true,token);
             if(_navigation.Current.Id==owner) ReloadLocal(preserveViewport:true);
             RefreshAccountUi();
-            ShowNotice(Strings.RefreshCompleteHint);
+            ShowNotice(workflow.ScoresPending ? Strings.RecordsUpdatedScoresPending : Strings.RefreshCompleteHint,workflow.ScoresPending);
             completed=true;context.Complete();
         }
         catch(OperationCanceledException) when(token.IsCancellationRequested) { }
@@ -383,50 +383,18 @@ public partial class MainWindow : ChromeWindow
             ConfigureRefreshReminder();
             ConfigureAutoRefresh();
             await ConfigureMatchEndDetectionAsync();
-            var language=Localization.Resolve(_settings.Language,Localization.SystemCulture).Name;
-            var languageChanged=language!=Localization.Culture.Name;
-            if(languageChanged)
-            {
-                await CancelDownloadsAsync();
-                if(_exitRequested) return;
-                ApplyLanguage();
-            }
             SetStatus("settings_saved", _settings.UseProxy ? Strings.SettingsSavedProxy : Strings.SettingsSavedDirect);
-            var roster=_profiles.Characters.Select(c=>(c.Id,c.Name,c.ToolName)).ToList();
-            if(languageChanged && !App.Capture && _profiles.Names.NeedsLanguage(language,roster))
-            {
-                var session=_vault.Load();
-                if(session==null)
-                    ShowNotice(Strings.SavedCharacterNamesSignIn,false,Strings.SignIn,()=>_=LoginAsync());
-                else
-                    await _sync.RunAsync(new(SyncOperation.CharacterNames,Quiet:true,Background:true), context=>LoadLanguageNamesAsync(session,language,roster,context));
-            }
         }
         catch (Exception ex) { ReportError(ex); }
         finally {_savingSettings=false;}
     }
 
-    private async Task LoadLanguageNamesAsync(SavedSession session,string language,
-        IReadOnlyList<(int Id,string Name,string ToolName)> roster,SyncContext context)
+    private void ChangeLanguage(string language)
     {
-        var token=context.Token;
-        Toast.BeginProgress(Strings.SavedLoadingCharacterNames);
-        try
-        {
-            using var client=CreateClient(session,session.AccountId);
-            client.Activity+=activity=>Toast.UpdateProgress(activity.Phase==RequestPhase.Waiting
-                ? Strings.SavedWaitingCharacterNames : Strings.SavedLoadingCharacterNames);
-            await _profiles.Names.EnsureLanguageAsync(client,session.AccountId,language,roster,token);
-            token.ThrowIfCancellationRequested();
-            ApplyLanguage();
-            Toast.CompleteProgress(Strings.SavedCharacterNamesReady);context.Complete();
-        }
-        catch(OperationCanceledException) when(token.IsCancellationRequested)
-        {Toast.CompleteProgress(Strings.SavedCharacterNamesCancelled);}
-        catch(LoginRequiredException ex)
-        {context.Fail(ex);Diagnostics.Write("character_names", "login_required", ex);Toast.CompleteProgress(Strings.SavedCharacterNamesSignIn,true,Strings.SignInAgain,()=>_=LoginAsync());}
-        catch(Exception ex) when(ex is not OutOfMemoryException)
-        {context.Fail(ex);Diagnostics.Write("character_names", "failed", ex);Toast.CompleteProgress(Strings.SavedCharacterNamesFailed,true);}
+        var settings=_settings with {Language=language};
+        settings.Save(App.DataDirectory);
+        _settings=settings;
+        ApplyLanguage();
     }
 
     private void ApplyLanguage()
@@ -442,7 +410,8 @@ public partial class MainWindow : ChromeWindow
             RefreshAccountUi(); RefreshViewedPlayerUi(); UpdateSearchEmptyState();
             PaintMatchEndStatus();
             UpdateRecentMatches();
-            SetSearchError(null); HideNotice(); HideButtonProgress(); UpdateRefreshAction();
+            UpdateRefreshAction();
+            if(_progressVisible) UpdateProgressTooltip();
             foreach(var window in _opponents.Values) window.RefreshLanguage();
             _tray?.RefreshLanguage();
         }
@@ -451,7 +420,7 @@ public partial class MainWindow : ChromeWindow
 
     private SettingsWindow CreateSettingsWindow()
     {
-        var dialog=new SettingsWindow(this,_settings) {BeforeImport=()=>CancelDownloadsAsync(),ApplyUpdate=ApplyAppUpdateAsync};
+        var dialog=new SettingsWindow(this,_settings) {BeforeImport=()=>CancelDownloadsAsync(),ApplyUpdate=ApplyAppUpdateAsync,ChangeLanguage=ChangeLanguage};
         dialog.DatabaseImported+=()=>
         {
             _store.InvalidateReads(); _pagers.Clear(); History.AllowPageUpdates(); ReloadLocal(preserveViewport:true);
@@ -686,10 +655,10 @@ public partial class MainWindow : ChromeWindow
                 BeforeProfile=()=> {SetStatus("profiles",Strings.UpdatingProfilesProgress);if(_progressVisible) {_refreshProgress.Metadata(1);UpdateButtonProgress();}}
             },automatic:false,token);
             _lastSync=workflow.Sync;
-            var profileMessage=workflow.ImagesPending ? Strings.ImagesPendingSuffix : "";
             ReloadLocal(preserveViewport: true); RefreshAccountUi();
-            SetStatus(profileMessage.Length>0 ? "sync_complete_images_pending" : "sync_complete", Localization.Format(Strings.RefreshCompleteSummary, _lastSync.Inserted, _lastSync.Pages, _lastSync.Requests, profileMessage));
-            if(reset && profileMessage.Length==0) ShowNotice(Strings.RefreshCompleteHint);
+            SetStatus(workflow.ScoresPending ? "sync_complete_scores_pending" : "sync_complete",
+                Localization.Format(Strings.RefreshCompleteSummary, _lastSync.Inserted, _lastSync.Pages, _lastSync.Requests, ""));
+            if(reset && !workflow.ScoresPending) ShowNotice(Strings.RefreshCompleteHint);
             completed=true;context.Complete();
             if(pager.Owner==_settings.PlayerId) _autoRefresh.Resume(DateTimeOffset.UtcNow);
         }
@@ -976,9 +945,8 @@ public partial class MainWindow : ChromeWindow
             case "login_needed": ShowNotice(Strings.SignInFirst); break;
             case "settings_saved": ShowNotice(Strings.Saved); break;
             case "cancelled": ShowNotice(Strings.CancelledFetchedSaved); break;
-            case "profile_pending": ShowNotice(Strings.PortraitsNotUpdated); break;
-            case "sync_complete_images_pending":
-                ShowNotice(Strings.RecordsUpdatedImagesPending);
+            case "sync_complete_scores_pending":
+                ShowNotice(Strings.RecordsUpdatedScoresPending,true);
                 break;
         }
         var path = Path.Combine(App.DataDirectory, "status.json");

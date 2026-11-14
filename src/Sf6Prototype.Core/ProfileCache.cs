@@ -57,6 +57,13 @@ public sealed class ProfileCache(string directory)
         var avatar=await RefreshAvatarAsync(client,owner,token);
         return [..avatar,..characters];
     }
+    public async Task RefreshScoresAsync(IProfileSource client,string owner,CancellationToken token)
+    {
+        token.ThrowIfCancellationRequested();
+        var json=await client.FetchPlayAsync(owner,token);
+        token.ThrowIfCancellationRequested();
+        SaveScores(owner,json,DateTimeOffset.UtcNow);
+    }
     public async Task<IReadOnlyList<ImageDownload>> RefreshPlayAsync(IProfileSource client, string owner, CancellationToken token, bool captureScores=false)
     {
         Directory.CreateDirectory(DirectoryPath);
@@ -64,9 +71,6 @@ public sealed class ProfileCache(string directory)
         token.ThrowIfCancellationRequested();
         var player = RankProfiles.ParseProfile(json, owner);
         var roster = ParseCharacters(json);
-        // Capture scores only after reading the latest ranked head. Login, older-page
-        // prefetch and unrelated-category loads must not settle an outdated newest match.
-        if (captureScores) SaveScores(owner, json, DateTimeOffset.UtcNow);
         foreach (var c in roster)
         {
             var path = Path.Combine(DirectoryPath, "character_" + c.ToolName + ".png");
@@ -80,6 +84,9 @@ public sealed class ProfileCache(string directory)
         var previous=Profile(owner);
         if((previous==null || previous.Name==owner) && !string.IsNullOrWhiteSpace(player.Name))
             WriteJson(Path.Combine(directory,"profile-"+owner+".json"),new ProfileMetadata(owner,player.Name,previous?.AvatarPath ?? "",DateTimeOffset.UtcNow,previous?.DailyRefreshedAt));
+        // Capture scores only after reading the latest ranked head. Login, older-page
+        // prefetch and unrelated-category loads must not settle an outdated newest match.
+        if (captureScores) SaveScores(owner, json, DateTimeOffset.UtcNow);
         return Characters.Where(c => !File.Exists(c.ImagePath)).Select(c =>
             new ImageDownload($"/6/buckler/assets/images/material/character/character_{c.ToolName}_l.png", c.ImagePath)).ToArray();
     }
@@ -111,7 +118,8 @@ public sealed class ProfileCache(string directory)
             var profile = RankProfiles.ParseProfile(playJson, owner);
             WriteJson(Path.Combine(directory, "scores-" + owner + ".json"), new CurrentScores(fetchedAt, profile.CurrentSeason, profile.Characters));
         }
-        catch (Exception e) when (e is InvalidDataException or KeyNotFoundException or InvalidOperationException or JsonException) { Diagnostics.Write("profile", "save_scores", e); }
+        catch (Exception e) when (e is InvalidDataException or KeyNotFoundException or InvalidOperationException or JsonException)
+        { Diagnostics.Write("profile", "save_scores", e); throw; }
     }
     private static void WriteJson<T>(string path, T value)
     {

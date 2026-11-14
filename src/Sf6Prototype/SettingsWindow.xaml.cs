@@ -15,7 +15,7 @@ namespace Sf6Prototype;
 
 public partial class SettingsWindow : ChromeWindow
 {
-    private readonly ConnectionSettings _current;
+    private ConnectionSettings _current;
     private readonly CancellationTokenSource _closing = new();
     private bool _syncingIntervals;
     private Task _transfer=Task.CompletedTask;
@@ -24,6 +24,7 @@ public partial class SettingsWindow : ChromeWindow
     private CancellationTokenSource? _updateCancellation;
     private Task _updateDownload=Task.CompletedTask;
     public Func<UpdateRelease,Task>? ApplyUpdate {get;set;}
+    public Action<string>? ChangeLanguage {get;set;}
     private readonly DispatcherTimer _gameStatusTimer=new() {Interval=TimeSpan.FromSeconds(2)};
     public Func<Task>? BeforeImport { get; set; }
     public event Action? DatabaseImported;
@@ -47,12 +48,32 @@ public partial class SettingsWindow : ChromeWindow
         ApiIntervalBox.Text=current.ApiIntervalSeconds.ToString(CultureInfo.InvariantCulture);
         CloseActionBox.SelectedIndex=(int)current.WindowCloseAction;
         LanguageBox.SelectedValue=Localization.Normalize(current.Language);
+        LanguageBox.SelectionChanged+=Language_Changed;
         ContentRendered += (_, _) => UiCapture.SaveLater((FrameworkElement)Content, "ui-settings.png");
         _gameStatusTimer.Tick+=(_,_)=>UpdateGameStatus();
         RefreshAfterMatchEnabled.Checked+=(_,_)=>UpdateGameStatusTimer();
         RefreshAfterMatchEnabled.Unchecked+=(_,_)=>UpdateGameStatusTimer();
         Loaded+=(_,_)=>UpdateGameStatusTimer();
         Closed += (_, _) => { _gameStatusTimer.Stop();_closing.Cancel(); _closing.Dispose(); };
+    }
+    private void Language_Changed(object sender,SelectionChangedEventArgs e)
+    {
+        if(LanguageBox.SelectedValue is not string language || language==_current.Language) return;
+        try
+        {
+            // Commit only the language. Other controls may contain incomplete, unsaved edits.
+            if(ChangeLanguage is { } change) change(language);
+            else LocalizationWpf.Apply(language);
+            _current=_current with {Language=language};
+            CheckUpdatesButton.ToolTip=_availableUpdate==null ? null :
+                Localization.Format(Strings.UpdateAvailable,$"v{_availableUpdate.Version.ToString(3)}");
+        }
+        catch(Exception error) when(error is IOException or UnauthorizedAccessException or ArgumentException)
+        {
+            Diagnostics.Write("settings","language_save_failed",error);
+            LanguageBox.SelectedValue=_current.Language;
+            ShowError(Strings.LanguageSaveFailed);
+        }
     }
     private void UpdateGameStatusTimer()
     {
@@ -64,7 +85,7 @@ public partial class SettingsWindow : ChromeWindow
     {
         if(RefreshAfterMatchEnabled.IsChecked!=true) {_gameStatusTimer.Stop();return;}
         var running=Sf6GameProbe.Find()!=null;
-        GameRunningHint.Text=running ? Strings.Sf6Running : Strings.Sf6NotRunning;
+        GameRunningHint.SetResourceReference(TextBlock.TextProperty,running ? "I18n.Sf6Running" : "I18n.Sf6NotRunning");
         GameRunningLight.SetResourceReference(Shape.FillProperty,running ? "Win" : "Loss");
     }
     private void OpenLogs_Click(object sender,RoutedEventArgs e)

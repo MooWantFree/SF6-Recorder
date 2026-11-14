@@ -9,7 +9,7 @@
     <AssemblyName>SF6 Recorder</AssemblyName>
     <AssemblyTitle>SF6 Recorder</AssemblyTitle>
     <Product>SF6 Recorder</Product>
-    <Version>0.0.2</Version>
+    <Version>0.0.3</Version>
     <StartupObject>Sf6Prototype.App</StartupObject>
     <Description>SF6 Recorder</Description>
     <RootNamespace>Sf6Prototype</RootNamespace>

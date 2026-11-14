@@ -33,8 +33,8 @@ public static class PresentationChecks
 
         var now=new DateTimeOffset(2026,11,12,12,0,0,TimeSpan.FromHours(8));
         Check(!DateRanges.IsRefreshOverdue(null,now) && !DateRanges.IsRefreshOverdue(now,now),"Unknown and freshly updated histories do not trigger the refresh reminder");
-        Check(!DateRanges.IsRefreshOverdue(now.AddDays(-1),now) && DateRanges.IsRefreshOverdue(now.AddDays(-1).AddSeconds(-1),now),"The refresh reminder starts only after a full 24 hours");
-        Check(!DateRanges.IsRefreshOverdue(now.AddMinutes(5),now) && DateRanges.IsRefreshOverdue(now.AddDays(-2).ToUniversalTime(),now),"Reminder timing handles clock skew and timezone offsets");
+        Check(!DateRanges.IsRefreshOverdue(now.AddDays(-1),now,86400) && DateRanges.IsRefreshOverdue(now.AddDays(-1).AddSeconds(-1),now,86400),"An explicitly enabled daily reminder starts only after a full 24 hours");
+        Check(!DateRanges.IsRefreshOverdue(now.AddMinutes(5),now,86400) && DateRanges.IsRefreshOverdue(now.AddDays(-2).ToUniversalTime(),now,86400),"Reminder timing handles clock skew and timezone offsets");
 
         Check(ViewportMath.CenterOffset(250,200,800)==150,"Dropdown selection is centered within its viewport");
         Check(ViewportMath.CenterOffset(15,200,800)==0 && ViewportMath.CenterOffset(990,200,800)==800,"Dropdown centering clamps at the first and last season");

@@ -12,7 +12,7 @@ public interface IRefreshSource : IBattleSource, IProfileSource
 public enum RefreshMode { Account, Initial, More, Scores }
 public sealed record RefreshPlan(BattlePager Pager, RefreshMode Mode, string Category = "", ScoreRange? Range = null,
     bool ForceHead = false, IReadOnlyList<Battle>? Filtered = null, DailyProfileRefresh? Profile = null);
-public sealed record RefreshResult(SyncResult Sync, bool ImagesPending);
+public sealed record RefreshResult(SyncResult Sync, bool ScoresPending);
 public sealed class RefreshCallbacks
 {
     public Action BeforeValidation { get; init; } = () => { };
@@ -37,7 +37,8 @@ public static class RefreshWorkflow
         source.Activity += callbacks.Request;
         BattlePager? pager = null;
         DailyProfileRefresh? daily = null;
-        void Progress(BattleLoadProgress progress) => callbacks.Progress(progress, daily?.Required == true ? 1 : 0);
+        bool NeedsProfile() => daily != null && (daily.Required || pager?.RankHeadFetched == true);
+        void Progress(BattleLoadProgress progress) => callbacks.Progress(progress, NeedsProfile() ? 1 : 0);
         try
         {
             token.ThrowIfCancellationRequested();
@@ -45,7 +46,7 @@ public static class RefreshWorkflow
             token.ThrowIfCancellationRequested();
             var plan = await prepare(); pager = plan.Pager; daily = plan.Profile;
             pager.ProgressChanged += Progress;
-            var pending = false;
+            var scoresPending = false;
             if (daily?.Required == true)
             {
                 await callbacks.PrepareImages();
@@ -57,7 +58,7 @@ public static class RefreshWorkflow
                 }
                 catch (Exception ex) when (ex is not OutOfMemoryException and not OperationCanceledException and not LoginRequiredException
                     && ex is not HttpRequestException {StatusCode:HttpStatusCode.TooManyRequests})
-                { Diagnostics.Write("sync", "refresh_avatar", ex); pending = true; }
+                { Diagnostics.Write("sync", "refresh_avatar", ex); }
             }
             var result = plan.Mode switch
             {
@@ -70,16 +71,16 @@ public static class RefreshWorkflow
             callbacks.BattlesLoaded();
             try
             {
-                if (daily?.Required == true)
+                if (NeedsProfile())
                 {
                     callbacks.BeforeProfile();
-                    var images = await daily.RefreshPlayAsync(source,token,captureScores:pager.RankHeadFetched);
+                    var images = await daily!.RefreshPlayAsync(source,token,captureScores:pager.RankHeadFetched);
                     token.ThrowIfCancellationRequested(); callbacks.ImagesReady(images);
                 }
             }
             catch (Exception ex) when (ex is not OperationCanceledException and not OutOfMemoryException && (!automatic || ex is not LoginRequiredException))
-            { Diagnostics.Write("sync", "refresh_profile", ex); pending = true; }
-            return new(result with {Requests=source.Requests}, pending);
+            { Diagnostics.Write("sync", "refresh_profile", ex); scoresPending = pager.RankHeadFetched; }
+            return new(result with {Requests=source.Requests}, scoresPending);
         }
         finally
         {

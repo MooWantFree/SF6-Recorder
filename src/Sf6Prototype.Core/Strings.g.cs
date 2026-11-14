@@ -176,6 +176,7 @@ public static class Strings
     public static string InvalidTagName => Localization.Get(nameof(InvalidTagName));
     public static string InvalidUserCode => Localization.Get(nameof(InvalidUserCode));
     public static string LanguageLabel => Localization.Get(nameof(LanguageLabel));
+    public static string LanguageSaveFailed => Localization.Get(nameof(LanguageSaveFailed));
     public static string LastFifty => Localization.Get(nameof(LastFifty));
     public static string LastHundred => Localization.Get(nameof(LastHundred));
     public static string LastMonth => Localization.Get(nameof(LastMonth));
@@ -313,6 +314,7 @@ public static class Strings
     public static string RecentSearches => Localization.Get(nameof(RecentSearches));
     public static string RecordsSavedImagesBackground => Localization.Get(nameof(RecordsSavedImagesBackground));
     public static string RecordsUpdatedImagesPending => Localization.Get(nameof(RecordsUpdatedImagesPending));
+    public static string RecordsUpdatedScoresPending => Localization.Get(nameof(RecordsUpdatedScoresPending));
     public static string Refresh => Localization.Get(nameof(Refresh));
     public static string RefreshAfterMatchHelp => Localization.Get(nameof(RefreshAfterMatchHelp));
     public static string RefreshAfterMatchLabel => Localization.Get(nameof(RefreshAfterMatchLabel));

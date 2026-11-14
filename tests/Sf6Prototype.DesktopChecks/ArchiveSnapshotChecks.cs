@@ -56,6 +56,24 @@ internal static class ArchiveSnapshotChecks
         current=current with {Season=2};File.WriteAllText(scoreFile,JsonSerializer.Serialize(current));archive.Load(owner);
         Check(archive.Points["third"].MrDelta==null && archive.Points["first"].MrDelta==5,
             "A profile season change clears only the cross-season estimate and preserves verified historic settlements");
+        var scores=new ScoresView();scores.Bind(archive);
+        current=current with {FetchedAt=DateTimeOffset.FromUnixTimeSeconds(1199)};
+        File.WriteAllText(scoreFile,JsonSerializer.Serialize(current));archive.Load(owner);scores.Reload(new(1,false,20));
+        var chart=(ScoreChart)scores.FindName("Chart");
+        Check(chart.Points.Last() is {ReplayId:"third",Settled:false,Connect:false},
+            "A profile older than the latest battle leaves its LP endpoint pending");
+        foreach(var delta in new[]{-121,-120,0,50000})
+        {
+            current=current with {FetchedAt=DateTimeOffset.FromUnixTimeSeconds(2000),Characters=[new(1,"RYU",10100+delta,1530,36,null)]};
+            File.WriteAllText(scoreFile,JsonSerializer.Serialize(current));archive.Load(owner);scores.Reload();
+            var last=chart.Points.Last();
+            Check(last.Settled==(delta>=-120) && last.Connect==(delta>=-120) && last.Value==(delta>=-120 ? 10100+delta : 10100),
+                $"The LP chart reconnects fresh official settlements, including -120, zero and large gains: {delta}");
+        }
+        var restarted=new Archive(new BattleStore(Path.Combine(root,"archive.sqlite")),new ProfileCache(root));
+        Complete(restarted.PrepareAsync(owner,CancellationToken.None));restarted.Load(owner);scores.Bind(restarted);scores.Reload();
+        Check(chart.Points.Last() is {ReplayId:"third",Value:60100,Settled:true,Connect:true},
+            "A cold local archive read retains the settled endpoint and connecting line without another refresh");
         return count;
     }
 }

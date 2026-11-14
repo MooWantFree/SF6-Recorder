@@ -53,11 +53,11 @@ public static class MatchEndDetectionChecks
         schedule.Clear();Check(!schedule.IsDue("a",now.AddYears(1)),"Disabling or stopping cancels future requests");
 
         var directory=Path.Combine(Environment.CurrentDirectory,".local","checks",Guid.NewGuid().ToString("N"));Directory.CreateDirectory(directory);
-        Check(new ConnectionSettings() is {RefreshAfterMatch:false,MatchEndWaitSeconds:5,MatchEndRetrySeconds:8},"New installations do not capture or send match-end requests automatically");
+        Check(new ConnectionSettings() is {RefreshAfterMatch:true,MatchEndWaitSeconds:1,MatchEndRetrySeconds:8},"New installations enable match-end refresh with a one-second settlement wait");
         var settings=new ConnectionSettings {RefreshAfterMatch=true,MatchEndWaitSeconds=12,MatchEndRetrySeconds=20};settings.Save(directory);
         Check(ConnectionSettings.Load(directory) is {RefreshAfterMatch:true,MatchEndWaitSeconds:12,MatchEndRetrySeconds:20},"The switch and custom timing settings persist independently");
         File.WriteAllText(Path.Combine(directory,"settings.json"),"""{"MatchEndWaitSeconds":-1,"MatchEndRetrySeconds":0,"RefreshAfterMatch":true}""");
-        Check(ConnectionSettings.Load(directory) is {RefreshAfterMatch:true,MatchEndWaitSeconds:5,MatchEndRetrySeconds:8},"Invalid stored timing values fall back without losing the switch");
+        Check(ConnectionSettings.Load(directory) is {RefreshAfterMatch:true,MatchEndWaitSeconds:1,MatchEndRetrySeconds:8},"Invalid stored timing values fall back without losing the switch");
         Check(ConnectionSettings.ParseMatchEndSeconds("0")==0 && ConnectionSettings.ParseMatchEndSeconds("3600",true)==3600,"Supported timing limits parse");
         (settings with {MatchEndSamplesPerSecond=2.5}).Save(directory);
         Check(ConnectionSettings.Load(directory).MatchEndSamplesPerSecond==2.5,"A custom fractional sampling frequency persists");
