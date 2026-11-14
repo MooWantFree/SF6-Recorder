@@ -2,6 +2,8 @@ using System.IO;
 
 namespace Sf6Prototype;
 
+public record SyncResult(int Inserted, int Pages, int Requests);
+
 public sealed record ScoreRange(int? CharacterId,int Count,long? From=null,long? Until=null)
 {
     public ScoreRange Resolve(IReadOnlyList<Battle> ranked) => CharacterId!=null ? this :
@@ -49,7 +51,8 @@ public sealed class BattlePager
         // Older archives may have full category snapshots without an all-stream snapshot.
         if(!store.IsCategoryPending(owner,"") && BattleCategory.All.All(c=>_windows[c.Key].Complete)) _windows[""].Complete=true;
     }
-    private static List<Battle> Ordered(IReadOnlyList<Battle> rows,string category) => rows
+    private static IReadOnlyList<Battle> Ordered(IReadOnlyList<Battle> rows,string category) =>
+        rows is BattleReadView view && (category.Length==0 || view.Filter.Category==category) ? view : rows
         .Where(b=>category.Length==0 || b.Category==category).OrderByDescending(b=>b.PlayedAt).ThenBy(b=>b.ReplayId,StringComparer.Ordinal).ToList();
     private static bool LocalPageAvailable(IReadOnlyList<Battle> rows,Window window) => rows.Count>window.Limit &&
         (window.Complete || window.Initialized && rows[window.Limit].PlayedAt>=window.Oldest);
@@ -83,7 +86,7 @@ public sealed class BattlePager
         var kept=retained?.Where(b=>b.OwnerId==Owner).Select(b=>b.ReplayId).ToHashSet() ?? [];
         if(prependOnly && retained?.FirstOrDefault(b=>b.OwnerId==Owner) is { } head)
             prefix=prefix.Where(b=>b.PlayedAt>head.PlayedAt || b.PlayedAt==head.PlayedAt && StringComparer.Ordinal.Compare(b.ReplayId,head.ReplayId)<0);
-        return prefix.Concat(filtered.Where(b=>kept.Contains(b.ReplayId))).DistinctBy(b=>b.ReplayId)
+        return prefix.Concat(filtered is BattleReadView readView ? readView.Find(kept) : filtered.Where(b=>kept.Contains(b.ReplayId))).DistinctBy(b=>b.ReplayId)
             .OrderByDescending(b=>b.PlayedAt).ThenBy(b=>b.ReplayId,StringComparer.Ordinal).ToList();
     }
     public bool HasMore(IReadOnlyList<Battle> filtered,string category) => Ordered(filtered,category).Count>_windows[category].Limit || !_windows[category].Complete;

@@ -18,23 +18,23 @@ public static class StreamingChecks
             if (page == 2) Check(delivered.SequenceEqual([1]), "First page is delivered before requesting the second page");
             return new(page, 2, [new Battle {OwnerId=owner,ReplayId="P"+page,Category=category,PlayedAt=10-page,Lp=1000}]);
         });
-        await new SyncService(store, source).RunAsync(owner, null, CancellationToken.None, pageSaved: async added =>
+        await new BattlePager(store,owner).LoadAccountAsync(source,CancellationToken.None,async () =>
         {
-            Check(added==1 && store.Query(new(owner)).Count==delivered.Count+1, "Each page callback observes its already committed records");
+            var saved=store.Query(new(owner)).Count;
             Check(store.IsSyncIncomplete(owner), "Partial histories are marked incomplete while pages are still arriving");
-            delivered.Add(store.Query(new(owner)).Count);
+            if(saved>(delivered.LastOrDefault())) delivered.Add(saved);
             await Task.Yield();
         });
-        Check(delivered.SequenceEqual([1,2]) && !store.IsSyncIncomplete(owner), "Streaming completes with all pages and restores settlement calculations");
-        var notified = 0;
-        await new SyncService(store, source).RunAsync(owner, null, CancellationToken.None, pageSaved: _ => { notified++; return Task.CompletedTask; });
-        Check(notified==0, "Duplicate incremental pages do not trigger unnecessary list rebuilds");
+        Check(delivered.SequenceEqual([1,2]) && !store.IsSyncIncomplete(owner), "Production paging exposes committed records before the next request");
+        var notified=0;
+        await new BattlePager(store,owner).LoadAccountAsync(source,CancellationToken.None,()=>{notified++;return Task.CompletedTask;});
+        Check(notified>0 && store.Query(new(owner)).Count==2, "Repeated production paging reconciles coverage without duplicating records");
         using var cancelled = new CancellationTokenSource();
         var partialStore = new BattleStore(Path.Combine(dir, "partial.sqlite"));
-        var partialSource = new FakeSource((category,page)=>new(page,5,[new Battle {OwnerId=owner,ReplayId="C"+page,Category=category,Lp=1200}]));
+        var partialSource = new FakeSource((category,page)=>new(page,5,[new Battle {OwnerId=owner,ReplayId="C"+page,Category=category.Length==0 ? "rank" : category,Lp=1200}]));
         try
         {
-            await new SyncService(partialStore,partialSource).RunAsync(owner,null,cancelled.Token,pageSaved: _ => {cancelled.Cancel();return Task.CompletedTask;});
+            await new BattlePager(partialStore,owner).LoadAccountAsync(partialSource,cancelled.Token,() => {cancelled.Cancel();return Task.CompletedTask;});
             throw new Exception("Expected cancellation");
         }
         catch(OperationCanceledException) { }

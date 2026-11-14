@@ -56,11 +56,44 @@ public record ConnectionSettings
         if (response.StatusCode != HttpStatusCode.NoContent) throw new HttpRequestException(Localization.Format(Strings.GoogleHttpError, (int)response.StatusCode));
         return watch.ElapsedMilliseconds;
     }
+    private static readonly object FileGate = new();
     public static ConnectionSettings Load(string directory)
+    {
+        lock (FileGate) return LoadCore(directory);
+    }
+    private static ConnectionSettings LoadCore(string directory)
     {
         var path = Path.Combine(directory, "settings.json");
         if (!File.Exists(path)) return new();
-        var settings=JsonSerializer.Deserialize<ConnectionSettings>(File.ReadAllText(path)) ?? new();
+        ConnectionSettings settings;
+        try
+        {
+            settings = ReadSettings(path);
+            // Seed a recovery copy for existing installations without rewriting preferences.
+            if(!File.Exists(path + ".bak"))
+            {
+                try { AtomicFile.WriteText(path + ".bak", File.ReadAllText(path)); }
+                catch(Exception backupError) when(backupError is IOException or UnauthorizedAccessException)
+                { Diagnostics.Write("settings", "backup_failed", backupError); }
+            }
+        }
+        catch (JsonException error)
+        {
+            Diagnostics.Write("settings", "corrupt", error);
+            settings = new();
+            try { if (File.Exists(path + ".bak")) settings = ReadSettings(path + ".bak"); }
+            catch (Exception backupError) when (backupError is JsonException or IOException or UnauthorizedAccessException)
+            { Diagnostics.Write("settings", "backup_unavailable", backupError); }
+            try
+            {
+                // Preserve evidence before repairing the primary file. Recovery is local and silent.
+                File.Copy(path, Path.Combine(directory, "settings.corrupt-" + Guid.NewGuid().ToString("N") + ".json"));
+                AtomicFile.WriteText(path, JsonSerializer.Serialize(settings));
+                Diagnostics.Write("settings", "recovered");
+            }
+            catch (Exception repairError) when (repairError is IOException or UnauthorizedAccessException)
+            { Diagnostics.Write("settings", "repair_failed", repairError); }
+        }
         return settings with
         {
             RefreshReminderSeconds=settings.RefreshReminderSeconds>=0 ? settings.RefreshReminderSeconds : DefaultRefreshReminderSeconds,
@@ -73,6 +106,8 @@ public record ConnectionSettings
             Language=Localization.Normalize(settings.Language)
         };
     }
+    private static ConnectionSettings ReadSettings(string path) =>
+        JsonSerializer.Deserialize<ConnectionSettings>(File.ReadAllText(path)) ?? throw new JsonException("Empty settings document");
     public static int ParseReminderSeconds(string value)
     {
         return ParseIntervalSeconds(value,Strings.RefreshReminder);
@@ -112,6 +147,14 @@ public record ConnectionSettings
         if(!Enum.IsDefined(WindowCloseAction)) throw new ArgumentException(Strings.InvalidCloseAction);
         if(!Localization.IsSupported(Language)) throw new ArgumentException(Strings.InvalidLanguage);
         if (UseProxy) ValidateProxy();
-        File.WriteAllText(Path.Combine(directory, "settings.json"), JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true }));
+        lock (FileGate)
+        {
+            var path = Path.Combine(directory, "settings.json");
+            var json = JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true });
+            AtomicFile.WriteText(path, json);
+            try { AtomicFile.WriteText(path + ".bak", json); }
+            catch (Exception error) when (error is IOException or UnauthorizedAccessException)
+            { Diagnostics.Write("settings", "backup_failed", error); }
+        }
     }
 }

@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Sf6Prototype</RootNamespace><NeutralLanguage>en</NeutralLanguage>
+  </PropertyGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="../Sf6Prototype/Resources/Strings*.resx" Link="Resources/%(Filename)%(Extension)" />
+    <EmbeddedResource Include="../Sf6Prototype/Resources/CharacterNames.json" LogicalName="Sf6Prototype.Resources.CharacterNames.json" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.15" />
+    <PackageReference Include="Velopack" Version="1.2.161" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.0" />
+    <InternalsVisibleTo Include="Sf6Prototype.Checks" />
+  </ItemGroup>
+</Project>

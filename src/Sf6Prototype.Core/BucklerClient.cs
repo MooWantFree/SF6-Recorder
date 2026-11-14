@@ -12,7 +12,7 @@ public interface IBattleSource
     int Requests { get; }
     Task<BattlePage> FetchPageAsync(string owner, string category, int page, CancellationToken token);
 }
-public sealed class BucklerClient : IBattleSource, IProfileSource, IRankSource, ICharacterNameSource, IDisposable
+public sealed class BucklerClient : IRefreshSource, IRankSource, ICharacterNameSource, IDisposable
 {
     public const string Origin = "https://www.streetfighter.com";
     private readonly HttpClient _http;

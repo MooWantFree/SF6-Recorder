@@ -4,6 +4,20 @@ namespace Sf6Prototype;
 
 public static class AtomicFile
 {
+    public static void WriteText(string destination, string text)
+    {
+        var temporary = destination + "." + Guid.NewGuid().ToString("N") + ".tmp";
+        try
+        {
+            using (var stream = new FileStream(temporary, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+            {
+                using var writer = new StreamWriter(stream, new System.Text.UTF8Encoding(false), leaveOpen: true);
+                writer.Write(text); writer.Flush(); stream.Flush(flushToDisk: true);
+            }
+            Commit(temporary, destination);
+        }
+        finally { if (File.Exists(temporary)) File.Delete(temporary); }
+    }
     public static void Commit(string temporary, string destination)
     {
         for (var attempt = 0; ; attempt++)

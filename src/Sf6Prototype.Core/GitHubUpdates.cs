@@ -16,7 +16,7 @@ public static class GitHubUpdates
 {
     public const string PackageId = "SF6Recorder";
     public const string RepositoryUrl = "https://github.com/MooWantFree/SF6-Recorder";
-    public static Version CurrentVersion { get; } = Version.Parse(typeof(GitHubUpdates).Assembly
+    public static Version CurrentVersion { get; } = Version.Parse((Assembly.GetEntryAssembly() ?? typeof(GitHubUpdates).Assembly)
         .GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion.Split('+')[0]);
     public static string VersionLabel => $"v{CurrentVersion.ToString(3)}";
 

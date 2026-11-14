@@ -123,7 +123,7 @@ public static class DatabaseTransfer
         CheckIntegrity(db);
         using var cmd=db.CreateCommand(); cmd.CommandText="PRAGMA user_version";
         var version=Convert.ToInt32(cmd.ExecuteScalar());
-        if(version is not (3 or 4)) throw new InvalidDataException(Strings.DatabaseVersionUnsupported);
+        if(version<3 || version>BattleStore.SchemaVersion) throw new InvalidDataException(Strings.DatabaseVersionUnsupported);
         var schemas=new Dictionary<string,string[]>
         {
             ["battles"]=["owner_id","replay_id","category","played_at","character_id","character","opponent","outcome","lp","mr","data_json","saved_at"],
@@ -131,7 +131,7 @@ public static class DatabaseTransfer
             ["score_links"]=["owner_id","replay_id","next_replay_id"],
             ["sync_state"]=["owner_id","category","frontier_id","completed_at"]
         };
-        if(version==4) {schemas["tags"]=["name","color"];schemas["battle_tags"]=["owner_id","replay_id","tag_name"];}
+        if(version>=4) {schemas["tags"]=["name","color"];schemas["battle_tags"]=["owner_id","replay_id","tag_name"];}
         foreach(var (table,columns) in schemas)
         {
             cmd.CommandText="SELECT sql FROM sqlite_master WHERE type='table' AND name=$name";
@@ -180,7 +180,7 @@ public static class DatabaseTransfer
               OR a.character_id<>b.character_id OR b.played_at<a.played_at OR (b.played_at=a.played_at AND b.replay_id<=a.replay_id);
             """;
         if(Convert.ToInt64(cmd.ExecuteScalar())!=0) throw new InvalidDataException(Strings.BackupScoreLinksIncomplete);
-        if(version==4)
+        if(version>=4)
         {
             cmd.CommandText="SELECT name,color FROM tags";
             using(var reader=cmd.ExecuteReader()) while(reader.Read())

@@ -34,6 +34,7 @@ public sealed class Archive(BattleStore store, ProfileCache profiles)
     private sealed record Prepared(string Owner,long Revision,List<Battle> Rows,CurrentScores? Current,
         Dictionary<string,string> Links,Dictionary<string,ScorePoint> Points,Dictionary<string,IReadOnlyList<MatchTag>> Tags);
     private Prepared? _prepared;
+    private readonly ScoreProjection _scoreProjection=new();
     public async Task PrepareAsync(string owner,CancellationToken token)
     {
         // Only immutable data is prepared here; WPF image objects and bindings stay on the dispatcher.
@@ -43,7 +44,7 @@ public sealed class Archive(BattleStore store, ProfileCache profiles)
             var revision=store.ReadRevision;
             var rows=store.QuerySummaries(new(owner));var current=profiles.Scores(owner);
             var links=store.ScoreLinks(owner);var tags=store.TagsFor(owner);
-            var points=BattleStore.Scores(rows,current,links:links).ToDictionary(p=>p.ReplayId);
+            var points=_scoreProjection.Update(owner,rows,current,links);
             token.ThrowIfCancellationRequested();
             return new Prepared(owner,revision,rows,current,links,points,tags);
         },token);
@@ -74,7 +75,7 @@ public sealed class Archive(BattleStore store, ProfileCache profiles)
             _loadedRevision=store.ReadRevision;
         }
         if(changed || scoresChanged)
-            _nativePoints=prepared?.Points ?? BattleStore.Scores(All,Current,links:_scoreLinks).ToDictionary(p=>p.ReplayId);
+            _nativePoints=prepared?.Points ?? _scoreProjection.Update(owner,All,Current,_scoreLinks);
         Points=_nativePoints;Tags=_nativeTags;
         if (refreshImages) _images.Clear();
     }

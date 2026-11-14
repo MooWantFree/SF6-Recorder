@@ -13,78 +13,7 @@ public sealed partial class BattleStore
     {
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         _connection = new SqliteConnectionStringBuilder { DataSource = path, ForeignKeys = true, DefaultTimeout = 10 }.ToString();
-        using var db = Open();
-        using var cmd = db.CreateCommand();
-        cmd.CommandText = """
-        PRAGMA journal_mode=WAL;
-        CREATE TABLE IF NOT EXISTS battles (
-          owner_id TEXT NOT NULL, replay_id TEXT NOT NULL, category TEXT NOT NULL, played_at INTEGER NOT NULL,
-          character_id INTEGER NOT NULL, character TEXT NOT NULL, opponent TEXT NOT NULL, outcome TEXT NOT NULL,
-          lp INTEGER, mr INTEGER, data_json TEXT NOT NULL, saved_at TEXT NOT NULL,
-          PRIMARY KEY(owner_id,replay_id));
-        CREATE INDEX IF NOT EXISTS ix_battles_filter ON battles(owner_id,category,character_id,played_at DESC);
-        CREATE TABLE IF NOT EXISTS score_snapshots (
-          owner_id TEXT NOT NULL, replay_id TEXT NOT NULL, character_id INTEGER NOT NULL, played_at INTEGER NOT NULL,
-          lp INTEGER, mr INTEGER, season INTEGER, PRIMARY KEY(owner_id,replay_id),
-          FOREIGN KEY(owner_id,replay_id) REFERENCES battles(owner_id,replay_id));
-        CREATE INDEX IF NOT EXISTS ix_scores_character ON score_snapshots(owner_id,character_id,played_at);
-        CREATE TABLE IF NOT EXISTS score_links (
-          owner_id TEXT NOT NULL, replay_id TEXT NOT NULL, next_replay_id TEXT NOT NULL,
-          PRIMARY KEY(owner_id,replay_id));
-        CREATE TABLE IF NOT EXISTS sync_state (
-          owner_id TEXT NOT NULL, category TEXT NOT NULL, frontier_id TEXT, completed_at TEXT NOT NULL,
-          PRIMARY KEY(owner_id,category));
-        CREATE TABLE IF NOT EXISTS sync_runs (
-          id INTEGER PRIMARY KEY AUTOINCREMENT, owner_id TEXT NOT NULL, started_at TEXT NOT NULL,
-          finished_at TEXT, status TEXT NOT NULL, requests INTEGER NOT NULL DEFAULT 0,
-          inserted INTEGER NOT NULL DEFAULT 0, detail TEXT);
-        CREATE TABLE IF NOT EXISTS sync_pending (
-          owner_id TEXT NOT NULL, category TEXT NOT NULL, PRIMARY KEY(owner_id,category));
-        CREATE TABLE IF NOT EXISTS history_prefixes (
-          owner_id TEXT NOT NULL, category TEXT NOT NULL, data_json TEXT NOT NULL,
-          PRIMARY KEY(owner_id,category));
-        """;
-        cmd.ExecuteNonQuery();
-        cmd.CommandText="PRAGMA user_version";
-        var version = Convert.ToInt32(cmd.ExecuteScalar());
-        if(version<2)
-        {
-            // Version 1 mistook the master_league badge for a season. Preserve it as a badge,
-            // invalidate only the erroneous season metadata, and keep every battle/score.
-            using var tx=db.BeginTransaction(); cmd.Transaction=tx;
-            cmd.CommandText="""
-            UPDATE battles SET data_json=json_set(data_json,'$.MasterLeague',json_extract(data_json,'$.Season'),'$.Season',NULL)
-              WHERE json_type(data_json,'$.MasterLeague') IS NULL;
-            UPDATE score_snapshots SET season=NULL;
-            PRAGMA user_version=2;
-            """;
-            cmd.ExecuteNonQuery(); tx.Commit();
-            cmd.Transaction = null;
-        }
-        if (version < 3)
-        {
-            cmd.CommandText = """
-            INSERT OR IGNORE INTO score_links(owner_id,replay_id,next_replay_id)
-            SELECT owner_id,replay_id,next_id FROM (
-              SELECT owner_id,replay_id,LEAD(replay_id) OVER(PARTITION BY owner_id,character_id ORDER BY played_at,replay_id) AS next_id
-              FROM battles WHERE category='rank' AND owner_id IN (SELECT owner_id FROM sync_state WHERE category='rank')
-            ) WHERE next_id IS NOT NULL;
-            PRAGMA user_version=3;
-            """;
-            cmd.ExecuteNonQuery();
-        }
-        cmd.CommandText = """
-            CREATE TABLE IF NOT EXISTS tags (
-              name TEXT PRIMARY KEY COLLATE NOCASE, color INTEGER NOT NULL CHECK(color>=0));
-            CREATE TABLE IF NOT EXISTS battle_tags (
-              owner_id TEXT NOT NULL, replay_id TEXT NOT NULL, tag_name TEXT NOT NULL COLLATE NOCASE,
-              PRIMARY KEY(owner_id,replay_id,tag_name),
-              FOREIGN KEY(owner_id,replay_id) REFERENCES battles(owner_id,replay_id),
-              FOREIGN KEY(tag_name) REFERENCES tags(name));
-            CREATE INDEX IF NOT EXISTS ix_battle_tags_name ON battle_tags(owner_id,tag_name,replay_id);
-            """;
-        cmd.ExecuteNonQuery();
-        if(version<4) {cmd.CommandText="PRAGMA user_version=4";cmd.ExecuteNonQuery();}
+        InitializeSchema();
     }
     private SqliteConnection Open() { var db = new SqliteConnection(_connection); db.Open(); return db; }
     public int SavePage(IEnumerable<Battle> rows)
@@ -221,9 +150,10 @@ public sealed partial class BattleStore
     }
     public void CompleteCategory(string owner, string category, string? head)
     {
-        using var db = Open(); using var cmd = db.CreateCommand();
+        using var db = Open(); using var transaction = db.BeginTransaction();
+        using var cmd = db.CreateCommand(); cmd.Transaction = transaction;
         cmd.CommandText = "INSERT INTO sync_state VALUES($owner,$category,$head,$time) ON CONFLICT(owner_id,category) DO UPDATE SET frontier_id=excluded.frontier_id,completed_at=excluded.completed_at; DELETE FROM sync_pending WHERE owner_id=$owner AND category=$category; DELETE FROM history_prefixes WHERE owner_id=$owner AND category=$category";
-        Add(cmd, "$owner", owner); Add(cmd, "$category", category); Add(cmd, "$head", head); Add(cmd, "$time", DateTimeOffset.UtcNow.ToString("O")); cmd.ExecuteNonQuery();
+        Add(cmd, "$owner", owner); Add(cmd, "$category", category); Add(cmd, "$head", head); Add(cmd, "$time", DateTimeOffset.UtcNow.ToString("O")); cmd.ExecuteNonQuery(); transaction.Commit();
     }
     public long BeginRun(string owner)
     {
@@ -287,38 +217,6 @@ public sealed partial class BattleStore
     // next ranked record of the same character minus this one. Only ranked matches move LP/MR.
     // The newest match uses the profile score captured after the last completed sync.
     public static List<ScorePoint> Scores(IEnumerable<Battle> rows, CurrentScores? current = null, bool settlementsComplete = true, IReadOnlyDictionary<string,string>? links = null)
-    {
-        // During backfill there may be a gap between old records and new pages.
-        // Show recorded pre-match scores, but do not label that gap as one match's settlement.
-        if (!settlementsComplete) return rows.Where(b => b.Category == "rank").OrderBy(b => b.PlayedAt).ThenBy(b => b.ReplayId)
-            .Select(b => new ScorePoint(b.PlayedAt, b.Time, b.Lp, b.Mr, null, null, b.ReplayId)).ToList();
-        var result = new List<ScorePoint>();
-        foreach (var group in rows.Where(b => b.Category == "rank").GroupBy(b => b.CharacterId))
-        {
-            var ordered = group.OrderBy(b => b.PlayedAt).ThenBy(b => b.ReplayId).ToList();
-            for (var i = 0; i < ordered.Count; i++)
-            {
-                var b = ordered[i];
-                if (i + 1 < ordered.Count)
-                {
-                    var next = ordered[i + 1];
-                    var linked = links == null || links.TryGetValue(b.ReplayId,out var knownNext) && knownNext==next.ReplayId;
-                    result.Add(new(b.PlayedAt, b.Time, b.Lp, b.Mr, linked ? LpDelta(b.Lp,next.Lp) : null, linked ? MrDelta(b, next.Mr, next.Season) : null, b.ReplayId));
-                    continue;
-                }
-                var now = current != null && current.FetchedAt.ToUnixTimeSeconds() > b.PlayedAt
-                    ? current.Characters.FirstOrDefault(c => c.CharacterId == b.CharacterId && c.Lp >= 0) : null;
-                int? lp = Plausible(b, LpDelta(b.Lp,now?.Lp)), mr = Plausible(b, now == null ? null : MrDelta(b, now.Mr, current!.Season));
-                result.Add(new(b.PlayedAt, b.Time, b.Lp, b.Mr, lp, mr, b.ReplayId, lp != null || mr != null));
-            }
-        }
-        return result.OrderBy(p => p.PlayedAt).ThenBy(p => p.ReplayId).ToList();
-    }
-    private static int? LpDelta(int? before,int? after) => before>=0 && after>=0 ? after-before : null;
-    private static int? MrDelta(Battle b, int? nextMr, int? nextSeason) =>
-        b.Mr > 0 && nextMr > 0 && b.Season != null && b.Season == nextSeason ? nextMr - b.Mr : null;
-    // Rejects an estimate that disagrees with the result, e.g. when a newer match is not yet listed.
-    private static int? Plausible(Battle b, int? delta) =>
-        delta == null || b.Outcome switch { "胜" => delta > 0, "负" => delta <= 0, _ => true } ? delta : null;
+        => ScoreCalculator.Calculate(rows,current,settlementsComplete,links);
     private static void Add(SqliteCommand cmd, string name, object? value) => cmd.Parameters.AddWithValue(name, value ?? DBNull.Value);
 }

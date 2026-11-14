@@ -45,10 +45,12 @@ public partial class App : Application
             System.Globalization.DateTimeStyles.None,out var captureStart)) StartedAt=captureStart;
         if (Arg("--size")?.Split('x') is [var w, var h] && int.TryParse(w, out var width) && int.TryParse(h, out var height)) StartSize = new(width, height);
         Directory.CreateDirectory(DataDirectory);
-        LocalizationWpf.Apply(ConnectionSettings.Load(DataDirectory).Language);
         try { _instanceLock = new FileStream(Path.Combine(DataDirectory, "instance.lock"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None); }
         catch (IOException)
         {
+            try { LocalizationWpf.Apply(ConnectionSettings.Load(DataDirectory).Language); }
+            catch (Exception error) when (error is IOException or UnauthorizedAccessException)
+            { LocalizationWpf.Apply(null); }
             MessageWindow.Notice(null,Strings.DataDirectoryInUse,Strings.AppTitle);
             Shutdown();
             return;
@@ -67,6 +69,7 @@ public partial class App : Application
             IsShuttingDown=true;
             Shutdown(1);
         };
+        LocalizationWpf.Apply(ConnectionSettings.Load(DataDirectory).Language);
         SessionEnding+=(_,_)=>IsShuttingDown=true;
         MainWindow = new MainWindow();
         MainWindow.Show();

@@ -267,9 +267,12 @@ public partial class HistoryView : UserControl
         var outcome = OutcomeFilter.SelectedIndex > 0 ? (OutcomeFilter.SelectedItem as OutcomeChoice)?.Key : null;
         var filter=new BattleFilter(a.Owner,string.IsNullOrEmpty(category) ? null : category,character,outcome,SearchBox.Text,
             Epoch(DateRange.Start),Epoch(DateRange.End?.AddDays(1)),opponentCharacter,FavoritesOnly,FavoritesOnly ? _filterTags : [],_matchAllTags);
-        var filtered=FavoritesOnly ? Favorites.Filter(_playerFavorites,filter) : a.Store.QuerySummaries(filter);
+        IReadOnlyList<Battle> filtered=FavoritesOnly ? Favorites.Filter(_playerFavorites,filter) : a.Store.ReadView(filter);
 
-        var wins = filtered.Count(b => b.Outcome == "胜"); var losses = filtered.Count(b => b.Outcome == "负"); var draws = filtered.Count(b => b.Outcome == "平");
+        var statistics=(filtered as BattleReadView)?.Statistics;
+        var wins=statistics?.Wins ?? filtered.Count(b=>b.Outcome=="胜");
+        var losses=statistics?.Losses ?? filtered.Count(b=>b.Outcome=="负");
+        var draws=statistics?.Draws ?? filtered.Count(b=>b.Outcome=="平");
         var incomplete=!FavoritesOnly && HistoryIncomplete(category);
         TotalMetric.Text = filtered.Count.ToString("N0")+(incomplete ? "*" : "");
         TotalMetric.ToolTip=incomplete ? Strings.IncompleteHistoryCount : null;
@@ -285,7 +288,7 @@ public partial class HistoryView : UserControl
         ModeColumnWidth=new GridLength(ShowModeColumn ? Localization.Culture.Name=="ja" ? 68 : 56 : 0);
         ShowScoreColumns = category=="rank" || string.IsNullOrEmpty(category);
         ScoreColumnWidth = new GridLength(ShowScoreColumns ? 148 : 0);
-        HasTags=filtered.Any(b=>a.Tags.GetValueOrDefault(b.ReplayId)?.Count>0);
+        HasTags=statistics?.HasTags ?? filtered.Any(b=>a.Tags.GetValueOrDefault(b.ReplayId)?.Count>0);
         TagColumnWidth=new GridLength(HasTags ? 112 : 52);
         ResetButton.Visibility = character != null || opponentCharacter!=null || FavoritesOnly && _filterTags.Count>0 || outcome != null || DateRange.Start != null || !string.IsNullOrWhiteSpace(SearchBox.Text) ? Visibility.Visible : Visibility.Collapsed;
 
@@ -294,7 +297,7 @@ public partial class HistoryView : UserControl
         var orderedPrefix=character==null && opponentCharacter==null && outcome==null && DateRange.Start==null && string.IsNullOrWhiteSpace(SearchBox.Text);
         if(_rowsOwner!=a.Owner) { _groups.Clear(); _rowsOwner=a.Owner; }
         var restoredIds=restore?.VisibleReplays.ToHashSet();
-        var retained=restoredIds!=null ? filtered.Where(b=>restoredIds.Contains(b.ReplayId)).ToList() : preserveViewport ? _rows.Select(r=>r.Battle).ToList() : null;
+        var retained=restoredIds!=null ? (filtered is BattleReadView readView ? readView.Find(restoredIds).ToList() : filtered.Where(b=>restoredIds.Contains(b.ReplayId)).ToList()) : preserveViewport ? _rows.Select(r=>r.Battle).ToList() : null;
         var visible=(FavoritesOnly ? filtered : Pager?.Visible(filtered,Category,orderedPrefix,retained,prependOnly:_headOnlyRefresh) ?? filtered).ToList();
         var rows = BuildRows(a, visible);
         _rebuilding = true;

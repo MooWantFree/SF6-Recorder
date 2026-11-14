@@ -13,7 +13,7 @@ if(Environment.GetCommandLineArgs().Contains("--name-cache-checks"))
     return;
 }
 Localization.Apply("zh");
-var assertions = 0;
+var assertions = PersistenceRecoveryChecks.Run() + ScoreProjectionChecks.Run() + await RefreshWorkflowChecks.Run();
 void Check(bool condition, string description)
 {
     if (!condition) throw new Exception(description);

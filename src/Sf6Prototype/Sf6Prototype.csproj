@@ -23,7 +23,8 @@
     <Using Remove="System.Drawing"/>
     <Resource Include="Assets\app.ico"/>
     <Resource Include="Assets\Ranks\*.png"/>
-    <EmbeddedResource Include="Resources\CharacterNames.json" LogicalName="Sf6Prototype.Resources.CharacterNames.json"/>
+    <EmbeddedResource Remove="Resources\Strings*.resx"/>
+    <ProjectReference Include="../Sf6Prototype.Core/Sf6Prototype.Core.csproj"/>
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4314.35" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.15" />
     <PackageReference Include="Velopack" Version="1.2.161" />

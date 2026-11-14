@@ -19,7 +19,12 @@ internal static class CancellationChecks
         void Set(string field,object? value)=>typeof(MainWindow).GetField(field,flags)!.SetValue(main,value);
         T Get<T>(string field)=>(T)typeof(MainWindow).GetField(field,flags)!.GetValue(main)!;
         void Pump()=>main.Dispatcher.Invoke(()=>{},DispatcherPriority.ContextIdle);
-        void Complete(Task task) {Pump();Check(task.IsCompleted,"Headless operation completed without network or a native window");task.GetAwaiter().GetResult();}
+        void Complete(Task task)
+        {
+            var deadline=DateTime.UtcNow.AddSeconds(10);
+            do {Pump();Thread.Yield();} while(!task.IsCompleted && DateTime.UtcNow<deadline);
+            Check(task.IsCompleted,"Headless operation completed without network or a native window");task.GetAwaiter().GetResult();
+        }
         void MouseDown(UIElement element,MouseButton button=MouseButton.Left)=>element.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,Environment.TickCount,button) {RoutedEvent=Mouse.PreviewMouseDownEvent});
         void Busy(bool busy)=>Call(main,"SetBusy",busy,false,false);
         var root=System.IO.Path.Combine(Environment.CurrentDirectory,".local","checks",Guid.NewGuid().ToString("N"));

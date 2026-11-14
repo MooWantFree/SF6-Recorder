@@ -33,6 +33,13 @@ public static class ArchiveReadChecks
         foreach(var filter in filters)
         {
             var full=store.Query(filter);var summary=store.QuerySummaries(filter);
+            var view=store.ReadView(filter);
+            Check(view.Count==full.Count && view.Statistics.Wins==full.Count(b=>b.Outcome=="胜") &&
+                view.Statistics.Losses==full.Count(b=>b.Outcome=="负") && view.Statistics.Draws==full.Count(b=>b.Outcome=="平"),
+                "SQL aggregates preserve the full filtered totals, including draws and unknown outcomes");
+            Check(view.Take(20).Select(b=>b.ReplayId).SequenceEqual(full.Take(20).Select(b=>b.ReplayId)),"Lazy first pages preserve SQL filter ordering");
+            Check(view.Find(["R00000","R00004","missing"]).Select(b=>b.ReplayId).SequenceEqual(full.Where(b=>b.ReplayId is "R00000" or "R00004").Select(b=>b.ReplayId)),
+                "Restored visible rows remain constrained by the current filter");
             Check(JsonSerializer.Serialize(full.Select(b=>b with {RawJson=null}))==JsonSerializer.Serialize(summary),
                 "Summaries preserve all displayed fields, ordering and SQL filter semantics");
             Check(store.QuerySummaryPage(filter,1,3).Select(b=>b.ReplayId).SequenceEqual(full.Skip(1).Take(3).Select(b=>b.ReplayId)),
@@ -42,7 +49,9 @@ public static class ArchiveReadChecks
         Check(ReferenceEquals(first,store.QuerySummaries(new(Owner))),"An unchanged archive reuses its summary snapshot");
         var ranked=store.QuerySummaries(new(Owner,Category:"rank"));
         Check(ReferenceEquals(ranked,store.QuerySummaries(new(Owner,Category:"rank"))),"Repeated filters reuse their result");
+        var oldView=store.ReadView(new(Owner));
         store.SavePage([Row(30)]);
+        Check(!ReferenceEquals(oldView,store.ReadView(new(Owner))) && store.ReadView(new(Owner)).Count==31,"Page commits invalidate SQL views and aggregate counts");
         var second=store.QuerySummaries(new(Owner));
         Check(second.Count==31 && first.Count==30 && ReferenceEquals(first[0],second.Single(b=>b.ReplayId==first[0].ReplayId)),
             "Appending a page keeps old snapshots stable and reuses unchanged summaries");
@@ -92,6 +101,15 @@ public static class ArchiveReadChecks
         store.SavePage([Row(10000) with {RawJson=payload}]);
         Measure("summary_append_one",()=>store.QuerySummaries(new(Owner)));
         Measure("summary_page_20",()=>store.QuerySummaryPage(new(Owner),0,20));
+        Measure("history_first_20_with_totals",()=>store.ReadView(new(Owner)).Take(20).ToList());
+        var rows=store.QuerySummaries(new(Owner));var projection=new ScoreProjection();var links=new Dictionary<string,string>();
+        var baseline=ScoreCalculator.Calculate(rows,links:links);projection.Update(Owner,rows,null,links);
+        var changed=rows.Append(Row(10002)).ToArray();
+        var start=Stopwatch.GetTimestamp();var fullScores=ScoreCalculator.Calculate(changed,links:links);
+        Console.WriteLine($"scores_full: rows={fullScores.Count}, ms={Stopwatch.GetElapsedTime(start).TotalMilliseconds:F1}");
+        start=Stopwatch.GetTimestamp();var incremental=projection.Update(Owner,changed,null,links);
+        Console.WriteLine($"scores_incremental: rows={incremental.Count}, ms={Stopwatch.GetElapsedTime(start).TotalMilliseconds:F1}");
+        if(fullScores.Any(p=>incremental[p.ReplayId]!=p)) throw new Exception("Benchmark score projections differ");
         Console.WriteLine("Synthetic archive: "+root);
     }
 }

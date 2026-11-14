@@ -16,26 +16,27 @@ public static class IntegrationChecks
         var store = new BattleStore(Path.Combine(dir, "battles.sqlite"));
         var source = new FakeSource((cat, page) => cat switch
         {
+            "" => new(page, 0, []),
             "rank" => new(page, 3, [Row("R" + (4-page), cat, 1000 + 4-page)]),
             "casual" => new(page, 1, [Row("C1", cat)]),
             "custom" => new(page, 0, []),
             _ => new(page, 1, [Row("H1", cat)])
         });
-        var first = await new SyncService(store, source).RunAsync(owner, null, CancellationToken.None);
-        Assert(first.Inserted == 5 && first.Pages == 6, "Initial sync must exhaust every category");
+        var first = await new BattlePager(store,owner).LoadAccountAsync(source,CancellationToken.None,()=>Task.CompletedTask);
+        Assert(first.Inserted == 5 && first.Pages == 7, "Initial sync must exhaust every category");
         Assert(store.Frontier(owner,"rank") == "R3", "Full sync sets the newest replay as the boundary");
         source.Calls.Clear();
-        var again = await new SyncService(store,source).RunAsync(owner,null,CancellationToken.None);
-        Assert(again.Inserted == 0 && again.Pages == 4, "Repeat sync must fetch only one page per category");
-        var failed = new FakeSource((cat,page) => cat == "rank" && page == 1
+        var again = await new BattlePager(store,owner).LoadAccountAsync(source,CancellationToken.None,()=>Task.CompletedTask);
+        Assert(again.Inserted == 0 && again.Pages == 5, "Repeat sync verifies All and fetches one boundary page per category");
+        var failed = new FakeSource((cat,page) => cat=="" ? new(page,0,[]) : cat == "rank" && page == 1
             ? new(1,3,[Row("R5",cat,1005)]) : throw new IOException("Simulated network failure"));
-        try { await new SyncService(store,failed).RunAsync(owner,null,CancellationToken.None); throw new Exception("Expected error"); }
+        try { await new BattlePager(store,owner).LoadAccountAsync(failed,CancellationToken.None,()=>Task.CompletedTask); throw new Exception("Expected error"); }
         catch (IOException) { }
         Assert(store.Frontier(owner,"rank") == "R3", "Partial sync cannot advance the checkpoint");
         Assert(store.Query(new(owner)).Count == 6, "Completed pages must survive a later network error");
         var resume = new FakeSource((cat,page) => cat == "rank"
             ? new(page,3,[Row("R"+(6-page),cat,1006-page)]) : source.Get(cat,page));
-        var resumed = await new SyncService(store,resume).RunAsync(owner,null,CancellationToken.None);
+        var resumed = await new BattlePager(store,owner).LoadAccountAsync(resume,CancellationToken.None,()=>Task.CompletedTask);
         Assert(resume.Calls.Count(c=>c.Category=="rank") == 3, "An already saved partial page must not stop backfill before the committed checkpoint");
         Assert(resumed.Inserted == 1 && store.Query(new(owner)).Count == 7, "Resume must fill the missing middle match without duplicates");
         Assert(store.Query(new(owner,Category:"rank")).Count == 5, "SQL category filter");
@@ -92,13 +93,13 @@ public static class IntegrationChecks
 
         Assert(store.LastCompletedSync(owner)!=null && store.LastCompletedSync(guest)==null, "Only a completed sync of the selected UID counts as its initial load");
         var guestSource = new FakeSource((category,page) => new(page,1,category=="rank" ? [Row("R3",category,2000) with {OwnerId=guest,OpponentId=owner}] : []));
-        var guestSync = await new SyncService(store,guestSource).RunAsync(guest,null,CancellationToken.None);
+        var guestSync = await new BattlePager(store,guest).LoadAccountAsync(guestSource,CancellationToken.None,()=>Task.CompletedTask);
         Assert(guestSync.Inserted==1 && guestSource.Owners.All(id=>id==guest), "Every category is requested for the viewed UID");
         Assert(store.Query(new(owner)).Count==before && store.Query(new(guest)).Single().Lp==2000, "One replay can be saved independently from two players' perspectives without overwriting own scores");
         Assert(store.LastCompletedSync(guest)!=null && store.Frontier(guest,"rank")=="R3" && store.Frontier(owner,"rank")=="R5", "Opponent history has its own sync completion and incremental boundary");
         const string emptyPlayer="7777777777";
         var emptySource=new FakeSource((category,page)=>new(page,0,[]));
-        await new SyncService(store,emptySource).RunAsync(emptyPlayer,null,CancellationToken.None);
+        await new BattlePager(store,emptyPlayer).LoadAccountAsync(emptySource,CancellationToken.None,()=>Task.CompletedTask);
         Assert(store.LastCompletedSync(emptyPlayer)!=null && store.Query(new(emptyPlayer)).Count==0, "A successful empty history is cached to avoid fetching again on each visit");
         var incomplete=store.BeginRun("6666666666"); store.FinishRun(incomplete,"cancelled",0,0,"cancelled");
         Assert(store.LastCompletedSync("6666666666")==null, "Cancelled initial visits remain eligible for retry");

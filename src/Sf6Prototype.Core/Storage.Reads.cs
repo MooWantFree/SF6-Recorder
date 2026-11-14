@@ -107,7 +107,20 @@ public sealed partial class BattleStore
         using var reader = cmd.ExecuteReader(); var loaded = new List<Battle>();
         while (reader.Read()) loaded.Add(JsonSerializer.Deserialize<Battle>(reader.GetString(0))!);
         foreach (var battle in loaded) cache.Rows[battle.ReplayId] = battle;
-        cache.Ordered = cache.Rows.Values.OrderByDescending(b => b.PlayedAt).ThenBy(b => b.ReplayId, StringComparer.Ordinal).ToList();
+        var changedIds=loaded.Select(b=>b.ReplayId).ToHashSet();
+        var additions=loaded.OrderByDescending(b=>b.PlayedAt).ThenBy(b=>b.ReplayId,StringComparer.Ordinal).ToList();
+        var previous=cache.Ordered ?? [];
+        var merged=new List<Battle>(cache.Rows.Count);var index=0;
+        foreach(var row in previous)
+        {
+            if(changedIds.Contains(row.ReplayId)) continue;
+            while(index<additions.Count && (additions[index].PlayedAt>row.PlayedAt ||
+                additions[index].PlayedAt==row.PlayedAt && StringComparer.Ordinal.Compare(additions[index].ReplayId,row.ReplayId)<0))
+                merged.Add(additions[index++]);
+            merged.Add(row);
+        }
+        while(index<additions.Count) merged.Add(additions[index++]);
+        cache.Ordered=merged;
         cache.Dirty.Clear();
         Diagnostics.Write("archive", initial ? "summary_load" : "summary_update", elapsedMs: Stopwatch.GetElapsedTime(started).TotalMilliseconds);
         return cache;

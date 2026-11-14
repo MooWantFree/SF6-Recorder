@@ -119,7 +119,7 @@ public partial class MainWindow
         try
         {
             var now=DateTimeOffset.UtcNow;var session=_vault.Load();
-            if(_busy || _savingSettings || _restoringView || _stoppingRefresh || !IsEnabled ||
+            if(_busy || _preparingViews>0 || _savingSettings || _restoringView || _stoppingRefresh || !IsEnabled ||
                 OwnedWindows.Count>0 || AccountPopup.IsOpen || PlayerSearchPopup.IsOpen) return;
             if(!_matchEndRefresh.IsDue(session?.AccountId,now)) return;
             if(_autoRefresh.Paused) {_matchEndRefresh.Clear();return;}
