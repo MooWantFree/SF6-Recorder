@@ -53,6 +53,16 @@ public static class RefreshProgressChecks
         Check(state.RemainingRequests==0 && state.Fraction<1,"All localized roster responses complete before final progress reaches 100 percent");
         state.Finish(false,true);Check(state.Fraction<1 && state.Stage=="刷新已取消","Cancellation does not turn partial work into a success");
         state.Begin();state.Finish(true);Check(state.Fraction==1 && Tip().Contains("100%"),"Successful completion exposes 100 percent explicitly in hover text");
+        state.Begin();state.Load(new("读取排位",null,3,null,""),0);
+        string Header(double requestSeconds=1)=>state.HeaderText(TimeSpan.FromSeconds(12),TimeSpan.FromSeconds(2),TimeSpan.FromSeconds(1),TimeSpan.FromSeconds(requestSeconds));
+        Check(Header().Contains("已读 3 页") && Header().Contains("已用 12秒") && !Header().Contains("约剩"),
+            "Unknown totals expose pages read and elapsed time directly without an invented estimate");
+        state.Load(new("读取排位",.5,3,4,""),1);state.Observe(new(RequestPhase.Sending));
+        Check(Header().StartsWith("约剩 ") && state.EstimateRemaining(TimeSpan.FromSeconds(2),TimeSpan.FromSeconds(1),TimeSpan.FromSeconds(1))!=null,
+            "Known remaining requests expose an approximate remaining time in the header");
+        Check(!Header(20).Contains("约剩") && Header(20).Contains("已用"),"Slow responses suspend the header countdown too");
+        state.Observe(new(RequestPhase.Retrying));Check(Header()==Strings.ResponseRetrying,"The header identifies retries instead of promising a remaining time");
+        state.Begin();Check(state.Pages==0 && !Header().Contains("已读"),"A new operation clears the previous operation's page count");
         return count;
     }
     private sealed class Source(Func<string,int,BattlePage> get):IBattleSource

@@ -111,6 +111,8 @@ public static class Strings
     public static string DuplicatePageStopped => Localization.Get(nameof(DuplicatePageStopped));
     public static string DurationMinutesSeconds => Localization.Get(nameof(DurationMinutesSeconds));
     public static string DurationSeconds => Localization.Get(nameof(DurationSeconds));
+    public static string DurationShortMinutesSeconds => Localization.Get(nameof(DurationShortMinutesSeconds));
+    public static string DurationShortSeconds => Localization.Get(nameof(DurationShortSeconds));
     public static string EditMatchTags => Localization.Get(nameof(EditMatchTags));
     public static string ElapsedDuration => Localization.Get(nameof(ElapsedDuration));
     public static string EndOfRecords => Localization.Get(nameof(EndOfRecords));
@@ -324,6 +326,8 @@ public static class Strings
     public static string RefreshComplete => Localization.Get(nameof(RefreshComplete));
     public static string RefreshCompleteHint => Localization.Get(nameof(RefreshCompleteHint));
     public static string RefreshCompleteSummary => Localization.Get(nameof(RefreshCompleteSummary));
+    public static string RefreshHeaderPagesElapsed => Localization.Get(nameof(RefreshHeaderPagesElapsed));
+    public static string RefreshHeaderRemaining => Localization.Get(nameof(RefreshHeaderRemaining));
     public static string RefreshIncomplete => Localization.Get(nameof(RefreshIncomplete));
     public static string RefreshReminder => Localization.Get(nameof(RefreshReminder));
     public static string RefreshShortcut => Localization.Get(nameof(RefreshShortcut));

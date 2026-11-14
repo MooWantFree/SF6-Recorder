@@ -189,6 +189,29 @@
     </ControlTemplate></Setter.Value></Setter>
   </Style>
   <Style x:Key="AccentButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}"><Setter Property="Background" Value="{StaticResource Accent}"/><Setter Property="BorderBrush" Value="{StaticResource Accent}"/><Setter Property="Foreground" Value="{StaticResource OnAccent}"/></Style>
+  <Style x:Key="HeaderRefreshProgress" TargetType="ProgressBar">
+    <Setter Property="Foreground" Value="{StaticResource Accent}"/><Setter Property="Background" Value="{StaticResource LineSubtle}"/>
+    <Setter Property="Focusable" Value="False"/>
+    <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ProgressBar">
+      <Grid x:Name="PART_Track" Background="{TemplateBinding Background}" ClipToBounds="True">
+        <Border x:Name="PART_Indicator" Background="{TemplateBinding Foreground}" HorizontalAlignment="Left"/>
+        <Border x:Name="Unknown" Background="{TemplateBinding Foreground}" Width="40" HorizontalAlignment="Center" Visibility="Hidden"/>
+      </Grid>
+      <ControlTemplate.Triggers>
+        <Trigger Property="IsIndeterminate" Value="True"><Setter TargetName="PART_Indicator" Property="Visibility" Value="Hidden"/><Setter TargetName="Unknown" Property="Visibility" Value="Visible"/></Trigger>
+        <MultiDataTrigger>
+          <MultiDataTrigger.Conditions>
+            <Condition Binding="{Binding IsIndeterminate,RelativeSource={RelativeSource TemplatedParent}}" Value="True"/>
+            <Condition Binding="{Binding Source={x:Static SystemParameters.ClientAreaAnimation}}" Value="True"/>
+          </MultiDataTrigger.Conditions>
+          <MultiDataTrigger.EnterActions><BeginStoryboard x:Name="HeaderPulse"><Storyboard>
+            <DoubleAnimation Storyboard.TargetName="Unknown" Storyboard.TargetProperty="Opacity" From="0.35" To="1" Duration="0:0:0.8" AutoReverse="True" RepeatBehavior="Forever"/>
+          </Storyboard></BeginStoryboard></MultiDataTrigger.EnterActions>
+          <MultiDataTrigger.ExitActions><RemoveStoryboard BeginStoryboardName="HeaderPulse"/></MultiDataTrigger.ExitActions>
+        </MultiDataTrigger>
+      </ControlTemplate.Triggers>
+    </ControlTemplate></Setter.Value></Setter>
+  </Style>
   <Style x:Key="NavigationRefreshButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
     <Setter Property="Width" Value="32"/><Setter Property="Height" Value="32"/><Setter Property="Padding" Value="0"/>
     <Setter Property="Background" Value="Transparent"/><Setter Property="BorderThickness" Value="0"/><Setter Property="Foreground" Value="{StaticResource Ink2}"/>

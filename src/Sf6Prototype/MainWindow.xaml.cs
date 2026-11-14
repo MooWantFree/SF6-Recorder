@@ -161,6 +161,7 @@ public partial class MainWindow : ChromeWindow
         SyncButton.IsHitTestVisible = SyncButton.Focusable = true;
         if(busy)
         {
+            _refreshInserted=0;_refreshOwner="";
             HideButtonProgress();
             _refreshProgress.Begin();
         }
@@ -223,9 +224,9 @@ public partial class MainWindow : ChromeWindow
         }
         catch(Exception ex) { _autoRefresh.Pause(); ReportError(ex); }
     }
-    private Task<bool> AutoRefreshAccountAsync(SavedSession session,bool notify=true) =>
-        _sync.RunAsync(new(SyncOperation.AutomaticRefresh,Quiet:true,Background:true,SilentCancellation:true), context=>AutoRefreshAccountCoreAsync(session,context,notify));
-    private async Task<bool> AutoRefreshAccountCoreAsync(SavedSession session,SyncContext context,bool notify)
+    private Task<bool> AutoRefreshAccountAsync(SavedSession session) =>
+        _sync.RunAsync(new(SyncOperation.AutomaticRefresh,Quiet:true,Background:true,SilentCancellation:true), context=>AutoRefreshAccountCoreAsync(session,context));
+    private async Task<bool> AutoRefreshAccountCoreAsync(SavedSession session,SyncContext context)
     {
         var token=context.Token;
         var owner=session.AccountId;
@@ -263,7 +264,8 @@ public partial class MainWindow : ChromeWindow
             },automatic:true,token);
             if(_navigation.Current.Id==owner) ReloadLocal(preserveViewport:true);
             RefreshAccountUi();
-            if(notify) ShowNotice(workflow.ScoresPending ? Strings.RecordsUpdatedScoresPending : Strings.RefreshCompleteHint,workflow.ScoresPending);
+            RecordRefreshResult(owner,workflow.Sync.Inserted);
+            if(workflow.ScoresPending) ShowNotice(Strings.RecordsUpdatedScoresPending,true);
             completed=true;context.Complete();
         }
         catch(OperationCanceledException) when(token.IsCancellationRequested) { }
@@ -271,8 +273,7 @@ public partial class MainWindow : ChromeWindow
         {
             if(ex is LoginRequiredException) _autoRefresh.Pause();
             context.Fail(ex);
-            if(notify) ReportError(ex);
-            else Diagnostics.Write("automatic_refresh","failed",ex);
+            ReportError(ex);
         }
         finally
         {
@@ -588,7 +589,7 @@ public partial class MainWindow : ChromeWindow
     {
         ClosePlayerSearch();
         if(_ready && PageTabs.SelectedIndex==0 && History.FavoritesOnly)
-        {ReloadLocal(preserveViewport:true);ShowNotice(Strings.RefreshCompleteHint);return Task.CompletedTask;}
+        {ReloadLocal(preserveViewport:true);return Task.CompletedTask;}
         return BeginLoadAsync(reset:true);
     }
     private Task BeginLoadAsync(bool reset=false,bool more=false,bool scoreRange=false)
@@ -673,10 +674,10 @@ public partial class MainWindow : ChromeWindow
                 }
             },automatic:false,token);
             _lastSync=workflow.Sync;
+            RecordRefreshResult(pager.Owner,_lastSync.Inserted);
             ReloadLocal(preserveViewport: true); RefreshAccountUi();
             SetStatus(workflow.ScoresPending ? "sync_complete_scores_pending" : "sync_complete",
                 Localization.Format(Strings.RefreshCompleteSummary, _lastSync.Inserted, _lastSync.Pages, _lastSync.Requests, ""));
-            if(reset && !workflow.ScoresPending) ShowNotice(Strings.RefreshCompleteHint);
             completed=true;context.Complete();
             if(pager.Owner==_settings.PlayerId) _autoRefresh.Resume(DateTimeOffset.UtcNow);
         }
@@ -811,7 +812,9 @@ public partial class MainWindow : ChromeWindow
         var lastUpdated = _store.LastSuccessfulLoad(viewed.Id);
         _viewingActiveAccount=viewed.Id==signedInId;
         _lastViewedUpdate=lastUpdated; UpdateRefreshReminder();
-        UpdatedLabel.Text = lastUpdated == null ? "" : Strings.UpdatedAtPrefix + BattleDateDisplay.Timestamp(lastUpdated.Value.ToOffset(TimeSpan.FromHours(8)).ToString("yyyy-MM-dd HH:mm"));
+        _headerViewOwner=viewed.Id;
+        _viewedUpdateText=lastUpdated == null ? "" : Strings.UpdatedAtPrefix + BattleDateDisplay.Timestamp(lastUpdated.Value.ToOffset(TimeSpan.FromHours(8)).ToString("yyyy-MM-dd HH:mm"));
+        UpdateHeaderRefreshStatus();
         UpdateRecentMatches();
     }
     private async Task<bool> PrepareArchiveAsync(string owner,int navigationVersion)
@@ -1060,5 +1063,5 @@ public partial class MainWindow : ChromeWindow
         _exitReady=true;Close();
     }
     protected override void OnClosed(EventArgs e)
-    { _tray?.Dispose();_imageRefreshTimer.Stop();_refreshReminderTimer.Stop();_autoRefreshTimer.Stop();_progressTimer.Stop();_matchEndStatusTimer.Stop();base.OnClosed(e); }
+    { _tray?.Dispose();_imageRefreshTimer.Stop();_refreshReminderTimer.Stop();_autoRefreshTimer.Stop();_progressTimer.Stop();_refreshResultTimer.Stop();_matchEndStatusTimer.Stop();base.OnClosed(e); }
 }

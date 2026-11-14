@@ -180,6 +180,7 @@ internal static class Program
         count+=ArchiveSnapshotChecks.Run();
         count+=CancellationChecks.Run();
         count+=CachedPagingChecks.Run();
+        count+=HeaderRefreshChecks.Run();
         count+=RefreshReminderChecks.Run();
         count+=MatchEndFailureImageChecks.Run();
         count+=MatchEndVisionChecks.Run();

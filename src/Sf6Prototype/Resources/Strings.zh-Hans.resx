@@ -1327,4 +1327,8 @@
   <data name="SettingsCategories" xml:space="preserve"><value>设置分类</value></data>
   <data name="Logs" xml:space="preserve"><value>日志</value></data>
   <data name="MatchEndDetectionUnavailable" xml:space="preserve"><value>对局检测不可用</value></data>
+  <data name="DurationShortMinutesSeconds" xml:space="preserve"><value>{0}分{1}秒</value></data>
+  <data name="DurationShortSeconds" xml:space="preserve"><value>{0}秒</value></data>
+  <data name="RefreshHeaderPagesElapsed" xml:space="preserve"><value>已读 {0} 页 · {1}</value></data>
+  <data name="RefreshHeaderRemaining" xml:space="preserve"><value>约剩 {0}</value></data>
 </root>

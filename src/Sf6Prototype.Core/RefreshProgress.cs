@@ -11,17 +11,19 @@ public sealed class RefreshProgressState
     public string Detail { get; private set; }="";
     public double? Fraction { get; private set; }
     public int? RemainingRequests { get; private set; }
+    public int Pages { get; private set; }
     public RequestPhase Network { get; private set; }=RequestPhase.Completed;
     public double MeanResponseSeconds { get; private set; }
     private int _responses,_metadataDone,_metadataTotal=2;
     private bool _metadata;
     public void Begin(string? stage=null)
-    {Stage=stage ?? Strings.PreparingRefresh;Detail="";Fraction=null;RemainingRequests=null;Network=RequestPhase.Completed;_metadata=false;_metadataDone=0;_responses=0;MeanResponseSeconds=0;}
+    {Stage=stage ?? Strings.PreparingRefresh;Detail="";Fraction=null;RemainingRequests=null;Pages=0;Network=RequestPhase.Completed;_metadata=false;_metadataDone=0;_responses=0;MeanResponseSeconds=0;}
     public void SetStage(string stage) {Stage=stage;}
     private void Advance(double value) => Fraction=Math.Clamp(Math.Max(Fraction ?? 0,value),0,1);
     public void Load(BattleLoadProgress progress,int metadataRequests)
     {
         Stage=progress.Stage;Detail=progress.Detail;
+        Pages=Math.Max(0,progress.Pages);
         if(progress.Fraction is { } fraction) Advance(.08+.82*Math.Clamp(fraction,0,1));
         RemainingRequests=progress.RemainingPages is { } pages ? Math.Max(0,pages)+metadataRequests : null;
     }
@@ -41,6 +43,22 @@ public sealed class RefreshProgressState
     }
     public void Finish(bool success,bool cancelled=false)
     {Stage=success ? Strings.RefreshComplete : cancelled ? Strings.RefreshCancelled : Strings.RefreshIncomplete;if(success) Fraction=1;RemainingRequests=0;Network=RequestPhase.Completed;}
+    public TimeSpan? EstimateRemaining(TimeSpan interval,TimeSpan delay,TimeSpan activeRequestElapsed)
+    {
+        if(RemainingRequests is not >0 || Network==RequestPhase.Retrying ||
+            Network==RequestPhase.Sending && activeRequestElapsed.TotalSeconds>Math.Max(5,MeanResponseSeconds*2)) return null;
+        var response=Math.Max(.3,MeanResponseSeconds);var spacing=Math.Max(interval.TotalSeconds,response);
+        return TimeSpan.FromSeconds((RemainingRequests.Value-1)*spacing+
+            (Network==RequestPhase.Sending ? Math.Max(1,response-activeRequestElapsed.TotalSeconds) : delay.TotalSeconds+response));
+    }
+    public string HeaderText(TimeSpan elapsed,TimeSpan interval,TimeSpan delay,TimeSpan activeRequestElapsed)
+    {
+        if(Network==RequestPhase.Retrying) return Strings.ResponseRetrying;
+        if(EstimateRemaining(interval,delay,activeRequestElapsed) is { } remaining)
+            return Localization.Format(Strings.RefreshHeaderRemaining,ShortDuration(remaining.TotalSeconds));
+        var used=Localization.Format(Strings.ElapsedDuration,ShortDuration(elapsed.TotalSeconds));
+        return Pages>0 ? Localization.Format(Strings.RefreshHeaderPagesElapsed,Pages,used) : used;
+    }
     public string Tooltip(TimeSpan elapsed,TimeSpan interval,TimeSpan delay,TimeSpan activeRequestElapsed)
     {
         var lines=new List<string> {Fraction is { } fraction ? $"{Stage} · {(int)Math.Floor(fraction*100)}%" : Stage};if(Detail.Length>0) lines.Add(Detail);
@@ -49,11 +67,9 @@ public sealed class RefreshProgressState
         else if(Network==RequestPhase.Retrying) lines.Add(Strings.ResponseRetrying);
         var duration=Localization.Format(Strings.ElapsedDuration, Duration(elapsed.TotalSeconds));
         var canEstimate=Network!=RequestPhase.Retrying && !(Network==RequestPhase.Sending && activeRequestElapsed.TotalSeconds>Math.Max(5,MeanResponseSeconds*2));
-        if(canEstimate && RemainingRequests is { } count && count>0)
+        if(EstimateRemaining(interval,delay,activeRequestElapsed) is { } remaining)
         {
-            var response=Math.Max(.3,MeanResponseSeconds);var spacing=Math.Max(interval.TotalSeconds,response);
-            var remaining=(count-1)*spacing+(Network==RequestPhase.Sending ? Math.Max(1,response-activeRequestElapsed.TotalSeconds) : delay.TotalSeconds+response);
-            duration+=Localization.Format(Strings.RemainingEstimateSuffix, Duration(remaining));
+            duration+=Localization.Format(Strings.RemainingEstimateSuffix,Duration(remaining.TotalSeconds));
         }
         else if(RemainingRequests==null || !canEstimate) duration+=Strings.RemainingUnknownSuffix;
         lines.Add(duration);
@@ -64,5 +80,10 @@ public sealed class RefreshProgressState
     {
         var total=(int)Math.Ceiling(Math.Max(0,seconds));
         return total<60 ? Localization.Format(Strings.DurationSeconds, total) : Localization.Format(Strings.DurationMinutesSeconds, total/60, total%60);
+    }
+    private static string ShortDuration(double seconds)
+    {
+        var total=(int)Math.Ceiling(Math.Max(0,seconds));
+        return total<60 ? Localization.Format(Strings.DurationShortSeconds,total) : Localization.Format(Strings.DurationShortMinutesSeconds,total/60,total%60);
     }
 }
