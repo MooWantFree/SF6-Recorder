@@ -70,6 +70,7 @@ var rankingJson=scored.Replace("\"league_point\":12000","\"league_point\":12000,
 Check(MatchParser.Parse(rankingJson,"3396336472","rank").Battles.Single() is {MasterRatingRanking:500,OpponentMasterRatingRanking:501},"Replay leaderboard positions are retained separately for both players");
 Check(MatchParser.Parse(rankingJson,"1234567890","rank").Battles.Single() is {MasterRatingRanking:501,OpponentMasterRatingRanking:500},"Switching the viewed player swaps both leaderboard positions");
 assertions += await IntegrationChecks.Run();
+assertions += await BucklerClientChecks.RunAsync();
 assertions += await StreamingChecks.Run();
 assertions += await ImageDownloadChecks.Run();
 assertions += await PagingChecks.Run();

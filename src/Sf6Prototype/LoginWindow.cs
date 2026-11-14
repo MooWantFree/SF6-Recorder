@@ -123,11 +123,12 @@ public sealed class LoginWindow : ChromeContentWindow
             if (id.Length != 10) return;
             _finishing = true;
             var cookies = await _browser.CoreWebView2.CookieManager.GetCookiesAsync(BucklerClient.Origin);
+            if (_closed) return;
             var list = cookies.Where(c => CookieVault.IsSiteDomain(c.Domain)).Select(c =>
                 new SavedCookie(c.Name, c.Value, c.Domain, c.Path, c.IsSession ? DateTime.MinValue : c.Expires, c.IsSecure, c.IsHttpOnly)).ToList();
             var session = new SavedSession(id, data.GetProperty("name").GetString()!, _browser.CoreWebView2.Settings.UserAgent,
                 data.GetProperty("buildId").GetString()!, _settings.RouteKey, list);
-            _vault.Save(session);
+            session = _vault.Save(session);
             await _browser.CoreWebView2.Profile.ClearBrowsingDataAsync(CoreWebView2BrowsingDataKinds.AllProfile);
             _completion.TrySetResult(session); Close();
         }

@@ -25,6 +25,7 @@ internal static class Program
         if(args.Contains("--match-end-follow-capture")) {MatchEndFollowChecks.Capture();app.Shutdown();return;}
         if(args.Contains("--cancellation-checks")) {Console.WriteLine($"Passed {CancellationChecks.Run()} cancellation checks.");app.Shutdown();return;}
         var main=new MainWindow();
+        count+=StatusFileChecks.Run(main);
         main.ApplyTemplate();main.Dispatcher.Invoke(()=>{},System.Windows.Threading.DispatcherPriority.ContextIdle);
         Check(new System.Windows.Interop.WindowInteropHelper(main).Handle==IntPtr.Zero,"Control checks do not create a native window or tray icon");
         Check(((TextBlock)main.FindName("ViewedPlayerName")).FontSize==16,"The active player uses the enlarged header typography");

@@ -7,34 +7,52 @@ using System.Text.Json;
 namespace Sf6Prototype;
 
 public record SavedCookie(string Name, string Value, string Domain, string Path, DateTime Expires, bool Secure, bool HttpOnly);
-public record SavedSession(string AccountId, string AccountName, string UserAgent, string BuildId, string RouteKey, List<SavedCookie> Cookies);
+public record SavedSession(string AccountId, string AccountName, string UserAgent, string BuildId, string RouteKey, List<SavedCookie> Cookies)
+{
+    // Older encrypted sessions start at Guid.Empty until their first update.
+    public Guid Revision { get; init; }
+}
 
 public sealed class CookieVault(string directory)
 {
     private readonly string _path = Path.Combine(directory, "session.dpapi");
     private static readonly byte[] Entropy = Encoding.UTF8.GetBytes("SF6.LocalSession.v1");
+    private static readonly object FileGate = new();
     public SavedSession? Load()
     {
-        if (!File.Exists(_path)) return null;
-        try
-        {
-            var plain = ProtectedData.Unprotect(File.ReadAllBytes(_path), Entropy, DataProtectionScope.CurrentUser);
-            try { return JsonSerializer.Deserialize<SavedSession>(plain); }
-            finally { CryptographicOperations.ZeroMemory(plain); }
-        }
-        catch (Exception e) when (e is CryptographicException or JsonException) { return null; }
+        lock (FileGate) return ReadActive();
     }
-    public void Save(SavedSession session)
+
+    // Explicit sign-in and activation select the current account and invalidate old clients.
+    public SavedSession Save(SavedSession session)
     {
-        if (!System.Text.RegularExpressions.Regex.IsMatch(session.AccountId, @"^\d{10}$")) throw new ArgumentException(Strings.InvalidAccountId);
+        lock (FileGate) return WriteActive(session);
+    }
+
+    internal SavedSession? TryUpdate(SavedSession original, SavedSession updated)
+    {
+        lock (FileGate)
+        {
+            if (updated.AccountId != original.AccountId || ReadActive() is not { } active ||
+                active.AccountId != original.AccountId || active.Revision != original.Revision) return null;
+            return WriteActive(updated);
+        }
+    }
+
+    // Commit the account file first. If writing the selector fails, the old selection
+    // still identifies its own account, and a stale snapshot cannot undo a committed update.
+    private SavedSession WriteActive(SavedSession session)
+    {
+        var accountPath = AccountPath(session.AccountId);
+        session = session with { Revision = Guid.NewGuid() };
         var plain = JsonSerializer.SerializeToUtf8Bytes(session);
         try
         {
             var encrypted = ProtectedData.Protect(plain, Entropy, DataProtectionScope.CurrentUser);
             Directory.CreateDirectory(Path.Combine(directory, "Accounts"));
-            var accountPath = AccountPath(session.AccountId);
             File.WriteAllBytes(accountPath + ".tmp", encrypted); File.Move(accountPath + ".tmp", accountPath, true);
             File.WriteAllBytes(_path + ".tmp", encrypted); File.Move(_path + ".tmp", _path, true);
+            return session;
         }
         finally { CryptographicOperations.ZeroMemory(plain); }
     }
@@ -43,7 +61,12 @@ public sealed class CookieVault(string directory)
         if (!System.Text.RegularExpressions.Regex.IsMatch(id, @"^\d{10}$")) throw new ArgumentException(Strings.InvalidAccountId);
         return Path.Combine(directory, "Accounts", id + ".dpapi");
     }
-    private SavedSession? ReadAccount(string path)
+    private SavedSession? ReadActive()
+    {
+        var selected = ReadSession(_path);
+        return selected == null ? null : ReadSession(AccountPath(selected.AccountId)) ?? selected;
+    }
+    private static SavedSession? ReadSession(string path)
     {
         if (!File.Exists(path)) return null;
         try
@@ -56,23 +79,36 @@ public sealed class CookieVault(string directory)
     }
     public IReadOnlyList<SavedSession> Accounts()
     {
-        // Migrate the original single-account vault without losing its session.
-        var current = Load();
-        if (current != null && !File.Exists(AccountPath(current.AccountId))) Save(current);
-        var folder = Path.Combine(directory, "Accounts");
-        return !Directory.Exists(folder) ? [] : Directory.EnumerateFiles(folder, "*.dpapi")
-            .Select(ReadAccount).OfType<SavedSession>().OrderBy(s => s.AccountName).ToList();
+        lock (FileGate)
+        {
+            var folder = Path.Combine(directory, "Accounts");
+            // Preserve the revision and cookies when migrating a single-account vault.
+            if (ReadSession(_path) is { } current && !File.Exists(AccountPath(current.AccountId)))
+            {
+                Directory.CreateDirectory(folder);
+                File.Copy(_path, AccountPath(current.AccountId));
+            }
+            return !Directory.Exists(folder) ? [] : Directory.EnumerateFiles(folder, "*.dpapi")
+                .Select(ReadSession).OfType<SavedSession>().OrderBy(s => s.AccountName).ToList();
+        }
     }
     public SavedSession Activate(string id)
     {
-        var session = ReadAccount(AccountPath(id)) ?? throw new InvalidDataException(Strings.AccountSignedOut);
-        Save(session); return session;
+        lock (FileGate)
+        {
+            var session = ReadSession(AccountPath(id)) ?? throw new InvalidDataException(Strings.AccountSignedOut);
+            return WriteActive(session);
+        }
     }
     public void Remove(string id)
     {
         // Remove credentials only; the local match archive and cached portraits remain available.
-        if (Load()?.AccountId == id) File.Delete(_path);
-        File.Delete(AccountPath(id));
+        lock (FileGate)
+        {
+            var accountPath = AccountPath(id);
+            if (ReadSession(_path)?.AccountId == id) File.Delete(_path);
+            File.Delete(accountPath);
+        }
     }
     public static bool IsSiteDomain(string domain) => domain.TrimStart('.').Equals("streetfighter.com", StringComparison.OrdinalIgnoreCase)
         || domain.EndsWith(".streetfighter.com", StringComparison.OrdinalIgnoreCase);

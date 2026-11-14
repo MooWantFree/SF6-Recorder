@@ -95,6 +95,27 @@ public static class RefreshWorkflowChecks
             Check(!portrait.ScoresPending && portraitProfiles.Scores(source.AccountId)?.Characters.Single().Lp==11930,
                 "An optional portrait failure does not make a successful current-score update appear incomplete");
             source.CardError=null;
+            foreach (var endpoint in new[] { "card", "play" })
+            {
+                var limitedDirectory = Path.Combine(directory, "limited-" + endpoint);
+                var limitedStore = new BattleStore(Path.Combine(limitedDirectory, "archive.sqlite"));
+                var limited = new Source();
+                var error = new HttpRequestException("fixture", null, System.Net.HttpStatusCode.TooManyRequests);
+                if (endpoint == "play") limited.PlayError = error;
+                else limited.CardError = error;
+                var limitedProfile = new DailyProfileRefresh(new ProfileCache(limitedDirectory), limited.AccountId, DateTimeOffset.UtcNow);
+                var limitedPlan = new RefreshPlan(new(limitedStore, limited.AccountId), RefreshMode.Account, Profile:limitedProfile);
+                try
+                {
+                    await RefreshWorkflow.RunAsync(limited, true, () => Task.FromResult(limitedPlan), new(), automatic, CancellationToken.None);
+                    throw new Exception("Expected the profile rate limit to stop the refresh");
+                }
+                catch (HttpRequestException ex) when (ReferenceEquals(ex, error)) { count++; }
+                string[] expected = endpoint == "play" ? ["validate", "card", "page", "play"] : ["validate", "card"];
+                Check(limited.Calls.SequenceEqual(expected), $"No more pages or profiles are requested after {endpoint} returns 429");
+                Check(limitedStore.Query(new(limited.AccountId)).Count == (endpoint == "play" ? 1 : 0) &&
+                    limitedStore.LastCompletedSync(limited.AccountId) == null, "A rate limit retains committed pages without completing the account sync");
+            }
             using var cancelled=new CancellationTokenSource();source.PlayError=null;source.Calls.Clear();
             try
             {

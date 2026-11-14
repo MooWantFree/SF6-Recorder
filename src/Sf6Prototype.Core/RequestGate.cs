@@ -1,4 +1,6 @@
 using System.Diagnostics;
+using System.Net;
+using System.Net.Http;
 
 namespace Sf6Prototype;
 
@@ -6,8 +8,10 @@ namespace Sf6Prototype;
 public sealed class RequestGate
 {
     public static RequestGate Shared { get; } = new(TimeSpan.FromSeconds(ConnectionSettings.DefaultApiIntervalSeconds));
+    private static readonly TimeSpan DefaultCooldown = TimeSpan.FromMinutes(1);
     private readonly SemaphoreSlim _mutex = new(1, 1);
     private long _lastStarted,_intervalTicks;
+    private long _cooldownUntilUtcTicks;
     public RequestGate(TimeSpan interval) => Interval=interval;
     public TimeSpan Interval
     {
@@ -20,9 +24,27 @@ public sealed class RequestGate
         {
             var last=Interlocked.Read(ref _lastStarted);
             var remaining=last==0 ? TimeSpan.Zero : Interval-Stopwatch.GetElapsedTime(last);
-            return remaining>TimeSpan.Zero ? remaining : TimeSpan.Zero;
+            var cooldownTicks = Interlocked.Read(ref _cooldownUntilUtcTicks) - DateTimeOffset.UtcNow.UtcTicks;
+            return TimeSpan.FromTicks(Math.Max(0, Math.Max(remaining.Ticks, cooldownTicks)));
         }
     }
+    internal Task<HttpResponseMessage> SendAsync(Func<Task<HttpResponseMessage>> send, CancellationToken token) =>
+        RunAsync(async () =>
+        {
+            var response = await send();
+            // Publish the deadline while still holding the gate, before any queued sender can run.
+            if (response.StatusCode == HttpStatusCode.TooManyRequests)
+            {
+                var now = DateTimeOffset.UtcNow;
+                var retry = response.Headers.RetryAfter;
+                var delay = retry?.Delta ?? (retry?.Date - now);
+                var cooldown = delay is { } specified && specified > TimeSpan.Zero ? specified : DefaultCooldown;
+                var availableTicks = DateTimeOffset.MaxValue.UtcTicks - now.UtcTicks;
+                Interlocked.Exchange(ref _cooldownUntilUtcTicks, now.UtcTicks + Math.Min(cooldown.Ticks, availableTicks));
+            }
+            return response;
+        }, token);
+
     public async Task<T> RunAsync<T>(Func<Task<T>> request, CancellationToken token)
     {
         await _mutex.WaitAsync(token);

@@ -53,7 +53,9 @@ public static class RefreshWorkflow
                 token.ThrowIfCancellationRequested(); callbacks.ImagesReady(images);
                 return true;
             }
-            catch (Exception ex) when (ex is not OperationCanceledException and not OutOfMemoryException && (!automatic || ex is not LoginRequiredException))
+            catch (Exception ex) when (ex is not OperationCanceledException and not OutOfMemoryException
+                && ex is not HttpRequestException { StatusCode: HttpStatusCode.TooManyRequests }
+                && (!automatic || ex is not LoginRequiredException))
             { Diagnostics.Write("sync", "refresh_profile", ex); scoresPending = pager!.RankHeadFetched; return false; }
         }
         async Task PageSaved()

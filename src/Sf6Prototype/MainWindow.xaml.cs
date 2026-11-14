@@ -314,7 +314,9 @@ public partial class MainWindow : ChromeWindow
                     StartImageDownloads(images);
                 }
             }
-            catch (Exception ex) when (ex is not OutOfMemoryException && ex is not OperationCanceledException) { Diagnostics.Write("login", "refresh_profile", ex); SetStatus("profile_pending", Strings.SessionSavedImagesPending); RefreshAccountUi(); return; }
+            catch (Exception ex) when (ex is not OutOfMemoryException and not OperationCanceledException
+                && ex is not System.Net.Http.HttpRequestException { StatusCode: System.Net.HttpStatusCode.TooManyRequests })
+            { Diagnostics.Write("login", "refresh_profile", ex); SetStatus("profile_pending", Strings.SessionSavedImagesPending); RefreshAccountUi(); return; }
             RefreshAccountUi(); ReloadLocal(); SetStatus("logged_in", Strings.SessionSaved);context.Complete();
         }
         catch (OperationCanceledException) when(token.IsCancellationRequested) { }
@@ -973,8 +975,15 @@ public partial class MainWindow : ChromeWindow
         var path = Path.Combine(App.DataDirectory, "status.json");
         var value = new { pid = Environment.ProcessId, stage, playerId = _navigation.Current.Id, accountId = _settings.PlayerId, transport = "HttpClient", storedMatches = _archive?.All.Count ?? 0,
             lastSync = _lastSync, updatedAt = DateTimeOffset.UtcNow, status = message };
-        File.WriteAllText(path + ".tmp", JsonSerializer.Serialize(value, new JsonSerializerOptions { WriteIndented = true }));
-        File.Move(path + ".tmp", path, true);
+        try
+        {
+            File.WriteAllText(path + ".tmp", JsonSerializer.Serialize(value, new JsonSerializerOptions { WriteIndented = true }));
+            File.Move(path + ".tmp", path, true);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            Diagnostics.Write("ui", "status_write_failed", ex);
+        }
     }
 
     private async Task CaptureAllAsync()

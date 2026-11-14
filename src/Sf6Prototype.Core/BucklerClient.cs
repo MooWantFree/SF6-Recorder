@@ -18,6 +18,7 @@ public sealed class BucklerClient : IRefreshSource, IRankSource, ICharacterNameS
     private readonly HttpClient _http;
     private readonly CookieContainer _cookies;
     private readonly CookieVault _vault;
+    private readonly RequestGate _gate;
     private SavedSession _session;
     public int Requests { get; private set; }
     public event Action<RequestActivity>? Activity;
@@ -25,24 +26,29 @@ public sealed class BucklerClient : IRefreshSource, IRankSource, ICharacterNameS
     public string AccountName => _session.AccountName;
     public string AccountId => _session.AccountId;
     public BucklerClient(ConnectionSettings settings, SavedSession session, CookieVault vault)
+        : this(settings, session, vault, cookies => settings.CreateHandler(cookies)) { }
+
+    internal BucklerClient(ConnectionSettings settings, SavedSession session, CookieVault vault,
+        Func<CookieContainer, HttpMessageHandler> createHandler, RequestGate? gate = null)
     {
         _session = session; _vault = vault; _cookies = CookieVault.ToContainer(session);
-        _http = new HttpClient(settings.CreateHandler(_cookies)) { Timeout = TimeSpan.FromSeconds(25), DefaultRequestVersion = HttpVersion.Version20, DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrLower };
+        _gate = gate ?? RequestGate.Shared;
+        _http = new HttpClient(createHandler(_cookies)) { Timeout = TimeSpan.FromSeconds(25), DefaultRequestVersion = HttpVersion.Version20, DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrLower };
         _http.DefaultRequestHeaders.UserAgent.ParseAdd(session.UserAgent);
         _http.DefaultRequestHeaders.Accept.ParseAdd("application/json");
         _http.DefaultRequestHeaders.Referrer = new Uri($"{Origin}/6/buckler/zh-hans/profile/{settings.PlayerId}/battlelog");
     }
     public async Task ValidateAsync(CancellationToken token)
     {
-        var (code, body) = await GetAsync("/6/buckler/api/auth/getlogindata", token);
+        var (code, body) = await GetAsync("/6/buckler/api/auth/getlogindata", token, persistCookies:false);
         EnsureSuccess(code);
         using var d = ParseJson(body);
         if (!d.RootElement.TryGetProperty("loginUser", out var user) || user.ValueKind != JsonValueKind.Object)
             throw new LoginRequiredException(Strings.CapcomSessionExpired);
         var id = MatchParser.Id(user, "shortId");
         if (id.Length == 0 || id == "0") throw new LoginRequiredException(Strings.CapcomSessionExpired);
-        _session = _session with { AccountId = id, AccountName = MatchParser.Text(user, "fighterId") };
-        Persist();
+        if (id != AccountId) throw new LoginRequiredException(Strings.AccountChanged);
+        Persist(_session with { AccountName = MatchParser.Text(user, "fighterId") });
     }
     public async Task<BattlePage> FetchPageAsync(string owner, string category, int page, CancellationToken token)
     {
@@ -106,9 +112,9 @@ public sealed class BucklerClient : IRefreshSource, IRankSource, ICharacterNameS
         var match = Regex.Match(html, "<script[^>]*id=\"__NEXT_DATA__\"[^>]*>(.*?)</script>", RegexOptions.Singleline);
         if (!match.Success) throw new LoginRequiredException(Strings.PageNotVerified);
         using var data = JsonDocument.Parse(match.Groups[1].Value);
-        _session = _session with { BuildId = data.RootElement.GetProperty("buildId").GetString()! }; Persist();
+        Persist(_session with { BuildId = data.RootElement.GetProperty("buildId").GetString()! });
     }
-    private async Task<(int Code, string Body)> GetAsync(string path, CancellationToken token, string? payload = null)
+    private async Task<(int Code, string Body)> GetAsync(string path, CancellationToken token, string? payload = null, bool persistCookies = true)
     {
         var endpoint = path.Contains("battlelog") ? "battles" : path.Contains("getlogindata") ? "session" :
             path.Contains("/card/") ? "card" : path.Contains("play") ? "profile" : "character_names";
@@ -122,21 +128,21 @@ public sealed class BucklerClient : IRefreshSource, IRankSource, ICharacterNameS
                 if(payload!=null) request.Content = new StringContent(payload,System.Text.Encoding.UTF8,"application/json");
                 Activity?.Invoke(new(RequestPhase.Waiting));
                 var sent=0L;
-                using var response = await RequestGate.Shared.RunAsync(() =>
+                using var response = await _gate.SendAsync(() =>
                 {
                     Requests++;
                     sent=System.Diagnostics.Stopwatch.GetTimestamp();Activity?.Invoke(new(RequestPhase.Sending));
                     return _http.SendAsync(request, token);
                 }, token);
-                Persist();
                 var code = (int)response.StatusCode;
                 Diagnostics.Write("http", endpoint, elapsedMs: System.Diagnostics.Stopwatch.GetElapsedTime(started).TotalMilliseconds, statusCode: code, attempt: attempt + 1);
                 Activity?.Invoke(new(RequestPhase.Completed,System.Diagnostics.Stopwatch.GetElapsedTime(sent).TotalSeconds,code==200));
                 if (code == 429)
                 {
-                    var after = response.Headers.RetryAfter?.Delta;
-                    throw new HttpRequestException(after != null ? Localization.Format(Strings.RateLimitDelay, Math.Ceiling(after.Value.TotalSeconds)) : Strings.RateLimitPaused,null,HttpStatusCode.TooManyRequests);
+                    var seconds = Math.Ceiling(_gate.RemainingDelay.TotalSeconds);
+                    throw new HttpRequestException(seconds > 0 ? Localization.Format(Strings.RateLimitDelay, seconds) : Strings.RateLimitPaused, null, HttpStatusCode.TooManyRequests);
                 }
+                if (persistCookies) Persist(_session);
                 if (code >= 500 && attempt < 1) {Activity?.Invoke(new(RequestPhase.Retrying)); await Task.Delay(TimeSpan.FromSeconds(5), token); continue; }
                 var body = await response.Content.ReadAsStringAsync(token);
                 return (code, body);
@@ -160,6 +166,13 @@ public sealed class BucklerClient : IRefreshSource, IRankSource, ICharacterNameS
         try { return JsonDocument.Parse(text); }
         catch (JsonException ex) { Diagnostics.Write("http","parse_json",ex); throw new LoginRequiredException(Strings.LoginVerificationPage); }
     }
-    private void Persist() { _session = _session with { Cookies = CookieVault.FromContainer(_cookies) }; _vault.Save(_session); }
-    public void Dispose() { Persist(); _http.Dispose(); }
+    private void Persist(SavedSession updated)
+    {
+        var cookies = CookieVault.FromContainer(_cookies);
+        if (updated == _session && cookies.SequenceEqual(_session.Cookies)) return;
+        updated = updated with { Cookies = cookies };
+        _session = _vault.TryUpdate(_session, updated) ?? updated;
+    }
+
+    public void Dispose() => _http.Dispose();
 }
