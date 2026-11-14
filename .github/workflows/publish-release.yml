@@ -28,16 +28,11 @@ jobs:
           if ($env:RELEASE_TAG -cne ('v'+$project.Project.PropertyGroup.Version)) { throw 'Release tag must match the project Version.' }
       - name: Verify
         run: ./build.ps1 -ChecksOnly
-      - name: Build self-contained update packages
-        run: ./scripts/Publish-Update.ps1
-      - name: Upload packages, then publish the update feed
+      - name: Build both runtime variants and update packages
+        run: ./scripts/Publish-Packages.ps1
+      - name: Upload packages, then publish both update feeds
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
           RELEASE_TAG: ${{ github.event.release.tag_name }}
-        run: |
-          $packages=@(Get-ChildItem artifacts/releases -File | Where-Object Extension -In '.nupkg','.zip' | ForEach-Object FullName)
-          gh release upload $env:RELEASE_TAG @packages
-          if($LASTEXITCODE -ne 0){throw 'Package upload failed; feed was not published.'}
-          gh release upload $env:RELEASE_TAG artifacts/releases/releases.win.json
-          if($LASTEXITCODE -ne 0){throw 'Update feed upload failed.'}
+        run: ./scripts/Publish-ReleaseAssets.ps1 -Tag $env:RELEASE_TAG

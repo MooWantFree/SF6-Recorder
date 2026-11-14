@@ -10,8 +10,8 @@ Save your `Street Fighter 6` match history from [CAPCOM's Buckler's Boot Camp](h
 
 Download from the [latest release](https://github.com/MooWantFree/SF6-Recorder/releases/latest).
 
-- `SF6-Recorder-win-x64-self-contained.zip`: includes the .NET runtime
-- `SF6-Recorder-win-x64-framework-dependent.zip`: does not include the .NET runtime; requires .NET 10 Windows Desktop Runtime (x64) to be installed
+- [Download with the .NET runtime included](https://github.com/MooWantFree/SF6-Recorder/releases/latest/download/SF6-Recorder-win-x64-self-contained.zip)
+- [Download without the runtime](https://github.com/MooWantFree/SF6-Recorder/releases/latest/download/SF6-Recorder-win-x64-framework-dependent.zip): requires .NET 10 Windows Desktop Runtime (x64)
 
 ### Local builds
 

@@ -14,7 +14,8 @@ try {
         & (Join-Path $PSScriptRoot 'Publish-Update.ps1') -OutputDirectory $packed -FrameworkDependent:$frameworkDependent -Version $Version
         $zip=Join-Path $packed "SF6Recorder-$channel-Portable.zip"
         Copy-Item -LiteralPath $zip -Destination (Join-Path $output "SF6-Recorder-win-x64-$variant.zip") -Force
-        Get-ChildItem -LiteralPath $packed -File | Copy-Item -Destination $feedOutput -Force
+        Get-ChildItem -LiteralPath $packed -File -Filter '*-full.nupkg' | Copy-Item -Destination $feedOutput -Force
+        Copy-Item -LiteralPath (Join-Path $packed "releases.$channel.json") -Destination $feedOutput -Force
     }
     & (Join-Path $PSScriptRoot 'Test-UpdatePackages.ps1') -PackageDirectory $output -ReleaseDirectory $feedOutput
 } finally {

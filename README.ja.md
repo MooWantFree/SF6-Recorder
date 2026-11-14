@@ -10,8 +10,8 @@
 
 [最新の Release](https://github.com/MooWantFree/SF6-Recorder/releases/latest) からダウンロードできます。
 
-- `SF6-Recorder-win-x64-self-contained.zip`：.NET ランタイム同梱版
-- `SF6-Recorder-win-x64-framework-dependent.zip`：.NET ランタイムなし版。.NET 10 Windows Desktop Runtime（x64）の事前インストールが必要です
+- [.NET ランタイム同梱版をダウンロード](https://github.com/MooWantFree/SF6-Recorder/releases/latest/download/SF6-Recorder-win-x64-self-contained.zip)
+- [ランタイムなし版をダウンロード](https://github.com/MooWantFree/SF6-Recorder/releases/latest/download/SF6-Recorder-win-x64-framework-dependent.zip)：.NET 10 Windows Desktop Runtime（x64）の事前インストールが必要です。
 
 ### ローカルビルド
 

@@ -26,10 +26,8 @@ foreach($variant in @('self-contained','framework-dependent')) {
     Assert-Package ($asset.FileName -ceq "SF6Recorder-$($asset.Version)$suffix-full.nupkg") "Package filename does not match $channel."
     $full=Get-Item -LiteralPath (Join-Path $releases $asset.FileName)
     Assert-Package ($full.Length -eq $asset.Size -and (Get-FileHash -LiteralPath $full.FullName -Algorithm SHA256).Hash -eq $asset.SHA256) "Checksum mismatch in $channel feed."
-    $portable=Join-Path $releases "SF6Recorder-$channel-Portable.zip"
     $download=Join-Path $packages "SF6-Recorder-win-x64-$variant.zip"
-    Assert-Package ((Get-FileHash -LiteralPath $portable).Hash -eq (Get-FileHash -LiteralPath $download).Hash) "Download ZIP does not match $channel portable package."
-    foreach($path in @($full.FullName,$portable)) {
+    foreach($path in @($full.FullName,$download)) {
         $archive=[IO.Compression.ZipFile]::OpenRead($path)
         try {
             $prefix=if($path.EndsWith('.nupkg')){'lib/app/'}else{'current/'}

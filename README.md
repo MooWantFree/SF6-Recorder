@@ -10,8 +10,8 @@
 
 在 [release](https://github.com/MooWantFree/SF6-Recorder/releases/latest) 下载
 
-- `SF6-Recorder-win-x64-self-contained.zip`: 带 .NET 运行时
-- `SF6-Recorder-win-x64-framework-dependent.zip`: 不带 .NET 运行时, 需要预装 .NET 10 Windows Desktop Runtime (x64)
+- [下载完整版（自带 .NET 运行时）](https://github.com/MooWantFree/SF6-Recorder/releases/latest/download/SF6-Recorder-win-x64-self-contained.zip)
+- [下载精简版](https://github.com/MooWantFree/SF6-Recorder/releases/latest/download/SF6-Recorder-win-x64-framework-dependent.zip): 需要预装 .NET 10 Windows Desktop Runtime (x64)
 
 ### 本地构建
 

@@ -60,7 +60,5 @@ jobs:
             artifacts/releases/*-full.nupkg
             artifacts/releases/releases.win.json
             artifacts/releases/releases.win-framework-dependent.json
-            artifacts/releases/SF6Recorder-win-Portable.zip
-            artifacts/releases/SF6Recorder-win-framework-dependent-Portable.zip
           if-no-files-found: error
           retention-days: 30
