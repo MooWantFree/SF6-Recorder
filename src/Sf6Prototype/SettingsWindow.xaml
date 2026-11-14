@@ -174,7 +174,7 @@
 
         <StackPanel x:Name="AboutPage" Visibility="Hidden">
           <Border Style="{StaticResource Card}">
-            <Grid Margin="16,12"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions><Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition/></Grid.ColumnDefinitions>
+            <Grid Margin="16,12"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions><Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition/></Grid.ColumnDefinitions>
               <TextBlock Text="{DynamicResource I18n.CurrentVersion}" VerticalAlignment="Center"/>
               <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                 <TextBlock x:Name="VersionText" Text="{x:Static core:GitHubUpdates.VersionLabel}" Style="{StaticResource Number}" Foreground="{StaticResource Ink2}" VerticalAlignment="Center" Margin="0,0,8,0" ToolTip="{DynamicResource I18n.CurrentVersion}" AutomationProperties.Name="{DynamicResource I18n.CurrentVersion}"/>
@@ -184,6 +184,12 @@
                 <Button x:Name="CheckUpdatesButton" Content="{DynamicResource I18n.CheckUpdates}" Click="CheckUpdates_Click"/>
                 <Button x:Name="InstallUpdateButton" Content="{DynamicResource I18n.InstallUpdate}" Click="InstallUpdate_Click" Margin="8,0,0,0" Style="{StaticResource AccentButton}" Visibility="Collapsed" ToolTip="{DynamicResource I18n.InstallUpdateHelp}"/>
               </StackPanel>
+              <Border Grid.Row="2" Grid.ColumnSpan="2" BorderBrush="{StaticResource LineSubtle}" BorderThickness="0,1,0,0" Margin="0,12,0,0" Padding="0,12,0,0">
+                <Grid MinHeight="30"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                  <TextBlock Text="{DynamicResource I18n.CheckForUpdatesOnStartup}" VerticalAlignment="Center"/>
+                  <CheckBox x:Name="StartupUpdateEnabled" Grid.Column="1" Style="{StaticResource Switch}" AutomationProperties.Name="{DynamicResource I18n.CheckForUpdatesOnStartup}"/>
+                </Grid>
+              </Border>
             </Grid>
           </Border>
         </StackPanel>

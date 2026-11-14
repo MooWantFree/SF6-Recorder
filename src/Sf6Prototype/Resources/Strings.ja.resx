@@ -1299,6 +1299,8 @@
   <data name="CollapseRecentMatches" xml:space="preserve"><value>最近の対戦を折りたたむ</value></data>
   <data name="ExpandRecentMatches" xml:space="preserve"><value>最近の対戦を展開</value></data>
   <data name="CheckUpdates" xml:space="preserve"><value>更新を確認</value></data>
+  <data name="CheckForUpdatesOnStartup" xml:space="preserve"><value>起動時に更新を確認</value></data>
+  <data name="UpdateLater" xml:space="preserve"><value>後で</value></data>
   <data name="CheckingUpdates" xml:space="preserve"><value>確認中…</value></data>
   <data name="ViewUpdate" xml:space="preserve"><value>更新を表示</value></data>
   <data name="CurrentVersion" xml:space="preserve"><value>現在のバージョン</value></data>

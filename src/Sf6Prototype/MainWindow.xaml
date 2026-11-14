@@ -145,7 +145,9 @@
       <local:ScoresView x:Name="Scores" Visibility="Collapsed"/>
       <local:MatchDetailPanel x:Name="Detail" Grid.Column="1" Margin="16,0,0,0"/>
     </Grid>
-    <local:StatusToast x:Name="Toast" Grid.Row="1" Panel.ZIndex="10" HorizontalAlignment="Center"
-                       VerticalAlignment="Bottom" Margin="24,0,24,28"/>
+    <StackPanel Grid.Row="1" Panel.ZIndex="10" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="24,0,24,28">
+      <local:StatusToast x:Name="StartupUpdateToast" HorizontalAlignment="Center" Margin="0,0,0,8"/>
+      <local:StatusToast x:Name="Toast" HorizontalAlignment="Center"/>
+    </StackPanel>
   </Grid>
 </local:ChromeWindow>

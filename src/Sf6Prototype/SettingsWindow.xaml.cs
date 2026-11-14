@@ -22,7 +22,8 @@ public partial class SettingsWindow : ChromeWindow
     private static int _lastCategory;
     private Task _transfer=Task.CompletedTask;
     private bool _waitingToClose;
-    private static UpdateRelease? _availableUpdate;
+    internal static UpdateRelease? AvailableUpdate { get; set; }
+    internal event Action? UpdateRequested;
     private CancellationTokenSource? _updateCancellation;
     private Task _updateDownload=Task.CompletedTask;
     public Func<UpdateRelease,Task>? ApplyUpdate {get;set;}
@@ -40,6 +41,7 @@ public partial class SettingsWindow : ChromeWindow
         InitializeComponent(); InitializeWindowChrome(WindowSurface,TitleBar); Owner = owner; _current = current;
         UpdateReleaseButton();
         ProxyEnabled.IsChecked = current.UseProxy; ProxyAddressBox.Text = current.ProxyAddress;
+        StartupUpdateEnabled.IsChecked = current.CheckForUpdatesOnStartup;
         ReminderSecondsBox.Text=current.RefreshReminderSeconds.ToString(CultureInfo.InvariantCulture);
         AutoRefreshSecondsBox.Text=current.AutoRefreshSeconds.ToString(CultureInfo.InvariantCulture);
         RefreshAfterMatchEnabled.IsChecked=current.RefreshAfterMatch;
@@ -111,8 +113,8 @@ public partial class SettingsWindow : ChromeWindow
             if(ChangeLanguage is { } change) change(language);
             else LocalizationWpf.Apply(language);
             _current=_current with {Language=language};
-            CheckUpdatesButton.ToolTip=_availableUpdate==null ? null :
-                Localization.Format(Strings.UpdateAvailable,$"v{_availableUpdate.Version.ToString(3)}");
+            CheckUpdatesButton.ToolTip = AvailableUpdate?.AvailableMessage;
+            UpdateToast.RefreshUpdatePrompt(AvailableUpdate);
         }
         catch(Exception error) when(error is IOException or UnauthorizedAccessException or ArgumentException)
         {
@@ -153,10 +155,16 @@ public partial class SettingsWindow : ChromeWindow
         CheckUpdatesButton.SetResourceReference(ContentControl.ContentProperty,
             "I18n.CheckUpdates");
         CheckUpdatesButton.SetResourceReference(StyleProperty,
-            _availableUpdate == null ? typeof(Button) : "AccentButton");
-        CheckUpdatesButton.ToolTip = _availableUpdate == null ? null :
-            Localization.Format(Strings.UpdateAvailable, $"v{_availableUpdate.Version.ToString(3)}");
-        InstallUpdateButton.Visibility = _availableUpdate == null ? Visibility.Collapsed : Visibility.Visible;
+            AvailableUpdate == null ? typeof(Button) : "AccentButton");
+        CheckUpdatesButton.ToolTip = AvailableUpdate?.AvailableMessage;
+        InstallUpdateButton.Visibility = AvailableUpdate == null ? Visibility.Collapsed : Visibility.Visible;
+    }
+    internal bool OfferStartupUpdate(UpdateRelease release)
+    {
+        UpdateReleaseButton();
+        if (!InstallUpdateButton.IsEnabled || _closing.IsCancellationRequested) return false;
+        UpdateToast.ShowUpdatePrompt(release, () => _ = InstallAvailableUpdateAsync());
+        return true;
     }
     private async void CheckUpdates_Click(object sender,RoutedEventArgs e)
     {
@@ -168,6 +176,8 @@ public partial class SettingsWindow : ChromeWindow
     }
     private async Task CheckForUpdatesAsync(Func<Task<UpdateCheckResult>> check)
     {
+        UpdateRequested?.Invoke();
+        UpdateToast.Dismiss();
         CheckUpdatesButton.IsEnabled = false;
         InstallUpdateButton.IsEnabled = false;
         ImportButton.IsEnabled=BackupButton.IsEnabled=false;
@@ -178,13 +188,13 @@ public partial class SettingsWindow : ChromeWindow
             if (_closing.IsCancellationRequested) return;
             if (result is {Status:UpdateStatus.Available,Release:{ } release})
             {
-                _availableUpdate = release;
-                UpdateToast.Show(Localization.Format(Strings.UpdateAvailable,$"v{release.Version.ToString(3)}"),
-                    actionText:Strings.InstallUpdate,action:()=>InstallUpdate_Click(this,new RoutedEventArgs()));
+                AvailableUpdate = release;
+                UpdateToast.Show(release.AvailableMessage,
+                    actionText:Strings.InstallUpdate,action:()=>_ = InstallAvailableUpdateAsync());
             }
             else
             {
-                _availableUpdate = null;
+                AvailableUpdate = null;
                 UpdateToast.Show(result.Status switch {UpdateStatus.NoRelease=>Strings.NoUpdatePackage,
                     UpdateStatus.NotInstalled=>Strings.UpdatePortableRequired,_=>Strings.NoUpdates});
             }
@@ -205,7 +215,13 @@ public partial class SettingsWindow : ChromeWindow
     private async void InstallUpdate_Click(object sender,RoutedEventArgs e)
     {
         if(_updateCancellation != null) {_updateCancellation.Cancel();return;}
-        if(_availableUpdate is not { } release || ApplyUpdate == null || !InstallUpdateButton.IsEnabled) return;
+        await InstallAvailableUpdateAsync();
+    }
+    internal async Task InstallAvailableUpdateAsync()
+    {
+        if(AvailableUpdate is not { } release || ApplyUpdate == null || !InstallUpdateButton.IsEnabled || _updateCancellation != null) return;
+        UpdateRequested?.Invoke();
+        ShowCategory(AboutPage);
         ConnectionSettings settings;
         try {settings=Draft(includeIntervals:false);}
         catch(ArgumentException ex) {UpdateToast.Show(ex.Message,true);return;}
@@ -252,6 +268,7 @@ public partial class SettingsWindow : ChromeWindow
     {
         var settings = _current with { UseProxy = ProxyEnabled.IsChecked == true, ProxyAddress = ProxyAddressBox.Text.Trim(),
             WindowCloseAction=(CloseAction)CloseActionBox.SelectedIndex,
+            CheckForUpdatesOnStartup=StartupUpdateEnabled.IsChecked==true,
             Language=LanguageBox.SelectedValue as string ?? Localization.SystemLanguage,
             RefreshAfterMatch=RefreshAfterMatchEnabled.IsChecked==true,
             FocusLatestMatchAfterRefresh=FocusLatestMatchEnabled.IsChecked==true,

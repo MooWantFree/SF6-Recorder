@@ -49,7 +49,7 @@ public static class PersistenceRecoveryChecks
         Check(Directory.GetFiles(root,"settings.corrupt-*.json").Length==1 && File.ReadAllText(Directory.GetFiles(root,"settings.corrupt-*.json")[0])=="{broken",
             "Recovery retains the exact damaged file for diagnostics");
         var fresh=Path.Combine(root,"fresh");Directory.CreateDirectory(fresh);File.WriteAllText(Path.Combine(fresh,"settings.json"),"null");
-        Check(ConnectionSettings.Load(fresh) is {AutoRefreshSeconds:0,RefreshAfterMatch:false},"Without a usable backup recovery enables no automatic requests");
+        Check(ConnectionSettings.Load(fresh) is {AutoRefreshSeconds:0,RefreshAfterMatch:false,CheckForUpdatesOnStartup:false},"Without a usable backup recovery enables no automatic requests");
         var existing=Path.Combine(root,"existing");Directory.CreateDirectory(existing);
         File.WriteAllText(Path.Combine(existing,"settings.json"),"{\"Language\":\"ja\",\"AutoRefreshSeconds\":1800}");
         var valid=File.ReadAllText(Path.Combine(existing,"settings.json"));ConnectionSettings.Load(existing);

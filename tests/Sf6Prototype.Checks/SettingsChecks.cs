@@ -20,12 +20,14 @@ public static class SettingsChecks
         Check(defaults is {RefreshAfterMatch:true,FocusLatestMatchAfterRefresh:true,RecentMatchesCollapsed:false,MatchEndWaitSeconds:1,MatchEndRetrySeconds:8,MatchEndSamplesPerSecond:4},
             "Fresh match-end settings match the selected baseline without copying account or proxy state");
         var existing=defaults with {Language="ja",UseProxy=true,RefreshReminderSeconds=86400,AutoRefreshSeconds=600,
-            RefreshAfterMatch=false,MatchEndWaitSeconds=5,WindowCloseAction=CloseAction.MinimizeToTray};
+            RefreshAfterMatch=false,CheckForUpdatesOnStartup=false,MatchEndWaitSeconds=5,WindowCloseAction=CloseAction.MinimizeToTray};
         existing.Save(directory);
         Check(ConnectionSettings.Load(directory)==existing,"New defaults preserve every explicitly saved preference");
         Check(defaults is {RefreshReminderSeconds:0,AutoRefreshSeconds:0},"New installations disable periodic refresh and update reminders");
         File.WriteAllText(path,"""{"UseProxy":true,"ProxyAddress":"http://127.0.0.1:8888","PlayerId":"1234567890"}""");
         var legacy=ConnectionSettings.Load(directory);
+        Check(defaults.CheckForUpdatesOnStartup && legacy.CheckForUpdatesOnStartup,
+            "Fresh installations and older settings without an update preference check on startup");
         Check(legacy.ApiIntervalSeconds==2 && new ConnectionSettings().ApiIntervalSeconds==2,"New settings and files without an explicit interval default to two seconds");
         foreach(var seconds in new[]{0.1,1,3,5,10,3600,2.5})
         {

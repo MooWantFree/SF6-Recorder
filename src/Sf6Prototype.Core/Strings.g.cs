@@ -61,6 +61,7 @@ public static class Strings
     public static string Character => Localization.Get(nameof(Character));
     public static string CharacterNamesIncomplete => Localization.Get(nameof(CharacterNamesIncomplete));
     public static string ChartHelp => Localization.Get(nameof(ChartHelp));
+    public static string CheckForUpdatesOnStartup => Localization.Get(nameof(CheckForUpdatesOnStartup));
     public static string CheckingSession => Localization.Get(nameof(CheckingSession));
     public static string CheckingSessionProgress => Localization.Get(nameof(CheckingSessionProgress));
     public static string CheckingUpdates => Localization.Get(nameof(CheckingUpdates));
@@ -449,6 +450,7 @@ public static class Strings
     public static string UpdatedAtPrefix => Localization.Get(nameof(UpdatedAtPrefix));
     public static string UpdateFailed => Localization.Get(nameof(UpdateFailed));
     public static string UpdateInstallFailed => Localization.Get(nameof(UpdateInstallFailed));
+    public static string UpdateLater => Localization.Get(nameof(UpdateLater));
     public static string UpdatePortableRequired => Localization.Get(nameof(UpdatePortableRequired));
     public static string UpdatingCharacterProfiles => Localization.Get(nameof(UpdatingCharacterProfiles));
     public static string UpdatingProfilesProgress => Localization.Get(nameof(UpdatingProfilesProgress));

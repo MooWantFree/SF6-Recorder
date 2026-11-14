@@ -27,6 +27,7 @@ public record ConnectionSettings
     public double MatchEndSamplesPerSecond { get; init; } = 4;
     public static bool ValidMatchEndFrequency(double value)=>double.IsFinite(value) && value is >=0.5 and <=10;
     public CloseAction WindowCloseAction { get; init; } = CloseAction.Ask;
+    public bool CheckForUpdatesOnStartup { get; init; } = true;
     public string Language { get; init; } = Localization.SystemLanguage;
     public bool UseProxy { get; init; } = false;
     public string ProxyAddress { get; init; } = "http://127.0.0.1:7890";
@@ -81,7 +82,7 @@ public record ConnectionSettings
         catch (JsonException error)
         {
             Diagnostics.Write("settings", "corrupt", error);
-            settings = new() {RefreshAfterMatch=false}; // Damaged preferences must not opt into background requests.
+            settings = new() {RefreshAfterMatch=false, CheckForUpdatesOnStartup=false}; // Damaged preferences must not opt into background requests.
             try { if (File.Exists(path + ".bak")) settings = ReadSettings(path + ".bak"); }
             catch (Exception backupError) when (backupError is JsonException or IOException or UnauthorizedAccessException)
             { Diagnostics.Write("settings", "backup_unavailable", backupError); }

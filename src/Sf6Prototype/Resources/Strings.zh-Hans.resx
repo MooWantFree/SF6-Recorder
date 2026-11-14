@@ -1299,6 +1299,8 @@
   <data name="CollapseRecentMatches" xml:space="preserve"><value>折叠最近比赛</value></data>
   <data name="ExpandRecentMatches" xml:space="preserve"><value>展开最近比赛</value></data>
   <data name="CheckUpdates" xml:space="preserve"><value>检查更新</value></data>
+  <data name="CheckForUpdatesOnStartup" xml:space="preserve"><value>启动时检查更新</value></data>
+  <data name="UpdateLater" xml:space="preserve"><value>稍后</value></data>
   <data name="CheckingUpdates" xml:space="preserve"><value>检查中…</value></data>
   <data name="ViewUpdate" xml:space="preserve"><value>查看更新</value></data>
   <data name="CurrentVersion" xml:space="preserve"><value>当前版本</value></data>

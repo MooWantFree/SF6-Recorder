@@ -38,6 +38,7 @@ public partial class MainWindow : ChromeWindow
     private BattlePager Pager => _pagers.TryGetValue(_navigation.Current.Id,out var pager) ? pager : _pagers[_navigation.Current.Id]=new(_store,_navigation.Current.Id);
     private SyncResult? _lastSync;
     private bool _savingSettings;
+    private readonly CancellationTokenSource _startupUpdateCheck = new();
     private readonly DispatcherTimer _refreshReminderTimer = new() {Interval=TimeSpan.FromSeconds(30)};
     private readonly DispatcherTimer _autoRefreshTimer = new();
     private readonly AutoRefreshSchedule _autoRefresh = new();
@@ -82,7 +83,7 @@ public partial class MainWindow : ChromeWindow
         AccountPopup.Opened += (_, _) => UiCapture.SaveLater((FrameworkElement)AccountPopup.Child, "ui-account-menu.png");
         PlayerSearchPopup.Closed+=(_,_)=>{IsPlayerSearchActive=false;if(_searchingPlayer) RequestCancellation();};
         Deactivated+=(_,_)=>ClosePlayerSearch();
-        Loaded += async (_, _) => await InitializeAsync();
+        Loaded += MainWindow_Loaded;
         PreviewKeyDown += async (_, e) =>
         {
             if (e.Key==Key.BrowserBack || Keyboard.Modifiers == ModifierKeys.Alt && (e.Key == Key.Left || e.SystemKey == Key.Left))
@@ -120,6 +121,11 @@ public partial class MainWindow : ChromeWindow
             ClosePlayerSearch();
         };
     }
+    private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
+    {
+        Loaded -= MainWindow_Loaded;
+        await InitializeAsync();
+    }
     private async Task InitializeAsync()
     {
         _settings = ConnectionSettings.Load(App.DataDirectory);
@@ -150,6 +156,7 @@ public partial class MainWindow : ChromeWindow
         ConfigureAutoRefresh();
         await ConfigureMatchEndDetectionAsync();
         SetStatus("ready", Strings.ReadyLocalData);
+        _ = CheckForStartupUpdateAsync(GitHubUpdates.CheckAsync);
         if (App.AutoSync) await SynchronizeAsync();
         if (App.Capture) await CaptureAllAsync();
     }
@@ -380,17 +387,50 @@ public partial class MainWindow : ChromeWindow
         { existing.Show(); existing.Activate(); return; }
         if(IsEnabled) OpenSettings();
     }
-    private async void OpenSettings()
+    private async Task CheckForStartupUpdateAsync(Func<ConnectionSettings, CancellationToken, Task<UpdateCheckResult>> check)
+    {
+        if (App.Capture || !_settings.CheckForUpdatesOnStartup || _exitRequested || App.IsShuttingDown) return;
+        var token = _startupUpdateCheck.Token;
+        if (token.IsCancellationRequested) return;
+        try
+        {
+            var result = await check(_settings, token);
+            if (token.IsCancellationRequested || App.IsShuttingDown || result is not { Status: UpdateStatus.Available, Release: { } release }) return;
+            SettingsWindow.AvailableUpdate = release;
+            var dialog = OwnedWindows.OfType<SettingsWindow>().FirstOrDefault();
+            if (dialog?.OfferStartupUpdate(release) != true)
+                StartupUpdateToast.ShowUpdatePrompt(release, () => OpenSettings(installUpdate: true));
+        }
+        catch (OperationCanceledException) when (token.IsCancellationRequested) { }
+        catch (Exception error) { Diagnostics.Write("updates", "startup_check_failed", error); }
+    }
+    private void CancelStartupUpdateCheck()
+    {
+        _startupUpdateCheck.Cancel();
+        StartupUpdateToast.Dismiss();
+    }
+    private async void OpenSettings(bool installUpdate = false)
     {
         if (!_ready || _exitRequested || _savingSettings) return;
         if(OwnedWindows.OfType<SettingsWindow>().FirstOrDefault() is { } existing)
-        { existing.Activate(); return; }
+        {
+            existing.Activate();
+            if (installUpdate) await existing.InstallAvailableUpdateAsync();
+            return;
+        }
         var dialog = CreateSettingsWindow();
+        if (installUpdate) dialog.Loaded += InstallWhenLoaded;
+        async void InstallWhenLoaded(object sender, RoutedEventArgs e)
+        {
+            dialog.Loaded -= InstallWhenLoaded;
+            await dialog.InstallAvailableUpdateAsync();
+        }
         if (dialog.ShowDialog() != true || dialog.Result == null) return;
         _savingSettings=true;
         try
         {
             var settings=dialog.Result with {PlayerId=_settings.PlayerId}; settings.Save(App.DataDirectory); _settings=settings;
+            if (!_settings.CheckForUpdatesOnStartup) CancelStartupUpdateCheck();
             RequestGate.Shared.Interval=TimeSpan.FromSeconds(_settings.ApiIntervalSeconds);
             ConfigureRefreshReminder();
             ConfigureAutoRefresh();
@@ -417,6 +457,7 @@ public partial class MainWindow : ChromeWindow
         try
         {
             LocalizationWpf.Apply(_settings.Language);
+            StartupUpdateToast.RefreshUpdatePrompt(SettingsWindow.AvailableUpdate);
             History.RefreshLanguage(); Scores.RefreshLanguage();
             Detail.RefreshLanguage(detail);
             RefreshAccountUi(); RefreshViewedPlayerUi(); UpdateSearchEmptyState();
@@ -433,6 +474,7 @@ public partial class MainWindow : ChromeWindow
     private SettingsWindow CreateSettingsWindow()
     {
         var dialog=new SettingsWindow(this,_settings) {BeforeImport=()=>CancelDownloadsAsync(),ApplyUpdate=ApplyAppUpdateAsync,ChangeLanguage=ChangeLanguage};
+        dialog.UpdateRequested += CancelStartupUpdateCheck;
         dialog.DatabaseImported+=()=>
         {
             _store.InvalidateReads(); _pagers.Clear(); History.AllowPageUpdates(); ReloadLocal(preserveViewport:true);
@@ -1053,6 +1095,7 @@ public partial class MainWindow : ChromeWindow
     {
         if(_exitRequested) return;
         _exitRequested=true;_closeRequested=true;
+        CancelStartupUpdateCheck();
         _autoRefreshTimer.Stop();_refreshReminderTimer.Stop();
         await StopMatchEndDetectionAsync();
         AccountPopup.IsOpen=PlayerSearchPopup.IsOpen=false;
@@ -1072,5 +1115,5 @@ public partial class MainWindow : ChromeWindow
         _exitReady=true;Close();
     }
     protected override void OnClosed(EventArgs e)
-    { _tray?.Dispose();_imageRefreshTimer.Stop();_refreshReminderTimer.Stop();_autoRefreshTimer.Stop();_progressTimer.Stop();_refreshResultTimer.Stop();_matchEndStatusTimer.Stop();base.OnClosed(e); }
+    { _startupUpdateCheck.Cancel();_startupUpdateCheck.Dispose();_tray?.Dispose();_imageRefreshTimer.Stop();_refreshReminderTimer.Stop();_autoRefreshTimer.Stop();_progressTimer.Stop();_refreshResultTimer.Stop();_matchEndStatusTimer.Stop();base.OnClosed(e); }
 }

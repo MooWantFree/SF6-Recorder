@@ -1299,6 +1299,8 @@ The saved sign-in will be removed from this device. Local match records will be 
   <data name="CollapseRecentMatches" xml:space="preserve"><value>Collapse recent matches</value></data>
   <data name="ExpandRecentMatches" xml:space="preserve"><value>Expand recent matches</value></data>
   <data name="CheckUpdates" xml:space="preserve"><value>Check updates</value></data>
+  <data name="CheckForUpdatesOnStartup" xml:space="preserve"><value>Check for updates on startup</value></data>
+  <data name="UpdateLater" xml:space="preserve"><value>Later</value></data>
   <data name="CheckingUpdates" xml:space="preserve"><value>Checking…</value></data>
   <data name="ViewUpdate" xml:space="preserve"><value>View update</value></data>
   <data name="CurrentVersion" xml:space="preserve"><value>Current version</value></data>

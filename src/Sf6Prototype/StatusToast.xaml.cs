@@ -26,6 +26,20 @@ public partial class StatusToast : UserControl
         Progress.Visibility=Visibility.Collapsed;
         _timer.Start();
     }
+    public void ShowUpdatePrompt(UpdateRelease release, Action install)
+    {
+        if (IsLoading) return;
+        Present(release.AvailableMessage, false, Strings.InstallUpdate, install);
+        ActionButton.SetResourceReference(ContentControl.ContentProperty, "I18n.InstallUpdate");
+        ActionButton.SetResourceReference(ToolTipProperty, "I18n.InstallUpdateHelp");
+        LaterButton.Visibility = Visibility.Visible;
+        Progress.Visibility = Visibility.Collapsed;
+    }
+    public void RefreshUpdatePrompt(UpdateRelease? release)
+    {
+        if (release != null && Visibility == Visibility.Visible && LaterButton.Visibility == Visibility.Visible)
+            SetText(release.AvailableMessage);
+    }
     public void BeginProgress(string text)
     {
         IsLoading=true;
@@ -53,7 +67,9 @@ public partial class StatusToast : UserControl
         Surface.SetResourceReference(BackgroundProperty,danger ? "DangerSoft" : "WinSoft");
         MessageText.SetResourceReference(TextBlock.ForegroundProperty,danger ? "Loss" : "Ink");
         _action=action;ActionButton.Content=actionText;
+        ActionButton.ClearValue(ToolTipProperty);
         ActionButton.Visibility=action==null ? Visibility.Collapsed : Visibility.Visible;
+        LaterButton.Visibility=Visibility.Collapsed;
         MessageButton.Cursor=IsLoading ? Cursors.Arrow : Cursors.Hand;
         MessageButton.Focusable=!IsLoading;
         Visibility=Visibility.Visible;

@@ -10,7 +10,10 @@ namespace Sf6Prototype;
 
 public enum UpdateStatus { UpToDate, Available, NoRelease, NotInstalled }
 public sealed record UpdateRelease(Version Version, Uri Page, string Tag, UpdateInfo Package,
-    string Channel = GitHubUpdates.SelfContainedChannel);
+    string Channel = GitHubUpdates.SelfContainedChannel)
+{
+    public string AvailableMessage => Localization.Format(Strings.UpdateAvailable, $"v{Version.ToString(3)}");
+}
 public sealed record UpdateCheckResult(UpdateStatus Status, UpdateRelease? Release = null);
 
 public static class GitHubUpdates
