@@ -28,6 +28,7 @@ public record ConnectionSettings
     public static bool ValidMatchEndFrequency(double value)=>double.IsFinite(value) && value is >=0.5 and <=10;
     public CloseAction WindowCloseAction { get; init; } = CloseAction.Ask;
     public bool CheckForUpdatesOnStartup { get; init; } = true;
+    public UpdateReminder UpdateReminder { get; init; } = new();
     public string Language { get; init; } = Localization.SystemLanguage;
     public bool UseProxy { get; init; } = false;
     public string ProxyAddress { get; init; } = "http://127.0.0.1:7890";
@@ -105,6 +106,7 @@ public record ConnectionSettings
             MatchEndSamplesPerSecond=ValidMatchEndFrequency(settings.MatchEndSamplesPerSecond) ? settings.MatchEndSamplesPerSecond : 4,
             ApiIntervalSeconds=ValidApiInterval(settings.ApiIntervalSeconds) ? settings.ApiIntervalSeconds : DefaultApiIntervalSeconds,
             WindowCloseAction=Enum.IsDefined(settings.WindowCloseAction) ? settings.WindowCloseAction : CloseAction.Ask,
+            UpdateReminder=settings.UpdateReminder ?? new(),
             Language=Localization.Normalize(settings.Language)
         };
     }

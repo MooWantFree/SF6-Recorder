@@ -28,6 +28,18 @@ public static class SettingsChecks
         var legacy=ConnectionSettings.Load(directory);
         Check(defaults.CheckForUpdatesOnStartup && legacy.CheckForUpdatesOnStartup,
             "Fresh installations and older settings without an update preference check on startup");
+        var release = new Version(0, 0, 7);
+        var laterRelease = new Version(0, 0, 8);
+        var reminderStart = new DateTimeOffset(2026, 11, 15, 10, 0, 0, TimeSpan.FromHours(8));
+        (legacy with { UpdateReminder = new(IgnoredVersion: "0.0.7") }).Save(directory);
+        var ignored = ConnectionSettings.Load(directory).UpdateReminder;
+        Check(!ignored.ShouldPrompt(release, reminderStart.AddYears(1)) && ignored.ShouldPrompt(laterRelease, reminderStart),
+            "Skipping an update survives restart and applies only to that version");
+        (legacy with { UpdateReminder = UpdateReminder.InFiveDays(reminderStart) }).Save(directory);
+        var deferred = ConnectionSettings.Load(directory).UpdateReminder;
+        var due = reminderStart.ToUniversalTime().AddDays(5);
+        Check(deferred.RemindAfterUtc == due && !deferred.ShouldPrompt(laterRelease, due.AddTicks(-1)) &&
+            deferred.ShouldPrompt(release, due), "A saved reminder is due at exactly five days across time zones");
         Check(legacy.ApiIntervalSeconds==2 && new ConnectionSettings().ApiIntervalSeconds==2,"New settings and files without an explicit interval default to two seconds");
         foreach(var seconds in new[]{0.1,1,3,5,10,3600,2.5})
         {

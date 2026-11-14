@@ -147,6 +147,7 @@ public static class Strings
     public static string HttpSyncStopped => Localization.Get(nameof(HttpSyncStopped));
     public static string HttpVerificationRequired => Localization.Get(nameof(HttpVerificationRequired));
     public static string HubShort => Localization.Get(nameof(HubShort));
+    public static string IgnoreUpdate => Localization.Get(nameof(IgnoreUpdate));
     public static string ImageRetryPending => Localization.Get(nameof(ImageRetryPending));
     public static string ImagesPendingSuffix => Localization.Get(nameof(ImagesPendingSuffix));
     public static string ImageTooLarge => Localization.Get(nameof(ImageTooLarge));
@@ -452,6 +453,7 @@ public static class Strings
     public static string UpdateInstallFailed => Localization.Get(nameof(UpdateInstallFailed));
     public static string UpdateLater => Localization.Get(nameof(UpdateLater));
     public static string UpdatePortableRequired => Localization.Get(nameof(UpdatePortableRequired));
+    public static string UpdateReminderSaveFailed => Localization.Get(nameof(UpdateReminderSaveFailed));
     public static string UpdatingCharacterProfiles => Localization.Get(nameof(UpdatingCharacterProfiles));
     public static string UpdatingProfilesProgress => Localization.Get(nameof(UpdatingProfilesProgress));
     public static string UseProxy => Localization.Get(nameof(UseProxy));

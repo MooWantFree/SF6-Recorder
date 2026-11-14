@@ -1300,7 +1300,9 @@
   <data name="ExpandRecentMatches" xml:space="preserve"><value>展開最近比賽</value></data>
   <data name="CheckUpdates" xml:space="preserve"><value>檢查更新</value></data>
   <data name="CheckForUpdatesOnStartup" xml:space="preserve"><value>啟動時檢查更新</value></data>
-  <data name="UpdateLater" xml:space="preserve"><value>稍後</value></data>
+  <data name="UpdateLater" xml:space="preserve"><value>5 天後提醒</value></data>
+  <data name="IgnoreUpdate" xml:space="preserve"><value>略過此次更新</value></data>
+  <data name="UpdateReminderSaveFailed" xml:space="preserve"><value>無法儲存更新提醒設定</value></data>
   <data name="CheckingUpdates" xml:space="preserve"><value>檢查中…</value></data>
   <data name="ViewUpdate" xml:space="preserve"><value>查看更新</value></data>
   <data name="CurrentVersion" xml:space="preserve"><value>目前版本</value></data>

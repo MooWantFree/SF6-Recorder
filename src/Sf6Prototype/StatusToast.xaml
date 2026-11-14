@@ -18,9 +18,17 @@
         </Button>
         <Button x:Name="ActionButton" Grid.Column="1" Margin="14,0,0,0" Padding="10,4"
                 Click="Action_Click" Visibility="Collapsed"/>
-        <Button x:Name="LaterButton" Grid.Column="2" Margin="8,0,0,0" Padding="10,4"
-                Content="{DynamicResource I18n.UpdateLater}" Click="Dismiss_Click" Visibility="Collapsed"/>
+        <Button x:Name="ClosePromptButton" Grid.Column="2" Style="{StaticResource IconButton}" Content="&#xE8BB;"
+                Width="28" Height="28" MinHeight="0" Margin="12,0,0,0" Click="Dismiss_Click" Visibility="Collapsed"
+                AutomationProperties.Name="{DynamicResource I18n.DismissNotice}" ToolTip="{DynamicResource I18n.DismissNotice}"/>
       </Grid>
+      <WrapPanel x:Name="UpdateActions" HorizontalAlignment="Right" Margin="0,8,0,0" Visibility="Collapsed">
+        <Button x:Name="IgnoreUpdateButton" Content="{DynamicResource I18n.IgnoreUpdate}" Style="{StaticResource GhostButton}"
+                Padding="10,4" Click="DeferUpdate_Click"/>
+        <Button x:Name="LaterButton" Content="{DynamicResource I18n.UpdateLater}" Margin="8,0,0,0" Padding="10,4" Click="DeferUpdate_Click"/>
+        <Button x:Name="InstallPromptButton" Content="{DynamicResource I18n.InstallUpdate}" Style="{StaticResource AccentButton}"
+                Margin="8,0,0,0" Padding="10,4" ToolTip="{DynamicResource I18n.InstallUpdateHelp}" Click="Action_Click"/>
+      </WrapPanel>
       <ProgressBar x:Name="Progress" Height="3" Margin="0,10,0,0" Minimum="0" Maximum="1"
                    Foreground="{DynamicResource Win}" Background="{DynamicResource LineSubtle}"
                    BorderThickness="0" Visibility="Collapsed"/>

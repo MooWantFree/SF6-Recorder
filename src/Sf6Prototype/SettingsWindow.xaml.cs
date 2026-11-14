@@ -23,7 +23,10 @@ public partial class SettingsWindow : ChromeWindow
     private Task _transfer=Task.CompletedTask;
     private bool _waitingToClose;
     internal static UpdateRelease? AvailableUpdate { get; set; }
+    private bool _checkingUpdates;
+    internal bool UpdateInProgress => _checkingUpdates || _updateCancellation != null;
     internal event Action? UpdateRequested;
+    internal event Action<UpdateReminder>? UpdateReminderChanged;
     private CancellationTokenSource? _updateCancellation;
     private Task _updateDownload=Task.CompletedTask;
     public Func<UpdateRelease,Task>? ApplyUpdate {get;set;}
@@ -114,7 +117,7 @@ public partial class SettingsWindow : ChromeWindow
             else LocalizationWpf.Apply(language);
             _current=_current with {Language=language};
             CheckUpdatesButton.ToolTip = AvailableUpdate?.AvailableMessage;
-            UpdateToast.RefreshUpdatePrompt(AvailableUpdate);
+            UpdateToast.RefreshUpdatePrompt();
         }
         catch(Exception error) when(error is IOException or UnauthorizedAccessException or ArgumentException)
         {
@@ -150,7 +153,7 @@ public partial class SettingsWindow : ChromeWindow
         catch(Exception ex) when(ex is Win32Exception or IOException or UnauthorizedAccessException)
         {ShowError(Strings.OpenLogFolderFailed);}
     }
-    private void UpdateReleaseButton()
+    internal void UpdateReleaseButton()
     {
         CheckUpdatesButton.SetResourceReference(ContentControl.ContentProperty,
             "I18n.CheckUpdates");
@@ -163,9 +166,15 @@ public partial class SettingsWindow : ChromeWindow
     {
         UpdateReleaseButton();
         if (!InstallUpdateButton.IsEnabled || _closing.IsCancellationRequested) return false;
-        UpdateToast.ShowUpdatePrompt(release, () => _ = InstallAvailableUpdateAsync());
+        ShowUpdatePrompt(release);
         return true;
     }
+    private void ShowUpdatePrompt(UpdateRelease release) =>
+        UpdateToast.ShowUpdatePrompt(release, () => _ = InstallAvailableUpdateAsync(), reminder =>
+        {
+            UpdateReminderChanged?.Invoke(reminder);
+            _current = _current with { UpdateReminder = reminder };
+        });
     private async void CheckUpdates_Click(object sender,RoutedEventArgs e)
     {
         if (!CheckUpdatesButton.IsEnabled) return;
@@ -176,6 +185,7 @@ public partial class SettingsWindow : ChromeWindow
     }
     private async Task CheckForUpdatesAsync(Func<Task<UpdateCheckResult>> check)
     {
+        _checkingUpdates = true;
         UpdateRequested?.Invoke();
         UpdateToast.Dismiss();
         CheckUpdatesButton.IsEnabled = false;
@@ -189,8 +199,7 @@ public partial class SettingsWindow : ChromeWindow
             if (result is {Status:UpdateStatus.Available,Release:{ } release})
             {
                 AvailableUpdate = release;
-                UpdateToast.Show(release.AvailableMessage,
-                    actionText:Strings.InstallUpdate,action:()=>_ = InstallAvailableUpdateAsync());
+                ShowUpdatePrompt(release);
             }
             else
             {
@@ -208,6 +217,7 @@ public partial class SettingsWindow : ChromeWindow
         }
         finally
         {
+            _checkingUpdates = false;
             if (!_closing.IsCancellationRequested)
             { CheckUpdatesButton.IsEnabled = InstallUpdateButton.IsEnabled = ImportButton.IsEnabled = BackupButton.IsEnabled = true; UpdateReleaseButton(); }
         }

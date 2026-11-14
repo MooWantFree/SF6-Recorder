@@ -15,6 +15,13 @@ public sealed record UpdateRelease(Version Version, Uri Page, string Tag, Update
     public string AvailableMessage => Localization.Format(Strings.UpdateAvailable, $"v{Version.ToString(3)}");
 }
 public sealed record UpdateCheckResult(UpdateStatus Status, UpdateRelease? Release = null);
+public sealed record UpdateReminder(string? IgnoredVersion = null, DateTimeOffset? RemindAfterUtc = null)
+{
+    public bool ShouldPrompt(Version version, DateTimeOffset now) =>
+        IgnoredVersion != version.ToString(3) && !(RemindAfterUtc > now);
+
+    public static UpdateReminder InFiveDays(DateTimeOffset now) => new(RemindAfterUtc: now.ToUniversalTime().AddDays(5));
+}
 
 public static class GitHubUpdates
 {
