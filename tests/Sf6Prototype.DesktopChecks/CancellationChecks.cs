@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -19,11 +20,16 @@ internal static class CancellationChecks
         void Set(string field,object? value)=>typeof(MainWindow).GetField(field,flags)!.SetValue(main,value);
         T Get<T>(string field)=>(T)typeof(MainWindow).GetField(field,flags)!.GetValue(main)!;
         void Pump()=>main.Dispatcher.Invoke(()=>{},DispatcherPriority.ContextIdle);
+        void PumpUntil(Func<bool> finished, string message)
+        {
+            var elapsed=Stopwatch.StartNew();
+            do {Pump();Thread.Yield();} while(!finished() && elapsed.Elapsed<TimeSpan.FromSeconds(10));
+            Check(finished(),message);
+        }
         void Complete(Task task)
         {
-            var deadline=DateTime.UtcNow.AddSeconds(10);
-            do {Pump();Thread.Yield();} while(!task.IsCompleted && DateTime.UtcNow<deadline);
-            Check(task.IsCompleted,"Headless operation completed without network or a native window");task.GetAwaiter().GetResult();
+            PumpUntil(()=>task.IsCompleted,"Headless operation completed without network or a native window");
+            task.GetAwaiter().GetResult();
         }
         void MouseDown(UIElement element,MouseButton button=MouseButton.Left)=>element.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,Environment.TickCount,button) {RoutedEvent=Mouse.PreviewMouseDownEvent});
         void Busy(bool busy)=>Call(main,"SetBusy",busy,false,false);
@@ -77,7 +83,9 @@ internal static class CancellationChecks
             Check(!first.Token.IsCancellationRequested,"Scrolling through existing matches does not cancel the active request");
             var categories=(ListBox)history.FindName("CategoryFilter");categories.SelectedItem=categories.Items.OfType<CategoryChoice>().Single(c=>c.Key=="rank");
             Check(!first.Token.IsCancellationRequested && history.Category=="rank","Changing the category keeps active downloading and applies the local filter");
-            ((Button)main.FindName("HomeButton")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));Pump();
+            ((Button)main.FindName("HomeButton")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            // The archive is read on a worker. Home restores the filter before waiting for the held download.
+            PumpUntil(()=>history.Category=="","Home did not restore the All filter");
             Check(!first.Token.IsCancellationRequested && history.Category=="" && ring.Visibility==Visibility.Visible,"Home within the active account returns to All without stopping its download");
             categories.SelectedItem=categories.Items.OfType<CategoryChoice>().Single(c=>c.Key=="rank");
             ((ListBox)main.FindName("PageTabs")).SelectedIndex=1;
@@ -87,7 +95,8 @@ internal static class CancellationChecks
             var queued=(Task)Call(main,"EnsureCurrentViewAsync")!;
             Check(!first.Token.IsCancellationRequested && !queued.IsCompleted,"A different score range waits behind the existing download instead of cancelling it");
             Check(((TextBlock)sync.ToolTip).Text.Contains("再次点击停止"),"The busy refresh tooltip advertises the click-to-stop action");
-            var version=Get<int>("_viewLoadVersion");sync.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));Pump();
+            var version=Get<int>("_viewLoadVersion");sync.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            PumpUntil(()=>!Get<bool>("_stoppingRefresh") && queued.IsCompleted,"Stop did not drain the pending view request");
             Check(first.Token.IsCancellationRequested && first.Work.Task.IsCompleted && queued.IsCompleted && Get<int>("_viewLoadVersion")>version && !Get<bool>("_busy"),"A second refresh click stops work and invalidates the queued range without restarting");
             Check(imageSource.Token.IsCancellationRequested && images.PendingWork.IsCompleted && imageSource.Disposed,
                 "Explicit stop also drains and disposes the independent image downloads");
@@ -99,7 +108,7 @@ internal static class CancellationChecks
             var earlier=(Task)Call(main,"EnsureCurrentViewAsync")!;
             categories.SelectedItem=categories.Items.OfType<CategoryChoice>().Single(c=>c.Key=="rank");
             var latest=(Task)Call(main,"EnsureCurrentViewAsync")!;
-            Busy(false);waiting.Work.SetResult();Pump();
+            Busy(false);waiting.Work.SetResult();Complete(Task.WhenAll(earlier,latest));
             Check(!waiting.Token.IsCancellationRequested && earlier.IsCompleted && latest.IsCompleted && history.Category=="rank","Queued category changes complete against the latest view without cancelling the old download");
 
             var same=Download();Complete((Task)Call(main,"ViewPlayerAsync",home)!);
@@ -116,7 +125,8 @@ internal static class CancellationChecks
             detail.DataContextChanged-=ObserveDestination;
             Check(same.Token.IsCancellationRequested && navigation.Current.Id==other.Id,"Switching players cancels the old download before changing the archive");
             Check(destinationSeen && !destinationHadButtonFeedback,"Cached destination details never inherit the clicked player's loading feedback, even during ReloadLocal");
-            var back=Download();MouseDown(main,MouseButton.XButton1);Pump();
+            var back=Download();MouseDown(main,MouseButton.XButton1);
+            PumpUntil(()=>navigation.Current.Id==home.Id,"Back did not restore the home player's archive");
             Check(back.Token.IsCancellationRequested && navigation.Current.Id==home.Id,"Mouse-side back cancels the active player's download and restores history");
             var forward=Download();Complete((Task)Call(main,"GoForwardAsync",1)!);
             Check(forward.Token.IsCancellationRequested && navigation.Current.Id==other.Id,"Forward navigation still cancels active downloading");
@@ -164,8 +174,8 @@ internal static class CancellationChecks
                 Pump();
                 Check(updateWork.Token.IsCancellationRequested && !updaterStarted && !updateExit.IsCompleted,
                     "The updater is not started until ongoing archive downloads have drained");
-                updateWork.Work.SetResult();Pump();
-                try {updateExit.GetAwaiter().GetResult();throw new Exception("Expected updater failure");}
+                updateWork.Work.SetResult();
+                try {Complete(updateExit);throw new Exception("Expected updater failure");}
                 catch(InvalidOperationException ex) when(ex.Message=="Synthetic updater start failure") {count++;}
                 Check(updaterStarted && !Get<bool>("_exitRequested") && !Get<bool>("_closeRequested") && !Get<bool>("_exitReady"),
                     "Failure to start the updater leaves the existing application usable");
