@@ -1319,4 +1319,12 @@
   <data name="UpdatePortableRequired" xml:space="preserve"><value>请使用支持自动更新的便携版</value></data>
   <data name="LanguageSaveFailed" xml:space="preserve"><value>语言设置未能保存. 请重试</value></data>
   <data name="RecordsUpdatedScoresPending" xml:space="preserve"><value>战绩已更新, 当前分数更新失败. 请稍后刷新</value></data>
+  <data name="SettingsGeneral" xml:space="preserve"><value>通用</value></data>
+  <data name="SettingsNetwork" xml:space="preserve"><value>网络</value></data>
+  <data name="SettingsRefresh" xml:space="preserve"><value>刷新</value></data>
+  <data name="SettingsData" xml:space="preserve"><value>数据</value></data>
+  <data name="SettingsAbout" xml:space="preserve"><value>关于</value></data>
+  <data name="SettingsCategories" xml:space="preserve"><value>设置分类</value></data>
+  <data name="Logs" xml:space="preserve"><value>日志</value></data>
+  <data name="MatchEndDetectionUnavailable" xml:space="preserve"><value>对局检测不可用</value></data>
 </root>

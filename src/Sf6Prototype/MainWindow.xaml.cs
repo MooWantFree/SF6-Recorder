@@ -977,7 +977,7 @@ public partial class MainWindow : ChromeWindow
         await Task.Delay(400); Capture();
         PageTabs.SelectedIndex = 1; await Task.Delay(400);
         PageTabs.SelectedIndex = 0; await Task.Delay(200);
-        var settings = CreateSettingsWindow(); settings.Show(); await Task.Delay(600); settings.Close();
+        var settings = CreateSettingsWindow(); settings.Show(); await Task.Delay(1600); settings.Close();
     }
     private void Capture()
     {

@@ -1319,4 +1319,12 @@
   <data name="UpdatePortableRequired" xml:space="preserve"><value>自動更新対応のポータブル版を使用してください。</value></data>
   <data name="LanguageSaveFailed" xml:space="preserve"><value>言語設定を保存できませんでした。もう一度お試しください</value></data>
   <data name="RecordsUpdatedScoresPending" xml:space="preserve"><value>戦績は更新済みです。現在のスコアを取得できませんでした。後でもう一度更新してください</value></data>
+  <data name="SettingsGeneral" xml:space="preserve"><value>一般</value></data>
+  <data name="SettingsNetwork" xml:space="preserve"><value>ネットワーク</value></data>
+  <data name="SettingsRefresh" xml:space="preserve"><value>更新</value></data>
+  <data name="SettingsData" xml:space="preserve"><value>データ</value></data>
+  <data name="SettingsAbout" xml:space="preserve"><value>バージョン情報</value></data>
+  <data name="SettingsCategories" xml:space="preserve"><value>設定カテゴリ</value></data>
+  <data name="Logs" xml:space="preserve"><value>ログ</value></data>
+  <data name="MatchEndDetectionUnavailable" xml:space="preserve"><value>対戦終了の検出を利用できません</value></data>
 </root>

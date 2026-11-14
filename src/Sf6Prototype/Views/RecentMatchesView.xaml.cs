@@ -2,11 +2,13 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Automation;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 
 namespace Sf6Prototype;
 
 public partial class RecentMatchesView : UserControl
 {
+    public const double HeaderHeight=48, ExpandedHeight=208;
     public static readonly DependencyProperty IsCollapsedProperty=DependencyProperty.Register(nameof(IsCollapsed),typeof(bool),typeof(RecentMatchesView),
         new PropertyMetadata(false,(d,_)=>((RecentMatchesView)d).CollapsedStateChanged()));
     public bool IsCollapsed {get=>(bool)GetValue(IsCollapsedProperty);set=>SetValue(IsCollapsedProperty,value);}
@@ -15,23 +17,45 @@ public partial class RecentMatchesView : UserControl
     private DateTimeOffset _startedAt;
     private int? _characterId;
     private bool _updating;
+    /// <summary>No ranked match has been played since launch; only the header is shown.</summary>
+    public bool IsEmpty {get;private set;}=true;
+    private bool? _shownEmpty;
     private Dictionary<string,Battle> _battles=[];
     public event Action<MatchListRow>? SelectionChanged;
     public RecentMatchesView() {InitializeComponent();UpdateCollapsedState();}
     private void CollapsedStateChanged() {UpdateCollapsedState();CollapsedChanged?.Invoke(IsCollapsed);}
-    private void UpdateCollapsedState()
+    private void UpdateCollapsedState(bool animate=false)
     {
         if(CollapseButton==null) return;
-        MetricsPanel.Visibility=Chart.Visibility=ScoreMetric.Visibility=IsCollapsed ? Visibility.Collapsed : Visibility.Visible;
+        var compact=IsCollapsed || IsEmpty;
+        MetricsPanel.Visibility=Chart.Visibility=ScoreMetric.Visibility=compact ? Visibility.Collapsed : Visibility.Visible;
+        // Collapsing an empty panel would change nothing, so the empty header offers no toggle.
+        CollapseButton.Visibility=IsEmpty ? Visibility.Collapsed : Visibility.Visible;
+        EmptyText.Visibility=IsEmpty ? Visibility.Visible : Visibility.Collapsed;
+        CharacterName.Visibility=IsEmpty ? Visibility.Collapsed : Visibility.Visible;
         CollapseButton.Content=IsCollapsed ? "\uE70D" : "\uE70E";
         var label=IsCollapsed ? Strings.ExpandRecentMatches : Strings.CollapseRecentMatches;
         CollapseButton.ToolTip=label;AutomationProperties.SetName(CollapseButton,label);
+        ApplyHeight(compact ? HeaderHeight : ExpandedHeight,animate);
+    }
+    private void ApplyHeight(double target,bool animate)
+    {
+        // Follow-up reloads (images, scores) must not cut short a transition that is already heading here.
+        if(!animate && Height==target) return;
+        var from=ActualHeight;
+        BeginAnimation(HeightProperty,null);MetricsPanel.BeginAnimation(OpacityProperty,null);Chart.BeginAnimation(OpacityProperty,null);
+        Height=target;
+        if(!animate || !IsVisible || !SystemParameters.ClientAreaAnimation || from<=0 || Math.Abs(from-target)<1) return;
+        // The base value already holds the target; the animation only bridges from the old height.
+        var duration=TimeSpan.FromMilliseconds(320);var ease=new CubicEase {EasingMode=EasingMode.EaseOut};
+        BeginAnimation(HeightProperty,new DoubleAnimation(from,target,duration) {EasingFunction=ease,FillBehavior=FillBehavior.Stop});
+        var reveal=new DoubleAnimation(0,1,TimeSpan.FromMilliseconds(220)) {BeginTime=TimeSpan.FromMilliseconds(140),FillBehavior=FillBehavior.Stop};
+        MetricsPanel.BeginAnimation(OpacityProperty,reveal);Chart.BeginAnimation(OpacityProperty,reveal);
     }
     private void Collapse_Click(object sender,RoutedEventArgs e)=>IsCollapsed=!IsCollapsed;
     public void Reload(Archive archive,DateTimeOffset startedAt)
     {
         _archive=archive;_startedAt=startedAt;
-        UpdateCollapsedState();
         var latest=archive.All.FirstOrDefault();
         if(latest?.CharacterId!=_characterId)
         {
@@ -47,6 +71,10 @@ public partial class RecentMatchesView : UserControl
         if(_archive is not { } archive) return;
         var mr=ScoreMetric.SelectedIndex==1;
         var summary=RecentMatchScores.Build(archive.All,archive.Points,archive.Owner,_startedAt,mr);
+        IsEmpty=summary.Matches.Count==0;
+        // Grow only when the first match of this session arrives while the panel is on screen.
+        UpdateCollapsedState(animate:_shownEmpty==true && !IsEmpty);
+        _shownEmpty=IsEmpty;
         CharacterName.Text=summary.Latest is { } latest ? archive.Profiles.Names.Display(latest.CharacterId,latest.Character) : "";
         RecentTitle.ToolTip=$"{Strings.RecentMatchesScope}\n{_startedAt.ToLocalTime():yyyy-MM-dd HH:mm:ss}";
         HighestScore.Text=summary.Highest?.ToString("N0") ?? "—";

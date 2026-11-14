@@ -19,10 +19,14 @@ public sealed class MatchEndMonitor(string directory)
         Volatile.Write(ref _samplesPerSecond,frequency);
     }
     public event Action<DateTimeOffset>? MatchEnded;
+    private bool _faulted;
+    /// <summary>The detector stopped on an unexpected error and is no longer sampling.</summary>
+    public bool Faulted=>Volatile.Read(ref _faulted);
     public void ReportRefresh(string status)=>Volatile.Write(ref _refreshStatus,status);
     public void Start()
     {
         if(_cancellation!=null) return;
+        Volatile.Write(ref _faulted,false);
         _cancellation=new();var token=_cancellation.Token;
         _worker=Task.Run(()=>RunAsync(token));
     }
@@ -145,7 +149,7 @@ public sealed class MatchEndMonitor(string directory)
         }
         catch(OperationCanceledException) when(token.IsCancellationRequested) { }
         catch(Exception ex) when(ex is not OutOfMemoryException)
-        {error=ex.GetType().Name;phase="unavailable";}
+        {error=ex.GetType().Name;phase="unavailable";Volatile.Write(ref _faulted,true);}
         finally
         {
             SaveFailure(failures.Interrupt("stopped"));

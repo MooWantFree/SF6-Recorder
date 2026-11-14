@@ -31,11 +31,14 @@ public partial class MainWindow
     private void PaintMatchEndStatus()
     {
         var enabled=_settings.RefreshAfterMatch;
-        var color=enabled ? _sf6Running ? "Win" : "Loss" : "Ink3";
+        var faulted=enabled && _matchEndMonitor?.Faulted==true;
+        // Red is reserved for a broken detector; a closed game is a normal idle state.
+        var (color,filled,state)=!enabled ? ("StatusOff",false,Strings.Off) :
+            faulted ? ("Loss",true,Strings.MatchEndDetectionUnavailable) :
+            _sf6Running ? ("Win",true,Strings.Sf6Running) : ("Ink3",false,Strings.Sf6NotRunning);
         MatchEndStatusLight.SetResourceReference(Shape.StrokeProperty,color);
-        if(enabled) MatchEndStatusLight.SetResourceReference(Shape.FillProperty,color);
+        if(filled) MatchEndStatusLight.SetResourceReference(Shape.FillProperty,color);
         else MatchEndStatusLight.Fill=Brushes.Transparent;
-        var state=enabled ? _sf6Running ? Strings.Sf6Running : Strings.Sf6NotRunning : Strings.Off;
         var description=$"{Strings.RefreshAfterMatchLabel}\n{state}";
         MatchEndStatus.ToolTip=description;
         AutomationProperties.SetName(MatchEndStatus,description);

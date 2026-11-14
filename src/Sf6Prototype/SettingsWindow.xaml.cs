@@ -18,6 +18,8 @@ public partial class SettingsWindow : ChromeWindow
     private ConnectionSettings _current;
     private readonly CancellationTokenSource _closing = new();
     private bool _syncingIntervals;
+    // Reopening settings in the same session returns to the page the user last viewed.
+    private static int _lastCategory;
     private Task _transfer=Task.CompletedTask;
     private bool _waitingToClose;
     private static UpdateRelease? _availableUpdate;
@@ -49,12 +51,56 @@ public partial class SettingsWindow : ChromeWindow
         CloseActionBox.SelectedIndex=(int)current.WindowCloseAction;
         LanguageBox.SelectedValue=Localization.Normalize(current.Language);
         LanguageBox.SelectionChanged+=Language_Changed;
-        ContentRendered += (_, _) => UiCapture.SaveLater((FrameworkElement)Content, "ui-settings.png");
+        CategoryNav.SelectedIndex=Math.Clamp(_lastCategory,0,CategoryNav.Items.Count-1);
+        ContentRendered += async (_, _) =>
+        {
+            UiCapture.SaveLater((FrameworkElement)Content, "ui-settings.png");
+            if(App.Capture) await CaptureCategoriesAsync();
+        };
         _gameStatusTimer.Tick+=(_,_)=>UpdateGameStatus();
         RefreshAfterMatchEnabled.Checked+=(_,_)=>UpdateGameStatusTimer();
         RefreshAfterMatchEnabled.Unchecked+=(_,_)=>UpdateGameStatusTimer();
         Loaded+=(_,_)=>UpdateGameStatusTimer();
         Closed += (_, _) => { _gameStatusTimer.Stop();_closing.Cancel(); _closing.Dispose(); };
+    }
+    private void Category_Changed(object sender,SelectionChangedEventArgs e)
+    {
+        if(CategoryNav.SelectedItem is not ListBoxItem {Tag:string selected}) return;
+        foreach(var page in Pages.Children.OfType<FrameworkElement>())
+            page.Visibility=page.Name==selected ? Visibility.Visible : Visibility.Hidden;
+        _lastCategory=CategoryNav.SelectedIndex;
+    }
+    public void ShowCategory(FrameworkElement page)=>
+        CategoryNav.SelectedItem=CategoryNav.Items.OfType<ListBoxItem>().FirstOrDefault(i=>i.Tag as string==page.Name) ?? CategoryNav.SelectedItem;
+    private async Task CaptureCategoriesAsync()
+    {
+        for(var i=0;i<CategoryNav.Items.Count;i++)
+        {
+            await Task.Delay(150);
+            if(!IsLoaded) return;
+            CategoryNav.SelectedIndex=i;
+            UiCapture.SaveLater((FrameworkElement)Content,$"ui-settings-{i}.png");
+            // Finish the queued capture before switching pages, even during a slow render.
+            await Dispatcher.InvokeAsync(()=>{},DispatcherPriority.ContextIdle);
+        }
+    }
+    /// <summary>The page holding the first value that would make saving fail.</summary>
+    private FrameworkElement? InvalidPage()
+    {
+        try
+        {
+            if(ProxyEnabled.IsChecked==true) (_current with {UseProxy=true,ProxyAddress=ProxyAddressBox.Text.Trim()}).ValidateProxy();
+            ConnectionSettings.ParseApiIntervalSeconds(ApiIntervalBox.Text);
+        }
+        catch(ArgumentException) {return NetworkPage;}
+        try
+        {
+            ConnectionSettings.ParseReminderSeconds(ReminderSecondsBox.Text);ConnectionSettings.ParseAutoRefreshSeconds(AutoRefreshSecondsBox.Text);
+            ConnectionSettings.ParseMatchEndSeconds(MatchEndWaitBox.Text);ConnectionSettings.ParseMatchEndSeconds(MatchEndRetryBox.Text,retry:true);
+            ConnectionSettings.ParseMatchEndFrequency(MatchEndFrequencyBox.Text);
+        }
+        catch(ArgumentException) {return RefreshPage;}
+        return null;
     }
     private void Language_Changed(object sender,SelectionChangedEventArgs e)
     {
@@ -86,7 +132,10 @@ public partial class SettingsWindow : ChromeWindow
         if(RefreshAfterMatchEnabled.IsChecked!=true) {_gameStatusTimer.Stop();return;}
         var running=Sf6GameProbe.Find()!=null;
         GameRunningHint.SetResourceReference(TextBlock.TextProperty,running ? "I18n.Sf6Running" : "I18n.Sf6NotRunning");
-        GameRunningLight.SetResourceReference(Shape.FillProperty,running ? "Win" : "Loss");
+        // Match the title-bar indicator: filled green while running, a neutral outline otherwise.
+        GameRunningLight.SetResourceReference(Shape.StrokeProperty,running ? "Win" : "Ink3");
+        if(running) GameRunningLight.SetResourceReference(Shape.FillProperty,"Win");
+        else GameRunningLight.Fill=System.Windows.Media.Brushes.Transparent;
     }
     private void OpenLogs_Click(object sender,RoutedEventArgs e)
     {
@@ -305,7 +354,7 @@ public partial class SettingsWindow : ChromeWindow
     private void Save_Click(object sender, RoutedEventArgs e)
     {
         try { Result = Draft(); DialogResult = true; }
-        catch (ArgumentException ex) { ShowError(ex.Message); }
+        catch (ArgumentException ex) { if(InvalidPage() is { } page) ShowCategory(page); ShowError(ex.Message); }
     }
     private async void Test_Click(object sender, RoutedEventArgs e)
     {

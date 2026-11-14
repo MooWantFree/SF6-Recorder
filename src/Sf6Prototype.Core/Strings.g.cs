@@ -191,6 +191,7 @@ public static class Strings
     public static string LoginToLoad => Localization.Get(nameof(LoginToLoad));
     public static string LoginVerificationPage => Localization.Get(nameof(LoginVerificationPage));
     public static string LoginWindowFailed => Localization.Get(nameof(LoginWindowFailed));
+    public static string Logs => Localization.Get(nameof(Logs));
     public static string LowestScore => Localization.Get(nameof(LowestScore));
     public static string LpSettlementUnknown => Localization.Get(nameof(LpSettlementUnknown));
     public static string MatchAllSelectedTags => Localization.Get(nameof(MatchAllSelectedTags));
@@ -198,6 +199,7 @@ public static class Strings
     public static string MatchCategory => Localization.Get(nameof(MatchCategory));
     public static string MatchCount => Localization.Get(nameof(MatchCount));
     public static string MatchDescription => Localization.Get(nameof(MatchDescription));
+    public static string MatchEndDetectionUnavailable => Localization.Get(nameof(MatchEndDetectionUnavailable));
     public static string MatchEndFrequency => Localization.Get(nameof(MatchEndFrequency));
     public static string MatchEndRetry => Localization.Get(nameof(MatchEndRetry));
     public static string MatchEndWait => Localization.Get(nameof(MatchEndWait));
@@ -386,6 +388,12 @@ public static class Strings
     public static string SessionSaved => Localization.Get(nameof(SessionSaved));
     public static string SessionSavedImagesPending => Localization.Get(nameof(SessionSavedImagesPending));
     public static string Settings => Localization.Get(nameof(Settings));
+    public static string SettingsAbout => Localization.Get(nameof(SettingsAbout));
+    public static string SettingsCategories => Localization.Get(nameof(SettingsCategories));
+    public static string SettingsData => Localization.Get(nameof(SettingsData));
+    public static string SettingsGeneral => Localization.Get(nameof(SettingsGeneral));
+    public static string SettingsNetwork => Localization.Get(nameof(SettingsNetwork));
+    public static string SettingsRefresh => Localization.Get(nameof(SettingsRefresh));
     public static string SettingsSavedDirect => Localization.Get(nameof(SettingsSavedDirect));
     public static string SettingsSavedProxy => Localization.Get(nameof(SettingsSavedProxy));
     public static string SettingsShortcut => Localization.Get(nameof(SettingsShortcut));

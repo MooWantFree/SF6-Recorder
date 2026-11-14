@@ -30,6 +30,14 @@ internal static class RecentMatchesChecks
             main.Dispatcher.Invoke(()=>{},DispatcherPriority.ContextIdle);root.UpdateLayout();
         }
         Update();
+        var empty=new RecentMatchesView();
+        empty.Reload(archive,DateTimeOffset.FromUnixTimeSeconds(at+3600));
+        Check(empty.IsEmpty && empty.Height==RecentMatchesView.HeaderHeight && ((ScoreChart)empty.FindName("Chart")).Visibility==Visibility.Collapsed &&
+            ((Button)empty.FindName("CollapseButton")).Visibility==Visibility.Collapsed && ((TextBlock)empty.FindName("EmptyText")).Visibility==Visibility.Visible,
+            "Without a ranked match this session the panel keeps only its header and empty message");
+        empty.Reload(archive,App.StartedAt);
+        Check(!empty.IsEmpty && empty.Height==RecentMatchesView.ExpandedHeight && ((ScoreChart)empty.FindName("Chart")).Visibility==Visibility.Visible,
+            "The first ranked match of the session expands the panel to its full height");
         foreach(var size in new[]{new Size(1380,880),new Size(1120,720)})
         {
             Layout(size.Width,size.Height);

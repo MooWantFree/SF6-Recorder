@@ -13,148 +13,190 @@
       <Button x:Name="CloseButton" Grid.Column="1" Style="{StaticResource CloseCaptionButton}" Content="&#xE8BB;" Click="Close_Click" Margin="8,0,6,0" VerticalAlignment="Center" ToolTip="{DynamicResource I18n.Close}" AutomationProperties.Name="{DynamicResource I18n.Close}" shell:WindowChrome.IsHitTestVisibleInChrome="True"/>
     </Grid>
   <Border Grid.Row="1" Background="{StaticResource Canvas}" Padding="24,4,24,20">
-  <StackPanel>
-    <ScrollViewer MaxHeight="560" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,8,0">
-    <StackPanel>
-    <Border Style="{StaticResource Card}" Margin="0,0,0,16">
-      <Grid Margin="16,12"><Grid.ColumnDefinitions><ColumnDefinition Width="180"/><ColumnDefinition/></Grid.ColumnDefinitions>
-        <TextBlock Text="{DynamicResource I18n.LanguageLabel}" VerticalAlignment="Center"/>
-        <ComboBox x:Name="LanguageBox" Grid.Column="1" SelectedValuePath="Tag" AutomationProperties.Name="{DynamicResource I18n.LanguageLabel}">
-          <ComboBoxItem Content="{DynamicResource I18n.SystemDefault}" Tag="system"/>
-          <ComboBoxItem Content="English" Tag="en"/>
-          <ComboBoxItem Content="简体中文" Tag="zh-Hans"/>
-          <ComboBoxItem Content="繁體中文" Tag="zh-Hant"/>
-          <ComboBoxItem Content="日本語" Tag="ja"/>
-        </ComboBox>
-      </Grid>
-    </Border>
-    <Border Style="{StaticResource Card}">
-      <StackPanel>
-        <Grid Margin="16,12" MinHeight="30"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-          <TextBlock Text="{DynamicResource I18n.UseProxy}" VerticalAlignment="Center"/>
-          <CheckBox x:Name="ProxyEnabled" Grid.Column="1" Style="{StaticResource Switch}" AutomationProperties.Name="{DynamicResource I18n.UseProxy}"/>
-        </Grid>
-        <Border BorderBrush="{StaticResource LineSubtle}" BorderThickness="0,1,0,0" Margin="16,0">
-          <Grid Margin="0,12"><Grid.ColumnDefinitions><ColumnDefinition Width="180"/><ColumnDefinition/></Grid.ColumnDefinitions>
-            <TextBlock Text="{DynamicResource I18n.ProxyAddress}" VerticalAlignment="Center"/>
-            <TextBox x:Name="ProxyAddressBox" Grid.Column="1" IsEnabled="{Binding IsChecked,ElementName=ProxyEnabled}" ToolTip="{DynamicResource I18n.ProxyHelp}" AutomationProperties.Name="{DynamicResource I18n.ProxyAddress}"/>
-          </Grid>
-        </Border>
-        <Border BorderBrush="{StaticResource LineSubtle}" BorderThickness="0,1,0,0" Margin="16,0">
-          <Grid Margin="0,12"><Grid.ColumnDefinitions><ColumnDefinition Width="180"/><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-            <TextBlock Text="{DynamicResource I18n.GoogleLatency}" VerticalAlignment="Center"/>
-            <TextBlock x:Name="TestResult" Grid.Column="1" VerticalAlignment="Center" Foreground="{StaticResource Ink2}" TextWrapping="Wrap" Margin="0,0,12,0"/>
-            <Button x:Name="TestButton" Grid.Column="2" Content="{DynamicResource I18n.Test}" Click="Test_Click"/>
-          </Grid>
-        </Border>
-      </StackPanel>
-    </Border>
-    <Border Style="{StaticResource Card}" Margin="0,16,0,0">
-      <StackPanel>
-        <StackPanel Margin="16,12">
-          <Grid MinHeight="30"><Grid.ColumnDefinitions><ColumnDefinition Width="180"/><ColumnDefinition Width="88"/><ColumnDefinition Width="Auto"/><ColumnDefinition/></Grid.ColumnDefinitions>
-            <TextBlock Text="{DynamicResource I18n.ApiInterval}" VerticalAlignment="Center"/>
-            <TextBox x:Name="ApiIntervalBox" Grid.Column="1" TextChanged="ApiInterval_Changed" MaxLength="8" VerticalContentAlignment="Center" AutomationProperties.Name="{DynamicResource I18n.ApiIntervalAccessible}" ToolTip="{DynamicResource I18n.ApiIntervalHelp}"/>
-            <TextBlock Grid.Column="2" Text="{DynamicResource I18n.SecondsUnit}" Foreground="{StaticResource Ink3}" VerticalAlignment="Center" Margin="6,0,10,0"/>
-            <ListBox x:Name="ApiIntervalPresets" Grid.Column="3" Style="{StaticResource Segmented}" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Center" SelectionChanged="ApiIntervalPreset_Changed" AutomationProperties.Name="{DynamicResource I18n.ApiIntervalPresets}">
-              <ListBoxItem Content="{DynamicResource I18n.OneSecond}" Tag="1" Width="70" Padding="4,4"/><ListBoxItem Content="{DynamicResource I18n.TwoSeconds}" Tag="2" Width="70" Padding="4,4"/><ListBoxItem Content="{DynamicResource I18n.FiveSeconds}" Tag="5" Width="70" Padding="4,4"/><ListBoxItem Content="{DynamicResource I18n.TenSeconds}" Tag="10" Width="70" Padding="4,4"/>
-            </ListBox>
-          </Grid>
-          <TextBlock x:Name="ApiIntervalWarning" Text="{DynamicResource I18n.ShortIntervalWarning}" Foreground="{StaticResource Warning}" TextWrapping="Wrap" Margin="180,6,0,0" FontSize="12" Visibility="Collapsed"/>
-        </StackPanel>
-        <Border BorderBrush="{StaticResource LineSubtle}" BorderThickness="0,1,0,0" Margin="16,0"/>
-        <Grid Margin="16,12" MinHeight="30"><Grid.ColumnDefinitions><ColumnDefinition Width="180"/><ColumnDefinition Width="88"/><ColumnDefinition Width="Auto"/><ColumnDefinition/></Grid.ColumnDefinitions>
-          <TextBlock Text="{DynamicResource I18n.RefreshReminder}" VerticalAlignment="Center"/>
-          <TextBox x:Name="ReminderSecondsBox" Grid.Column="1" TextChanged="ReminderSeconds_Changed" MaxLength="10" VerticalContentAlignment="Center" ToolTip="{DynamicResource I18n.ReminderOffHelp}" AutomationProperties.Name="{DynamicResource I18n.ReminderAccessible}"/>
-          <TextBlock Grid.Column="2" Text="{DynamicResource I18n.SecondsUnit}" Foreground="{StaticResource Ink3}" VerticalAlignment="Center" Margin="6,0,10,0"/>
-          <ListBox x:Name="ReminderPresets" Grid.Column="3" Style="{StaticResource Segmented}" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Center" SelectionChanged="ReminderPreset_Changed" AutomationProperties.Name="{DynamicResource I18n.ReminderPresets}">
-            <ListBoxItem Content="{DynamicResource I18n.Off}" Tag="0" Width="56" Padding="4,4"/><ListBoxItem Content="{DynamicResource I18n.OneDay}" Tag="86400" Width="56" Padding="4,4"/><ListBoxItem Content="{DynamicResource I18n.TwelveHours}" Tag="43200" Width="56" Padding="4,4"/><ListBoxItem Content="{DynamicResource I18n.OneHour}" Tag="3600" Width="56" Padding="4,4"/><ListBoxItem Content="{DynamicResource I18n.TenMinutes}" Tag="600" Width="56" Padding="4,4"/>
-          </ListBox>
-        </Grid>
-        <Border BorderBrush="{StaticResource LineSubtle}" BorderThickness="0,1,0,0" Margin="16,0">
-          <Grid Margin="0,12" MinHeight="30"><Grid.ColumnDefinitions><ColumnDefinition Width="180"/><ColumnDefinition Width="88"/><ColumnDefinition Width="Auto"/><ColumnDefinition/></Grid.ColumnDefinitions>
-            <TextBlock Text="{DynamicResource I18n.AutoRefresh}" VerticalAlignment="Center"/>
-            <TextBox x:Name="AutoRefreshSecondsBox" Grid.Column="1" TextChanged="AutoRefreshSeconds_Changed" MaxLength="10" VerticalContentAlignment="Center" ToolTip="{DynamicResource I18n.AutoRefreshHelp}" AutomationProperties.Name="{DynamicResource I18n.AutoRefreshAccessible}"/>
-            <TextBlock Grid.Column="2" Text="{DynamicResource I18n.SecondsUnit}" Foreground="{StaticResource Ink3}" VerticalAlignment="Center" Margin="6,0,10,0"/>
-            <ListBox x:Name="AutoRefreshPresets" Grid.Column="3" Style="{StaticResource Segmented}" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Center" SelectionChanged="AutoRefreshPreset_Changed" AutomationProperties.Name="{DynamicResource I18n.AutoRefreshPresets}">
-              <ListBoxItem Content="{DynamicResource I18n.Off}" Tag="0" Width="70" Padding="4,4"/><ListBoxItem Content="{DynamicResource I18n.FiveMinutes}" Tag="300" Width="70" Padding="4,4"/><ListBoxItem Content="{DynamicResource I18n.TwentyMinutes}" Tag="1200" Width="70" Padding="4,4"/><ListBoxItem Content="{DynamicResource I18n.OneHour}" Tag="3600" Width="70" Padding="4,4"/>
-            </ListBox>
-          </Grid>
-        </Border>
-        <Border BorderBrush="{StaticResource LineSubtle}" BorderThickness="0,1,0,0" Margin="16,0">
-          <StackPanel Margin="0,10">
-            <Grid MinHeight="30"><Grid.ColumnDefinitions><ColumnDefinition Width="180"/><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-              <TextBlock Text="{DynamicResource I18n.RefreshAfterMatchLabel}" VerticalAlignment="Center"/>
-              <StackPanel x:Name="GameRunningStatus" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" ToolTip="{Binding Text,ElementName=GameRunningHint}">
-                <StackPanel.Style>
-                  <Style TargetType="StackPanel"><Setter Property="Visibility" Value="Collapsed"/>
-                    <Style.Triggers><DataTrigger Binding="{Binding IsChecked,ElementName=RefreshAfterMatchEnabled}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
-                  </Style>
-                </StackPanel.Style>
-                <Ellipse x:Name="GameRunningLight" Width="8" Height="8" Fill="{StaticResource Loss}" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                <TextBlock x:Name="GameRunningHint" Text="{DynamicResource I18n.Sf6NotRunning}" Foreground="{StaticResource Ink2}" VerticalAlignment="Center"/>
-              </StackPanel>
-              <CheckBox x:Name="RefreshAfterMatchEnabled" Grid.Column="2" Style="{StaticResource Switch}" AutomationProperties.Name="{DynamicResource I18n.RefreshAfterMatchLabel}" ToolTip="{DynamicResource I18n.RefreshAfterMatchHelp}"/>
-            </Grid>
-            <Grid MinHeight="30" Margin="0,6,0,0" IsEnabled="{Binding IsChecked,ElementName=RefreshAfterMatchEnabled}">
-              <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-              <TextBlock Text="{DynamicResource I18n.FocusLatestMatch}" VerticalAlignment="Center"/>
-              <CheckBox x:Name="FocusLatestMatchEnabled" Grid.Column="1" Style="{StaticResource Switch}" AutomationProperties.Name="{DynamicResource I18n.FocusLatestMatch}" ToolTip="{DynamicResource I18n.FocusLatestMatchHelp}"/>
-            </Grid>
-            <Grid Margin="0,6,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="180"/><ColumnDefinition Width="64"/><ColumnDefinition Width="Auto"/><ColumnDefinition/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="64"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-              <TextBlock Text="{DynamicResource I18n.MatchEndWait}" VerticalAlignment="Center"/>
-              <TextBox x:Name="MatchEndWaitBox" Grid.Column="1" MaxLength="4" VerticalContentAlignment="Center" AutomationProperties.Name="{DynamicResource I18n.MatchEndWait}"/>
-              <TextBlock Grid.Column="2" Text="{DynamicResource I18n.SecondsUnit}" Foreground="{StaticResource Ink3}" VerticalAlignment="Center" Margin="6,0,0,0"/>
-              <TextBlock Grid.Column="4" Text="{DynamicResource I18n.MatchEndRetry}" VerticalAlignment="Center" Margin="8,0,8,0"/>
-              <TextBox x:Name="MatchEndRetryBox" Grid.Column="5" MaxLength="4" VerticalContentAlignment="Center" AutomationProperties.Name="{DynamicResource I18n.MatchEndRetry}"/>
-              <TextBlock Grid.Column="6" Text="{DynamicResource I18n.SecondsUnit}" Foreground="{StaticResource Ink3}" VerticalAlignment="Center" Margin="6,0,0,0"/>
-            </Grid>
-            <Grid Margin="0,8,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="180"/><ColumnDefinition Width="64"/><ColumnDefinition/></Grid.ColumnDefinitions>
-              <TextBlock Text="{DynamicResource I18n.MatchEndFrequency}" VerticalAlignment="Center"/>
-              <TextBox x:Name="MatchEndFrequencyBox" Grid.Column="1" MaxLength="4" VerticalContentAlignment="Center" AutomationProperties.Name="{DynamicResource I18n.MatchEndFrequency}"/>
-              <TextBlock Grid.Column="2" Text="{DynamicResource I18n.SamplesPerSecondUnit}" Foreground="{StaticResource Ink3}" VerticalAlignment="Center" Margin="6,0,0,0"/>
-            </Grid>
-          </StackPanel>
-        </Border>
-      </StackPanel>
-    </Border>
-    <Border Style="{StaticResource Card}" Margin="0,16,0,0">
-      <StackPanel>
-        <Grid Margin="16,12"><Grid.ColumnDefinitions><ColumnDefinition Width="180"/><ColumnDefinition/></Grid.ColumnDefinitions>
-          <TextBlock Text="{DynamicResource I18n.WhenWindowCloses}" VerticalAlignment="Center"/>
-          <ComboBox x:Name="CloseActionBox" Grid.Column="1" SelectedIndex="0" AutomationProperties.Name="{DynamicResource I18n.WhenWindowCloses}">
-            <ComboBoxItem Content="{DynamicResource I18n.AskEveryTime}"/><ComboBoxItem Content="{DynamicResource I18n.MinimizeToTray}"/><ComboBoxItem Content="{DynamicResource I18n.Exit}"/>
-          </ComboBox>
-        </Grid>
-        <Border BorderBrush="{StaticResource LineSubtle}" BorderThickness="0,1,0,0" Margin="16,0">
-          <Grid Margin="0,12"><Grid.ColumnDefinitions><ColumnDefinition Width="180"/><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-            <TextBlock Text="{DynamicResource I18n.Database}" VerticalAlignment="Center"/>
-            <TextBlock x:Name="DatabaseStatus" Grid.Column="1" VerticalAlignment="Center" Foreground="{StaticResource Ink2}" TextWrapping="Wrap" Margin="0,0,8,0"/>
-            <StackPanel Grid.Column="2" Orientation="Horizontal">
-              <Button x:Name="ImportButton" Content="{DynamicResource I18n.Import}" Click="Import_Click" Margin="0,0,8,0" ToolTip="{DynamicResource I18n.ImportHelp}"/>
-              <Button x:Name="BackupButton" Content="{DynamicResource I18n.BackupDatabase}" Click="Backup_Click" ToolTip="{DynamicResource I18n.BackupHelp}"/>
+  <Grid>
+    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+    <Grid>
+      <Grid.ColumnDefinitions><ColumnDefinition Width="120"/><ColumnDefinition Width="20"/><ColumnDefinition/></Grid.ColumnDefinitions>
+      <ListBox x:Name="CategoryNav" Style="{StaticResource NavList}" VerticalAlignment="Top" SelectionChanged="Category_Changed" AutomationProperties.Name="{DynamicResource I18n.SettingsCategories}">
+        <ListBoxItem Content="{DynamicResource I18n.SettingsGeneral}" Tag="GeneralPage"/>
+        <ListBoxItem Content="{DynamicResource I18n.SettingsNetwork}" Tag="NetworkPage"/>
+        <ListBoxItem Content="{DynamicResource I18n.SettingsRefresh}" Tag="RefreshPage"/>
+        <ListBoxItem Content="{DynamicResource I18n.SettingsData}" Tag="DataPage"/>
+        <ListBoxItem Content="{DynamicResource I18n.SettingsAbout}" Tag="AboutPage"/>
+      </ListBox>
+      <!-- Inactive pages stay Hidden, not Collapsed, so the window keeps one height while switching. -->
+      <Grid x:Name="Pages" Grid.Column="2">
+
+        <StackPanel x:Name="GeneralPage">
+          <Border Style="{StaticResource Card}">
+            <StackPanel>
+              <Grid Margin="16,12"><Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                <TextBlock Text="{DynamicResource I18n.LanguageLabel}" VerticalAlignment="Center"/>
+                <ComboBox x:Name="LanguageBox" Grid.Column="1" SelectedValuePath="Tag" AutomationProperties.Name="{DynamicResource I18n.LanguageLabel}">
+                  <ComboBoxItem Content="{DynamicResource I18n.SystemDefault}" Tag="system"/>
+                  <ComboBoxItem Content="English" Tag="en"/>
+                  <ComboBoxItem Content="简体中文" Tag="zh-Hans"/>
+                  <ComboBoxItem Content="繁體中文" Tag="zh-Hant"/>
+                  <ComboBoxItem Content="日本語" Tag="ja"/>
+                </ComboBox>
+              </Grid>
+              <Border BorderBrush="{StaticResource LineSubtle}" BorderThickness="0,1,0,0" Margin="16,0">
+                <Grid Margin="0,12"><Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                  <TextBlock Text="{DynamicResource I18n.WhenWindowCloses}" VerticalAlignment="Center"/>
+                  <ComboBox x:Name="CloseActionBox" Grid.Column="1" SelectedIndex="0" AutomationProperties.Name="{DynamicResource I18n.WhenWindowCloses}">
+                    <ComboBoxItem Content="{DynamicResource I18n.AskEveryTime}"/><ComboBoxItem Content="{DynamicResource I18n.MinimizeToTray}"/><ComboBoxItem Content="{DynamicResource I18n.Exit}"/>
+                  </ComboBox>
+                </Grid>
+              </Border>
             </StackPanel>
-          </Grid>
-        </Border>
-      </StackPanel>
-    </Border>
-    </StackPanel>
-    </ScrollViewer>
-    <TextBlock x:Name="ErrorText" Foreground="{StaticResource Loss}" Margin="2,10,0,0" TextWrapping="Wrap" Visibility="Collapsed"/>
-    <Grid Margin="0,18,0,0"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-      <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-        <Button x:Name="OpenLogsButton" Content="{DynamicResource I18n.OpenLogFolder}" Click="OpenLogs_Click" AutomationProperties.Name="{DynamicResource I18n.OpenLogFolder}"/>
-        <Button x:Name="CheckUpdatesButton" Content="{DynamicResource I18n.CheckUpdates}" Click="CheckUpdates_Click" Margin="8,0,0,0"/>
-        <Button x:Name="InstallUpdateButton" Content="{DynamicResource I18n.InstallUpdate}" Click="InstallUpdate_Click" Margin="8,0,0,0" Style="{StaticResource AccentButton}" Visibility="Collapsed" ToolTip="{DynamicResource I18n.InstallUpdateHelp}"/>
-        <TextBlock x:Name="VersionText" Text="{x:Static core:GitHubUpdates.VersionLabel}" Foreground="{StaticResource Ink2}" VerticalAlignment="Center" Margin="12,0,4,0" ToolTip="{DynamicResource I18n.CurrentVersion}" AutomationProperties.Name="{DynamicResource I18n.CurrentVersion}"/>
-        <Button x:Name="GitHubButton" Content="GitHub ↗" Style="{StaticResource GhostButton}" Padding="6,6" Click="GitHub_Click" ToolTip="{x:Static core:GitHubUpdates.RepositoryUrl}" AutomationProperties.Name="{DynamicResource I18n.OpenGitHub}"/>
-      </StackPanel>
+          </Border>
+        </StackPanel>
+
+        <StackPanel x:Name="NetworkPage" Visibility="Hidden">
+          <Border Style="{StaticResource Card}">
+            <StackPanel>
+              <Grid Margin="16,12" MinHeight="30"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                <TextBlock Text="{DynamicResource I18n.UseProxy}" VerticalAlignment="Center"/>
+                <CheckBox x:Name="ProxyEnabled" Grid.Column="1" Style="{StaticResource Switch}" AutomationProperties.Name="{DynamicResource I18n.UseProxy}"/>
+              </Grid>
+              <Border BorderBrush="{StaticResource LineSubtle}" BorderThickness="0,1,0,0" Margin="16,0">
+                <Grid Margin="0,12"><Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                  <TextBlock Text="{DynamicResource I18n.ProxyAddress}" VerticalAlignment="Center"/>
+                  <TextBox x:Name="ProxyAddressBox" Grid.Column="1" IsEnabled="{Binding IsChecked,ElementName=ProxyEnabled}" ToolTip="{DynamicResource I18n.ProxyHelp}" AutomationProperties.Name="{DynamicResource I18n.ProxyAddress}"/>
+                </Grid>
+              </Border>
+              <Border BorderBrush="{StaticResource LineSubtle}" BorderThickness="0,1,0,0" Margin="16,0">
+                <Grid Margin="0,12"><Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                  <TextBlock Text="{DynamicResource I18n.GoogleLatency}" VerticalAlignment="Center"/>
+                  <TextBlock x:Name="TestResult" Grid.Column="1" VerticalAlignment="Center" Foreground="{StaticResource Ink2}" TextWrapping="Wrap" Margin="0,0,12,0"/>
+                  <Button x:Name="TestButton" Grid.Column="2" Content="{DynamicResource I18n.Test}" Click="Test_Click"/>
+                </Grid>
+              </Border>
+            </StackPanel>
+          </Border>
+          <Border Style="{StaticResource Card}" Margin="0,16,0,0">
+            <StackPanel Margin="16,12">
+              <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions><Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition Width="88"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                <TextBlock Text="{DynamicResource I18n.ApiInterval}" VerticalAlignment="Center"/>
+                <TextBox x:Name="ApiIntervalBox" Grid.Column="1" TextChanged="ApiInterval_Changed" MaxLength="8" VerticalContentAlignment="Center" AutomationProperties.Name="{DynamicResource I18n.ApiIntervalAccessible}" ToolTip="{DynamicResource I18n.ApiIntervalHelp}"/>
+                <TextBlock Grid.Column="2" Text="{DynamicResource I18n.SecondsUnit}" Foreground="{StaticResource Ink3}" VerticalAlignment="Center" Margin="6,0,10,0"/>
+                <ListBox x:Name="ApiIntervalPresets" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,8,0,0" Style="{StaticResource Segmented}" FontSize="12" HorizontalAlignment="Left" SelectionChanged="ApiIntervalPreset_Changed" AutomationProperties.Name="{DynamicResource I18n.ApiIntervalPresets}">
+                  <ListBoxItem Content="{DynamicResource I18n.OneSecond}" Tag="1" Width="70" Padding="4,4"/><ListBoxItem Content="{DynamicResource I18n.TwoSeconds}" Tag="2" Width="70" Padding="4,4"/><ListBoxItem Content="{DynamicResource I18n.FiveSeconds}" Tag="5" Width="70" Padding="4,4"/><ListBoxItem Content="{DynamicResource I18n.TenSeconds}" Tag="10" Width="70" Padding="4,4"/>
+                </ListBox>
+              </Grid>
+              <TextBlock x:Name="ApiIntervalWarning" Text="{DynamicResource I18n.ShortIntervalWarning}" Foreground="{StaticResource Warning}" TextWrapping="Wrap" Margin="160,6,0,0" FontSize="12" Visibility="Collapsed"/>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+
+        <StackPanel x:Name="RefreshPage" Visibility="Hidden">
+          <Border Style="{StaticResource Card}">
+            <StackPanel>
+              <Grid Margin="16,12"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions><Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition Width="88"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                <TextBlock Text="{DynamicResource I18n.RefreshReminder}" VerticalAlignment="Center"/>
+                <TextBox x:Name="ReminderSecondsBox" Grid.Column="1" TextChanged="ReminderSeconds_Changed" MaxLength="10" VerticalContentAlignment="Center" ToolTip="{DynamicResource I18n.ReminderOffHelp}" AutomationProperties.Name="{DynamicResource I18n.ReminderAccessible}"/>
+                <TextBlock Grid.Column="2" Text="{DynamicResource I18n.SecondsUnit}" Foreground="{StaticResource Ink3}" VerticalAlignment="Center" Margin="6,0,10,0"/>
+                <ListBox x:Name="ReminderPresets" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,8,0,0" Style="{StaticResource Segmented}" FontSize="12" HorizontalAlignment="Left" SelectionChanged="ReminderPreset_Changed" AutomationProperties.Name="{DynamicResource I18n.ReminderPresets}">
+                  <ListBoxItem Content="{DynamicResource I18n.Off}" Tag="0" Width="56" Padding="4,4"/><ListBoxItem Content="{DynamicResource I18n.OneDay}" Tag="86400" Width="56" Padding="4,4"/><ListBoxItem Content="{DynamicResource I18n.TwelveHours}" Tag="43200" Width="56" Padding="4,4"/><ListBoxItem Content="{DynamicResource I18n.OneHour}" Tag="3600" Width="56" Padding="4,4"/><ListBoxItem Content="{DynamicResource I18n.TenMinutes}" Tag="600" Width="56" Padding="4,4"/>
+                </ListBox>
+              </Grid>
+              <Border BorderBrush="{StaticResource LineSubtle}" BorderThickness="0,1,0,0" Margin="16,0">
+                <Grid Margin="0,12"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions><Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition Width="88"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                  <TextBlock Text="{DynamicResource I18n.AutoRefresh}" VerticalAlignment="Center"/>
+                  <TextBox x:Name="AutoRefreshSecondsBox" Grid.Column="1" TextChanged="AutoRefreshSeconds_Changed" MaxLength="10" VerticalContentAlignment="Center" ToolTip="{DynamicResource I18n.AutoRefreshHelp}" AutomationProperties.Name="{DynamicResource I18n.AutoRefreshAccessible}"/>
+                  <TextBlock Grid.Column="2" Text="{DynamicResource I18n.SecondsUnit}" Foreground="{StaticResource Ink3}" VerticalAlignment="Center" Margin="6,0,10,0"/>
+                  <ListBox x:Name="AutoRefreshPresets" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,8,0,0" Style="{StaticResource Segmented}" FontSize="12" HorizontalAlignment="Left" SelectionChanged="AutoRefreshPreset_Changed" AutomationProperties.Name="{DynamicResource I18n.AutoRefreshPresets}">
+                    <ListBoxItem Content="{DynamicResource I18n.Off}" Tag="0" Width="70" Padding="4,4"/><ListBoxItem Content="{DynamicResource I18n.FiveMinutes}" Tag="300" Width="70" Padding="4,4"/><ListBoxItem Content="{DynamicResource I18n.TwentyMinutes}" Tag="1200" Width="70" Padding="4,4"/><ListBoxItem Content="{DynamicResource I18n.OneHour}" Tag="3600" Width="70" Padding="4,4"/>
+                  </ListBox>
+                </Grid>
+              </Border>
+            </StackPanel>
+          </Border>
+          <Border Style="{StaticResource Card}" Margin="0,16,0,0">
+            <StackPanel Margin="16,10">
+              <Grid MinHeight="30"><Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                <TextBlock Text="{DynamicResource I18n.RefreshAfterMatchLabel}" VerticalAlignment="Center"/>
+                <StackPanel x:Name="GameRunningStatus" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" ToolTip="{Binding Text,ElementName=GameRunningHint}">
+                  <StackPanel.Style>
+                    <Style TargetType="StackPanel"><Setter Property="Visibility" Value="Collapsed"/>
+                      <Style.Triggers><DataTrigger Binding="{Binding IsChecked,ElementName=RefreshAfterMatchEnabled}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+                    </Style>
+                  </StackPanel.Style>
+                  <Ellipse x:Name="GameRunningLight" Width="8" Height="8" Fill="Transparent" Stroke="{StaticResource Ink3}" StrokeThickness="1.5" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                  <TextBlock x:Name="GameRunningHint" Text="{DynamicResource I18n.Sf6NotRunning}" Foreground="{StaticResource Ink2}" VerticalAlignment="Center"/>
+                </StackPanel>
+                <CheckBox x:Name="RefreshAfterMatchEnabled" Grid.Column="2" Style="{StaticResource Switch}" AutomationProperties.Name="{DynamicResource I18n.RefreshAfterMatchLabel}" ToolTip="{DynamicResource I18n.RefreshAfterMatchHelp}"/>
+              </Grid>
+              <Grid MinHeight="30" Margin="0,6,0,0" IsEnabled="{Binding IsChecked,ElementName=RefreshAfterMatchEnabled}">
+                <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                <TextBlock Text="{DynamicResource I18n.FocusLatestMatch}" VerticalAlignment="Center"/>
+                <CheckBox x:Name="FocusLatestMatchEnabled" Grid.Column="1" Style="{StaticResource Switch}" AutomationProperties.Name="{DynamicResource I18n.FocusLatestMatch}" ToolTip="{DynamicResource I18n.FocusLatestMatchHelp}"/>
+              </Grid>
+              <Grid Margin="0,8,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition Width="88"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                <TextBlock Text="{DynamicResource I18n.MatchEndWait}" VerticalAlignment="Center"/>
+                <TextBox x:Name="MatchEndWaitBox" Grid.Column="1" MaxLength="4" VerticalContentAlignment="Center" AutomationProperties.Name="{DynamicResource I18n.MatchEndWait}"/>
+                <TextBlock Grid.Column="2" Text="{DynamicResource I18n.SecondsUnit}" Foreground="{StaticResource Ink3}" VerticalAlignment="Center" Margin="6,0,0,0"/>
+              </Grid>
+              <Grid Margin="0,8,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition Width="88"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                <TextBlock Text="{DynamicResource I18n.MatchEndRetry}" VerticalAlignment="Center"/>
+                <TextBox x:Name="MatchEndRetryBox" Grid.Column="1" MaxLength="4" VerticalContentAlignment="Center" AutomationProperties.Name="{DynamicResource I18n.MatchEndRetry}"/>
+                <TextBlock Grid.Column="2" Text="{DynamicResource I18n.SecondsUnit}" Foreground="{StaticResource Ink3}" VerticalAlignment="Center" Margin="6,0,0,0"/>
+              </Grid>
+              <Grid Margin="0,8,0,2"><Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition Width="88"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                <TextBlock Text="{DynamicResource I18n.MatchEndFrequency}" VerticalAlignment="Center"/>
+                <TextBox x:Name="MatchEndFrequencyBox" Grid.Column="1" MaxLength="4" VerticalContentAlignment="Center" AutomationProperties.Name="{DynamicResource I18n.MatchEndFrequency}"/>
+                <TextBlock Grid.Column="2" Text="{DynamicResource I18n.SamplesPerSecondUnit}" Foreground="{StaticResource Ink3}" VerticalAlignment="Center" Margin="6,0,0,0"/>
+              </Grid>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+
+        <StackPanel x:Name="DataPage" Visibility="Hidden">
+          <Border Style="{StaticResource Card}">
+            <StackPanel>
+              <Grid Margin="16,12"><Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                <TextBlock Text="{DynamicResource I18n.Database}" VerticalAlignment="Center"/>
+                <TextBlock x:Name="DatabaseStatus" Grid.Column="1" VerticalAlignment="Center" Foreground="{StaticResource Ink2}" TextWrapping="Wrap" Margin="0,0,8,0"/>
+                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                  <Button x:Name="ImportButton" Content="{DynamicResource I18n.Import}" Click="Import_Click" Margin="0,0,8,0" ToolTip="{DynamicResource I18n.ImportHelp}"/>
+                  <Button x:Name="BackupButton" Content="{DynamicResource I18n.BackupDatabase}" Click="Backup_Click" ToolTip="{DynamicResource I18n.BackupHelp}"/>
+                </StackPanel>
+              </Grid>
+              <Border BorderBrush="{StaticResource LineSubtle}" BorderThickness="0,1,0,0" Margin="16,0">
+                <Grid Margin="0,12"><Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                  <TextBlock Text="{DynamicResource I18n.Logs}" VerticalAlignment="Center"/>
+                  <Button x:Name="OpenLogsButton" Grid.Column="2" Content="{DynamicResource I18n.OpenLogFolder}" Click="OpenLogs_Click" AutomationProperties.Name="{DynamicResource I18n.OpenLogFolder}"/>
+                </Grid>
+              </Border>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+
+        <StackPanel x:Name="AboutPage" Visibility="Hidden">
+          <Border Style="{StaticResource Card}">
+            <Grid Margin="16,12"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions><Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition/></Grid.ColumnDefinitions>
+              <TextBlock Text="{DynamicResource I18n.CurrentVersion}" VerticalAlignment="Center"/>
+              <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock x:Name="VersionText" Text="{x:Static core:GitHubUpdates.VersionLabel}" Style="{StaticResource Number}" Foreground="{StaticResource Ink2}" VerticalAlignment="Center" Margin="0,0,8,0" ToolTip="{DynamicResource I18n.CurrentVersion}" AutomationProperties.Name="{DynamicResource I18n.CurrentVersion}"/>
+                <Button x:Name="GitHubButton" Content="GitHub ↗" Style="{StaticResource GhostButton}" Padding="6,6" Click="GitHub_Click" ToolTip="{x:Static core:GitHubUpdates.RepositoryUrl}" AutomationProperties.Name="{DynamicResource I18n.OpenGitHub}"/>
+              </StackPanel>
+              <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Margin="0,8,0,0">
+                <Button x:Name="CheckUpdatesButton" Content="{DynamicResource I18n.CheckUpdates}" Click="CheckUpdates_Click"/>
+                <Button x:Name="InstallUpdateButton" Content="{DynamicResource I18n.InstallUpdate}" Click="InstallUpdate_Click" Margin="8,0,0,0" Style="{StaticResource AccentButton}" Visibility="Collapsed" ToolTip="{DynamicResource I18n.InstallUpdateHelp}"/>
+              </StackPanel>
+            </Grid>
+          </Border>
+        </StackPanel>
+      </Grid>
+    </Grid>
+    <Grid Grid.Row="1" Margin="0,18,0,0"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+      <TextBlock x:Name="ErrorText" Foreground="{StaticResource Loss}" Margin="2,0,16,0" VerticalAlignment="Center" TextWrapping="Wrap" Visibility="Collapsed"/>
       <StackPanel Grid.Column="1" Orientation="Horizontal">
         <Button Content="{DynamicResource I18n.Cancel}" IsCancel="True" MinWidth="76" Margin="0,0,8,0"/>
         <Button x:Name="SaveButton" Content="{DynamicResource I18n.Save}" IsDefault="True" Click="Save_Click" Style="{StaticResource AccentButton}" MinWidth="76"/>
       </StackPanel>
     </Grid>
-  </StackPanel>
+  </Grid>
   </Border>
     <local:StatusToast x:Name="UpdateToast" Grid.Row="1" Panel.ZIndex="10" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="24,0,24,70"/>
   </Grid>

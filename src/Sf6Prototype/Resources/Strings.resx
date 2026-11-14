@@ -1319,4 +1319,12 @@ The saved sign-in will be removed from this device. Local match records will be 
   <data name="UpdatePortableRequired" xml:space="preserve"><value>Use the auto-updating portable package to enable updates.</value></data>
   <data name="LanguageSaveFailed" xml:space="preserve"><value>Could not save the language setting. Please try again</value></data>
   <data name="RecordsUpdatedScoresPending" xml:space="preserve"><value>Records updated. Current scores could not be updated. Try refreshing again</value></data>
+  <data name="SettingsGeneral" xml:space="preserve"><value>General</value></data>
+  <data name="SettingsNetwork" xml:space="preserve"><value>Network</value></data>
+  <data name="SettingsRefresh" xml:space="preserve"><value>Refresh</value></data>
+  <data name="SettingsData" xml:space="preserve"><value>Data</value></data>
+  <data name="SettingsAbout" xml:space="preserve"><value>About</value></data>
+  <data name="SettingsCategories" xml:space="preserve"><value>Settings categories</value></data>
+  <data name="Logs" xml:space="preserve"><value>Logs</value></data>
+  <data name="MatchEndDetectionUnavailable" xml:space="preserve"><value>Match detection is unavailable</value></data>
 </root>

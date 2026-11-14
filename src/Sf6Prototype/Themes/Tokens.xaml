@@ -33,6 +33,8 @@
   <SolidColorBrush x:Key="LossSoft" Color="#FBE9E7"/>
   <SolidColorBrush x:Key="Warning" Color="#896207"/>
   <SolidColorBrush x:Key="Neutral" Color="#74747F"/>
+  <!-- Outline for a status indicator whose feature is switched off. -->
+  <SolidColorBrush x:Key="StatusOff" Color="#BDBDC9"/>
   <SolidColorBrush x:Key="NeutralSoft" Color="#EFEFF3"/>
   <SolidColorBrush x:Key="TagAddFill" Color="#BDBDC9"/>
   <SolidColorBrush x:Key="TagAddHover" Color="#9696A7"/>

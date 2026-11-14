@@ -156,11 +156,11 @@ internal static class Program
         Check(((ConnectionSettings)draft.Invoke(settings,[false])!).ApiIntervalSeconds==2,"A partially edited API interval does not block the independent Google proxy test");
         apiPresets.SelectedIndex=2;
         var settingsContent=(FrameworkElement)settings.Content;settingsContent.Measure(new Size(settings.Width-16,double.PositiveInfinity));settingsContent.Arrange(new Rect(settingsContent.DesiredSize));
-        var intervalRight=api.TranslatePoint(new Point(api.ActualWidth,0),settingsContent).X;
-        var presetsLeft=apiPresets.TranslatePoint(new Point(0,0),settingsContent).X;
+        var intervalBounds=new Rect(api.TranslatePoint(new Point(),settingsContent),api.RenderSize);
+        var presetBounds=new Rect(apiPresets.TranslatePoint(new Point(),settingsContent),apiPresets.RenderSize);
         // The integrated title bar is already part of the measured content.
         var settingsFrameHeight=2*SystemParameters.ResizeFrameHorizontalBorderHeight;
-        Check(settingsContent.DesiredSize.Height+settingsFrameHeight<=720 && intervalRight<=presetsLeft,$"The settings window fits the minimum height without overlapping its preset group (contentHeight={settingsContent.DesiredSize.Height:F2}, frameHeight={settingsFrameHeight:F2}, intervalRight={intervalRight:F2}, presetsLeft={presetsLeft:F2}, font={settings.FontFamily})");
+        Check(settingsContent.DesiredSize.Height+settingsFrameHeight<=720 && !intervalBounds.IntersectsWith(presetBounds) && new Rect(settingsContent.RenderSize).Contains(presetBounds),$"The settings window fits the minimum height with its preset group inside the window and clear of the input (contentHeight={settingsContent.DesiredSize.Height:F2}, frameHeight={settingsFrameHeight:F2}, input={intervalBounds}, presets={presetBounds}, font={settings.FontFamily})");
         var choice=new CloseChoiceWindow(null!);
         Check(choice.Choice==CloseAction.Ask && !choice.Remember,"Dismissed close choices cannot silently become a remembered action");
         var loader=typeof(TrayIcon).GetMethod("LoadIcon",BindingFlags.Static|BindingFlags.NonPublic)!;
