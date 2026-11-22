@@ -107,9 +107,10 @@ public sealed class ScoreChart : FrameworkElement
         }
         InvalidateVisual();
     }
-    private static (double Low, double High, double Step) NiceScale(double min, double max)
+    private static (double Low, double High, double Step) VerticalScale(double min, double max, bool showAxis)
     {
         if (max - min < 20) { var mid = (max + min) / 2; min = mid - 10; max = mid + 10; }
+        if (!showAxis) return (min, max, 1);
         var rough = (max - min) / 4; var magnitude = Math.Pow(10, Math.Floor(Math.Log10(rough))); var n = rough / magnitude;
         var step = Math.Max(1, (n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10) * magnitude);
         var low = Math.Floor(min / step) * step; var high = Math.Ceiling(max / step) * step;
@@ -119,11 +120,13 @@ public sealed class ScoreChart : FrameworkElement
     {
         base.OnRender(dc); _locations.Clear();
         var width = ActualWidth; var height = ActualHeight;
+        var sparkline = OverlayStyle != null;
+        var fits = sparkline ? width >= 60 && height >= 30 : width >= 150 && height >= 100;
         var highlightLatest = IsVisible && OverlayStyle?.HighlightNewMatch == true && _points.Count > 0 &&
-            SystemParameters.ClientAreaAnimation && width >= 150 && height >= 100;
+            SystemParameters.ClientAreaAnimation && fits;
         if (!highlightLatest) StopHighlight();
         dc.DrawRectangle(Brushes.Transparent, null, new Rect(0, 0, width, height));
-        if (width < 150 || height < 100) return;
+        if (!fits) return;
         var dpi = VisualTreeHelper.GetDpi(this).PixelsPerDip;
         FormattedText Text(string text, Brush color) => new(text, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, new Typeface("Segoe UI"), 11, color, dpi);
         if (_points.Count == 0)
@@ -131,10 +134,12 @@ public sealed class ScoreChart : FrameworkElement
             var empty = new FormattedText(EmptyText, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, new Typeface((FontFamily)FindResource("UiFont"),FontStyles.Normal,FontWeights.Normal,FontStretches.Normal), 13, Res("Ink3"), dpi);
             dc.DrawText(empty, new Point((width - empty.Width) / 2, (height - empty.Height) / 2)); return;
         }
-        var (low, high, step) = NiceScale(_points.Min(p => p.Value), _points.Max(p => p.Value));
-        const double left = 60; var top=Compact ? 18d : 28; var right = width - 12; var bottom = height - (Compact ? 26 : 48);
+        var (low, high, step) = VerticalScale(_points.Min(p => p.Value), _points.Max(p => p.Value), !sparkline);
+        const double markerInset = 7;
+        var left = sparkline ? 0d : 60; var top = sparkline ? markerInset : Compact ? 18d : 28;
+        var right = width - (sparkline ? 0 : 12); var bottom = height - (sparkline ? markerInset : Compact ? 26 : 48);
         var grid = new Pen(Res("LineSubtle"), 1); var ink3 = Res("Ink3");
-        for (var v = low; v <= high + step / 2; v += step)
+        for (var v = low; !sparkline && v <= high + step / 2; v += step)
         {
             var y = Math.Round(bottom - (bottom - top) * (v - low) / (high - low)) + .5;
             dc.DrawLine(grid, new(left, y), new(right, y));
@@ -201,6 +206,7 @@ public sealed class ScoreChart : FrameworkElement
             dc.DrawRoundedRectangle(Res("Surface"),null,new Rect(x-3,y-1,label.Width+6,label.Height+2),3,3);
             dc.DrawText(label,new Point(x,y));
         }
+        if (sparkline) return;
         string? lastDate = null; var lastX = double.NegativeInfinity;
         for (var i = 0; i < _points.Count; i++)
         {

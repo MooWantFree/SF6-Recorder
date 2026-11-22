@@ -77,6 +77,11 @@ public partial class MainWindow
         };
         menu.Picker.Committed += () => { if (menu.IsOpen) CommitOpacity(); };
         menu.Closed += (_,_) => CommitOpacity();
+        menu.TrendChanged += show =>
+        {
+            if (_overlayEditor is { } editor) editor.OverlayTrend.IsChecked = show;
+            else SaveOverlayAppearance(_settings with { OverlayStyle = _settings.OverlayStyle with { ShowTrend = show } });
+        };
         menu.ToggleGreen += () =>
         {
             if (_overlayEditor is { } editor) editor.OverlayGreen.IsChecked = editor.OverlayGreen.IsChecked != true;
@@ -116,6 +121,7 @@ public partial class MainWindow
             return;
         }
         // WPF fixes AllowsTransparency when the HWND is created.
+        current.SetTrendLayout(appearance.OverlayStyle);
         var bounds = current.Bounds;
         var minimized = current.Minimized;
         var replacement = new RecentMatchesStreamWindow(current.Account, appearance, current.PinOverride);

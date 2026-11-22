@@ -1,34 +1,48 @@
 <UserControl x:Class="Sf6Prototype.OverlayMatchCard" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:Sf6Prototype">
-  <Grid x:Name="Panel" Focusable="True" Resources="{StaticResource StreamPalette}" Background="{StaticResource OverlayHitSurface}" TextElement.Foreground="{DynamicResource Ink}" SizeChanged="Panel_SizeChanged">
-    <Border x:Name="Backdrop" Background="{DynamicResource Surface}" CornerRadius="8"/>
-    <Grid Margin="16,10,16,6">
-      <Grid.LayoutTransform><ScaleTransform x:Name="ContentScale"/></Grid.LayoutTransform>
-      <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition/></Grid.RowDefinitions>
-      <DockPanel x:Name="Heading">
-        <TextBlock x:Name="ScoreHeader" DockPanel.Dock="Right" Foreground="{DynamicResource Accent}" FontWeight="SemiBold"/>
-        <TextBlock DockPanel.Dock="Left" Text="{DynamicResource I18n.RecentMatches}" FontSize="16" FontWeight="SemiBold" Margin="0,0,12,0"/>
-        <TextBlock Text="{Binding Character}" VerticalAlignment="Center" Foreground="{DynamicResource Ink2}" TextTrimming="CharacterEllipsis"/>
-      </DockPanel>
-      <Grid x:Name="Metrics" Grid.Row="1" Margin="0,8,0,0">
-        <Grid.ColumnDefinitions>
-          <ColumnDefinition/><ColumnDefinition/><ColumnDefinition/><ColumnDefinition/>
-          <ColumnDefinition/><ColumnDefinition/><ColumnDefinition/><ColumnDefinition/>
-        </Grid.ColumnDefinitions>
-        <Grid.Resources>
-          <Style TargetType="StackPanel">
-            <Setter Property="Grid.ColumnSpan" Value="2"/>
-            <Setter Property="Margin" Value="8,0"/>
-            <Setter Property="MinWidth" Value="70"/>
-            <Setter Property="TextBlock.TextAlignment" Value="Center"/>
-          </Style>
-        </Grid.Resources>
-        <StackPanel x:Name="HighestMetric"><TextBlock Text="{DynamicResource I18n.HighestScore}" Style="{StaticResource StreamMetricLabel}"/><TextBlock Text="{Binding Highest}" Style="{StaticResource StreamNumber}"/></StackPanel>
-        <StackPanel x:Name="LowestMetric"><TextBlock Text="{DynamicResource I18n.LowestScore}" Style="{StaticResource StreamMetricLabel}"/><TextBlock Text="{Binding Lowest}" Style="{StaticResource StreamNumber}"/></StackPanel>
-        <StackPanel x:Name="ChangeMetric"><TextBlock Text="{DynamicResource I18n.RangeChange}" Style="{StaticResource StreamMetricLabel}"/><TextBlock x:Name="ChangeValue" Text="{Binding Change}" Style="{StaticResource StreamNumber}"/></StackPanel>
-        <StackPanel x:Name="WinRateMetric"><TextBlock Text="{DynamicResource I18n.RangeWinRate}" Style="{StaticResource StreamMetricLabel}"/><TextBlock Text="{Binding WinRate}" Style="{StaticResource StreamNumber}"/></StackPanel>
-      </Grid>
-      <local:ScoreChart x:Name="Plot" Grid.Row="2" Compact="True" Focusable="False" IsHitTestVisible="False" AutomationProperties.Name="{DynamicResource I18n.RecentMatches}"/>
-    </Grid>
+  <Grid x:Name="Panel" Resources="{StaticResource StreamPalette}" Background="{StaticResource OverlayHitSurface}" TextElement.Foreground="{DynamicResource Ink}">
+    <Grid.ColumnDefinitions><ColumnDefinition x:Name="SummaryColumn"/><ColumnDefinition x:Name="TrendColumn" Width="0"/></Grid.ColumnDefinitions>
+    <Grid.RowDefinitions><RowDefinition/><RowDefinition x:Name="GapRow" Height="0"/><RowDefinition x:Name="TrendRow" Height="0"/></Grid.RowDefinitions>
+    <Border x:Name="Backdrop" Grid.ColumnSpan="2" Grid.RowSpan="3" Background="{DynamicResource Surface}" CornerRadius="8"/>
+    <Viewbox x:Name="SummaryBar" Margin="12,5" Stretch="Uniform">
+      <StackPanel x:Name="Metrics" Orientation="Horizontal">
+        <StackPanel.Resources>
+          <Style TargetType="StackPanel"><Setter Property="Margin" Value="12,0"/><Setter Property="VerticalAlignment" Value="Center"/></Style>
+        </StackPanel.Resources>
+        <StackPanel x:Name="CurrentMetric">
+          <TextBlock x:Name="ScoreLabel" Style="{StaticResource StreamMetricLabel}"/>
+          <TextBlock x:Name="ScoreHeader" Text="{Binding CurrentScore}" Style="{StaticResource StreamNumber}" FontSize="34"/>
+        </StackPanel>
+        <StackPanel x:Name="ChangeMetric">
+          <TextBlock Text="{DynamicResource I18n.OverlaySessionChange}" Style="{StaticResource StreamMetricLabel}"/>
+          <TextBlock x:Name="ChangeValue" Text="{Binding Change}" Style="{StaticResource StreamNumber}" FontSize="30"/>
+        </StackPanel>
+        <StackPanel x:Name="CountMetric">
+          <TextBlock Text="{DynamicResource I18n.OverlaySessionCount}" Style="{StaticResource StreamMetricLabel}"/>
+          <TextBlock Text="{Binding Summary.Matches.Count, FallbackValue=0}" Style="{StaticResource StreamNumber}" FontSize="25"/>
+        </StackPanel>
+        <StackPanel x:Name="WinRateMetric">
+          <TextBlock Text="{DynamicResource I18n.OverlaySessionWinRate}" Style="{StaticResource StreamMetricLabel}"/>
+          <TextBlock Text="{Binding WinRate}" Style="{StaticResource StreamNumber}" FontSize="25"/>
+        </StackPanel>
+      </StackPanel>
+    </Viewbox>
+    <Border x:Name="TrendPanel" Grid.Column="1" BorderBrush="{DynamicResource LineSubtle}" BorderThickness="1,0,0,0" Margin="0,5,0,5" Visibility="Collapsed">
+      <Border.Style>
+        <Style TargetType="Border">
+          <Style.Triggers>
+            <Trigger Property="Grid.Column" Value="1">
+              <Setter Property="Height" Value="{Binding ActualHeight, ElementName=SummaryBar}"/>
+              <Setter Property="VerticalAlignment" Value="Center"/>
+            </Trigger>
+            <DataTrigger Binding="{Binding ActualHeight, ElementName=SummaryBar}" Value="0">
+              <Setter Property="Height" Value="Auto"/>
+              <Setter Property="VerticalAlignment" Value="Stretch"/>
+            </DataTrigger>
+          </Style.Triggers>
+        </Style>
+      </Border.Style>
+      <local:ScoreChart x:Name="Plot" Compact="True" ClipToBounds="True" Focusable="False" IsHitTestVisible="False" AutomationProperties.Name="{DynamicResource I18n.OverlayTrend}"/>
+    </Border>
   </Grid>
 </UserControl>

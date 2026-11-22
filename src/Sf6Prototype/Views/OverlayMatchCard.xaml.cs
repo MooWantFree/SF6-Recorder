@@ -18,7 +18,35 @@ public partial class OverlayMatchCard : UserControl
         Backdrop.Opacity = green ? 1 : settings.OverlayBackgroundOpacity / 100d;
         if (_style == settings.OverlayStyle) return;
         _style = settings.OverlayStyle;
+        ApplyTrendLayout();
         if (_session != null) RenderSession();
+    }
+
+    private void ApplyTrendLayout()
+    {
+        var beside = _style.ShowTrend && !_style.TrendBelow;
+        var below = _style.ShowTrend && _style.TrendBelow;
+        var star = new GridLength(1, GridUnitType.Star);
+        SummaryColumn.Width = beside ? GridLength.Auto : star;
+        TrendColumn.Width = beside ? star : new GridLength(0);
+        TrendRow.Height = below ? star : new GridLength(0);
+        Grid.SetColumn(TrendPanel, beside ? 1 : 0);
+        Grid.SetRow(TrendPanel, below ? 2 : 0);
+        SummaryBar.Margin = new Thickness(12, 5, beside ? 0 : 12, below ? 0 : 5);
+        TrendPanel.Margin = beside ? new Thickness(_style.TrendSpacing, 5, 0, 5) : new Thickness(12, 0, 12, 4);
+        TrendPanel.BorderThickness = beside ? new Thickness(1, 0, 0, 0) : new Thickness(0, 1, 0, 0);
+        TrendPanel.Visibility = _style.ShowTrend ? Visibility.Visible : Visibility.Collapsed;
+        InvalidateMeasure();
+    }
+
+    protected override Size MeasureOverride(Size available)
+    {
+        // Size the left column to the rendered numbers, while reserving space for the curve.
+        SummaryBar.MaxWidth = _style.ShowTrend && !_style.TrendBelow
+            ? Math.Max(0, available.Width * 2 / 3 - SummaryBar.Margin.Left) : double.PositiveInfinity;
+        GapRow.Height = new GridLength(_style.ShowTrend && _style.TrendBelow
+            ? _style.TrendSpacing * Math.Min(1, available.Height / 160) : 0);
+        return base.MeasureOverride(available);
     }
 
     public void Display(RecentMatchDisplay session)
@@ -29,31 +57,24 @@ public partial class OverlayMatchCard : UserControl
 
     private void RenderSession()
     {
-        var display = _session!.WithLimit(_style.MatchLimit);
-        DataContext = display;
-        var extremes = _style.ShowExtremes;
-        HighestMetric.Visibility = LowestMetric.Visibility = extremes ? Visibility.Visible : Visibility.Collapsed;
+        var session = _session!;
+        ScoreLabel.SetResourceReference(TextBlock.TextProperty, session.Unit switch {
+            "LP" => "I18n.OverlayCurrentLP", "MR" => "I18n.OverlayCurrentMR", _ => "I18n.OverlayCurrentScore" });
+        DataContext = session;
+        SummaryBar.HorizontalAlignment = _style.ShowCurrent && _style.ShowChange && _style.ShowCount && _style.ShowWinRate
+            ? HorizontalAlignment.Left : HorizontalAlignment.Center;
+        CurrentMetric.Visibility = _style.ShowCurrent ? Visibility.Visible : Visibility.Collapsed;
         ChangeMetric.Visibility = _style.ShowChange ? Visibility.Visible : Visibility.Collapsed;
+        CountMetric.Visibility = _style.ShowCount ? Visibility.Visible : Visibility.Collapsed;
         WinRateMetric.Visibility = _style.ShowWinRate ? Visibility.Visible : Visibility.Collapsed;
-        var visibleMetrics = Metrics.Children.Cast<UIElement>()
-            .Where(metric => metric.Visibility == Visibility.Visible).ToArray();
-        Metrics.Visibility = !display.IsEmpty && visibleMetrics.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
-        // Each metric spans two half-columns. Split the unused columns equally between the ends.
-        var firstColumn = Metrics.ColumnDefinitions.Count / 2 - visibleMetrics.Length;
-        for (var i = 0; i < visibleMetrics.Length; i++)
-            Grid.SetColumn(visibleMetrics[i], firstColumn + 2 * i);
-        ScoreHeader.Text = _style.ShowCurrent && !display.IsEmpty ? $"{display.CurrentScore} {display.Unit}" : display.Unit;
-        ChangeValue.SetResourceReference(TextBlock.ForegroundProperty,display.ChangeBrush);
-        Plot.OverlayStyle = _style;
-        Plot.Unit = display.Unit;
-        Plot.EmptyText = display.EmptyText;
-        Plot.Points = display.Points;
-        Plot.SelectedReplay = display.Points.LastOrDefault()?.ReplayId;
-    }
+        ChangeValue.SetResourceReference(TextBlock.ForegroundProperty, session.ChangeBrush);
+        if (!_style.ShowTrend) return;
 
-    private void Panel_SizeChanged(object sender, SizeChangedEventArgs e)
-    {
-        var scale = Math.Clamp(Math.Min((e.NewSize.Width - 32) / 388, (e.NewSize.Height - 16) / 198), 0.5, 1);
-        ContentScale.ScaleX = ContentScale.ScaleY = scale;
+        var trend = session.WithLimit(_style.MatchLimit);
+        Plot.OverlayStyle = _style;
+        Plot.Unit = trend.Unit;
+        Plot.EmptyText = trend.EmptyText;
+        Plot.Points = trend.Points;
+        Plot.SelectedReplay = trend.Points.LastOrDefault()?.ReplayId;
     }
 }

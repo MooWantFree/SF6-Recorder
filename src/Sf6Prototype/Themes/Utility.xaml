@@ -203,11 +203,11 @@
     <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="MenuItem">
       <Border x:Name="Row" Background="Transparent" CornerRadius="4" Padding="9,0,10,0">
         <DockPanel VerticalAlignment="Center">
-          <TextBlock DockPanel.Dock="Left" FontFamily="Segoe Fluent Icons" FontSize="14" Width="23" Foreground="{StaticResource Ink3}" Text="{TemplateBinding Tag}"/>
+          <TextBlock x:Name="Icon" DockPanel.Dock="Left" FontFamily="Segoe Fluent Icons" FontSize="14" Width="23" Foreground="{StaticResource Ink3}" Text="{TemplateBinding Tag}"/>
           <ContentPresenter ContentSource="Header" RecognizesAccessKey="True"/>
         </DockPanel>
       </Border>
-      <ControlTemplate.Triggers><Trigger Property="IsHighlighted" Value="True"><Setter TargetName="Row" Property="Background" Value="{StaticResource SurfaceSelected}"/></Trigger></ControlTemplate.Triggers>
+      <ControlTemplate.Triggers><Trigger Property="IsChecked" Value="True"><Setter TargetName="Icon" Property="Text" Value="&#xE73E;"/></Trigger><Trigger Property="IsHighlighted" Value="True"><Setter TargetName="Row" Property="Background" Value="{StaticResource SurfaceSelected}"/></Trigger></ControlTemplate.Triggers>
     </ControlTemplate></Setter.Value></Setter>
   </Style>
   <Style x:Key="OverlayActions" TargetType="ContextMenu" BasedOn="{StaticResource NavigationMenu}">

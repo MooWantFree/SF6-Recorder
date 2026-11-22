@@ -94,7 +94,7 @@ public partial class SettingsWindow : ChromeWindow
     /// <summary>The page holding the first value that would make saving fail.</summary>
     private FrameworkElement? InvalidPage()
     {
-        if (!ValidOverlayLimit()) { MetricsTab.IsSelected = true; return OverlayPage; }
+        if (!ValidOverlayLimit()) { TrendTab.IsSelected = true; return OverlayPage; }
         try
         {
             if(ProxyEnabled.IsChecked==true) (_current with {UseProxy=true,ProxyAddress=ProxyAddressBox.Text.Trim()}).ValidateProxy();

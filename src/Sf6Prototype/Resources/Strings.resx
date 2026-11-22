@@ -1353,9 +1353,20 @@ The saved sign-in will be removed from this device. Local match records will be 
   <data name="UnpinOverlay" xml:space="preserve"><value>Unpin overlay</value></data>
   <data name="OverlayStyleSettings" xml:space="preserve"><value>Style settings</value></data>
   <data name="OverlaySamplePreview" xml:space="preserve"><value>Preview · Sample matches</value></data>
+  <data name="OverlayCurrentLP" xml:space="preserve"><value>Current LP</value></data>
+  <data name="OverlayCurrentMR" xml:space="preserve"><value>Current MR</value></data>
+  <data name="OverlayTrendPosition" xml:space="preserve"><value>Position</value></data>
+  <data name="OverlayTrendRight" xml:space="preserve"><value>Right</value></data>
+  <data name="OverlayTrendBelow" xml:space="preserve"><value>Below</value></data>
+  <data name="OverlayTrendSpacing" xml:space="preserve"><value>Spacing</value></data>
   <data name="OverlayCurrentScore" xml:space="preserve"><value>Current score</value></data>
   <data name="OverlayScoreExtremes" xml:space="preserve"><value>Highest and lowest scores</value></data>
-  <data name="OverlayMatchLimit" xml:space="preserve"><value>Recent match count</value></data>
+  <data name="OverlayTrend" xml:space="preserve"><value>Trend</value></data>
+  <data name="OverlayShowTrend" xml:space="preserve"><value>Show trend chart</value></data>
+  <data name="OverlaySessionChange" xml:space="preserve"><value>Score change</value></data>
+  <data name="OverlaySessionCount" xml:space="preserve"><value>Matches</value></data>
+  <data name="OverlaySessionWinRate" xml:space="preserve"><value>Win rate</value></data>
+  <data name="OverlayMatchLimit" xml:space="preserve"><value>Matches in chart</value></data>
   <data name="OverlayPreviewOnStream" xml:space="preserve"><value>Preview in overlay</value></data>
   <data name="OverlayEndPreview" xml:space="preserve"><value>End preview</value></data>
   <data name="OverlayLimitError" xml:space="preserve"><value>Enter a whole number from 2 to 50.</value></data>

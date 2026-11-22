@@ -13,7 +13,12 @@ public enum OverlayColor { Mint, Rose, Lavender, Blue, Orange, White }
 
 public sealed record OverlayStyle
 {
-    public const int MinMatches = 2, DefaultMatches = 5, MaxMatches = 50;
+    public const int MinMatches = 2, DefaultMatches = 10, MaxMatches = 50;
+    public const int MaxTrendSpacing = 40;
+    public bool TrendBelow { get; init; }
+    public int TrendSpacing { get; init; } = 4;
+    public bool ShowTrend { get; init; }
+    public bool ShowCount { get; init; } = true;
     public bool ShowCurrent { get; init; } = true;
     public bool ShowExtremes { get; init; } = true;
     public bool ShowChange { get; init; } = true;
@@ -25,6 +30,7 @@ public sealed record OverlayStyle
     public OverlayColor LineColor { get; init; } = OverlayColor.Lavender;
 
     public OverlayStyle Normalized() => this with {
+        TrendSpacing = Math.Clamp(TrendSpacing, 0, MaxTrendSpacing),
         MatchLimit = MatchLimit is >= MinMatches and <= MaxMatches ? MatchLimit : DefaultMatches,
         WinColor = Enum.IsDefined(WinColor) ? WinColor : OverlayColor.Mint,
         LossColor = Enum.IsDefined(LossColor) ? LossColor : OverlayColor.Rose,
@@ -44,7 +50,7 @@ public record ConnectionSettings
     public bool RefreshAfterMatch { get; init; } = true;
     public bool FocusLatestMatchAfterRefresh { get; init; } = true;
     public bool RecentMatchesCollapsed {get;init;} = false;
-    public int OverlayBackgroundOpacity { get; init; } = 75;
+    public int OverlayBackgroundOpacity { get; init; } = 100;
     public bool OverlayGreenScreen { get; init; }
     public bool OpenOverlayOnStartup { get; init; }
     public bool OverlayAlwaysOnTop { get; init; }

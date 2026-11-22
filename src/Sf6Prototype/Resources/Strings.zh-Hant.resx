@@ -1353,9 +1353,20 @@
   <data name="UnpinOverlay" xml:space="preserve"><value>取消置頂</value></data>
   <data name="OverlayStyleSettings" xml:space="preserve"><value>樣式設定</value></data>
   <data name="OverlaySamplePreview" xml:space="preserve"><value>效果預覽 · 範例戰績</value></data>
+  <data name="OverlayCurrentLP" xml:space="preserve"><value>目前LP分數</value></data>
+  <data name="OverlayCurrentMR" xml:space="preserve"><value>目前MR分數</value></data>
+  <data name="OverlayTrendPosition" xml:space="preserve"><value>位置</value></data>
+  <data name="OverlayTrendRight" xml:space="preserve"><value>右側</value></data>
+  <data name="OverlayTrendBelow" xml:space="preserve"><value>下方</value></data>
+  <data name="OverlayTrendSpacing" xml:space="preserve"><value>間距</value></data>
   <data name="OverlayCurrentScore" xml:space="preserve"><value>目前分數</value></data>
   <data name="OverlayScoreExtremes" xml:space="preserve"><value>最高分與最低分</value></data>
-  <data name="OverlayMatchLimit" xml:space="preserve"><value>最近對局數</value></data>
+  <data name="OverlayTrend" xml:space="preserve"><value>走勢圖</value></data>
+  <data name="OverlayShowTrend" xml:space="preserve"><value>顯示走勢圖</value></data>
+  <data name="OverlaySessionChange" xml:space="preserve"><value>加減分</value></data>
+  <data name="OverlaySessionCount" xml:space="preserve"><value>對局數</value></data>
+  <data name="OverlaySessionWinRate" xml:space="preserve"><value>勝率</value></data>
+  <data name="OverlayMatchLimit" xml:space="preserve"><value>曲線顯示場數</value></data>
   <data name="OverlayPreviewOnStream" xml:space="preserve"><value>在浮窗中預覽</value></data>
   <data name="OverlayEndPreview" xml:space="preserve"><value>結束預覽</value></data>
   <data name="OverlayLimitError" xml:space="preserve"><value>請輸入 2 到 50 之間的整數。</value></data>

@@ -85,14 +85,20 @@ internal static class RecentMatchesChecks
         Update();
         var card = (OverlayMatchCard)stream.FindName("Card");
         var plot = (ScoreChart)card.FindName("Plot");
+        Check(!preferences.OverlayStyle.ShowTrend && ((Border)card.FindName("TrendPanel")).Visibility==Visibility.Collapsed, "The overlay starts with a score bar");
+        var withTrend = preferences with {OverlayStyle = preferences.OverlayStyle with {ShowTrend=true}};
+        stream.ApplyBackground(withTrend);
         Check(plot.Points[^1] is { ReplayId: "second", Value: 1010 } && stream.DataContext is RecentMatchDisplay { Unit: "LP" } display && display.Change == settledChange,
             "A hidden recent panel continues publishing the signed-in player's settled session on another player's page");
         var metric = (ListBox)recent.FindName("ScoreMetric");
         metric.SelectedIndex = 1;
-        Check(plot.Unit == "MR" && plot.Points.Count == 0, "Switching the score metric updates the live display immediately");
+        stream.Dispatcher.Invoke(() => {}, DispatcherPriority.ContextIdle);
+        Check(plot.Unit == "MR" && plot.Points.Count == 0 &&
+            ((TextBlock)card.FindName("ScoreLabel")).Text==Strings.OverlayCurrentMR,
+            "Switching the score metric also updates the unit in the current score label");
         metric.SelectedIndex = 0;
         var panel = (FrameworkElement)stream.Content;
-        var overlaySize = new Size(560,232);
+        var overlaySize = new Size(840,80);
         panel.Measure(overlaySize);
         panel.Arrange(new Rect(overlaySize));
         panel.UpdateLayout();
@@ -101,8 +107,8 @@ internal static class RecentMatchesChecks
         bitmap.Render(panel);
         var pixel = new byte[4];
         bitmap.CopyPixels(new Int32Rect(10,10,1,1),pixel,4,0);
-        Check(pixel[3] is >=190 and <=192 && plot.ActualHeight >=100 && stream.Opacity == 1,
-            "Only the stream background is translucent and the compact plot has enough height to render");
+        Check(pixel[3]==255 && !stream.AllowsTransparency && plot.ActualHeight >=30 && stream.Opacity == 1,
+            "The default background is fully opaque and the compact plot has enough height to render");
         if(Environment.GetEnvironmentVariable("SF6_LAYOUT_CAPTURES") is {Length:>0} captures)
         {
             Directory.CreateDirectory(captures);
@@ -121,10 +127,11 @@ internal static class RecentMatchesChecks
         var reopened = new RecentMatchesStreamWindow(owner, alwaysPinned);
         Check(reopened.Topmost, "Reopening restores the saved pin preference");
         reopened.Close();
+        stream.ApplyBackground(withTrend);
         panel.Measure(new Size(stream.MinWidth,stream.MinHeight));
         panel.Arrange(new Rect(0,0,stream.MinWidth,stream.MinHeight));
         panel.UpdateLayout();
-        Check(plot.ActualHeight >= 100 && plot.ActualWidth >= 150, "The plot still renders at the minimum overlay size");
+        Check(plot.ActualHeight >= 30 && plot.ActualWidth >= 150, "The plot still renders at the minimum overlay size");
         var menu = new OverlayContextMenu();
         menu.SetAppearance(custom with {OverlayGreenScreen = true});
         var picker = (OverlayOpacityPicker)menu.FindName("Picker");
@@ -150,54 +157,53 @@ internal static class RecentMatchesChecks
         settingsWindow.ShowCategory((FrameworkElement)settingsWindow.FindName("OverlayPage"));
         var sampleCard = (OverlayMatchCard)settingsWindow.FindName("SampleCard");
         var samplePlot = (ScoreChart)sampleCard.FindName("Plot");
-        Check(samplePlot.Points.Count == 6 && samplePlot.Points.Any(p=>p.Kind=="loss") && samplePlot.Points.Any(p=>p.Kind=="win"),
+        Check(((Border)sampleCard.FindName("TrendPanel")).Visibility==Visibility.Collapsed, "Settings initially preview the compact bar");
+        ((CheckBox)settingsWindow.FindName("OverlayTrend")).IsChecked = true;
+        var session = (RecentMatchDisplay)sampleCard.DataContext;
+        Check(session.Summary!.Matches.Count==30 && ((Border)sampleCard.FindName("TrendPanel")).Visibility==Visibility.Visible, "Expanded preview shows the full session totals");
+        Check(samplePlot.Points.Count == 11 && samplePlot.Points.Any(p=>p.Kind=="loss") && samplePlot.Points.Any(p=>p.Kind=="win"),
             "The preview shows fixed sample results without opening an overlay");
         bool HasInteriorExtremes() => DateRanges.Extrema(samplePlot.Points.Select(p=>p.Value).ToArray())
             .All(i=>i>0 && i<samplePlot.Points.Count-1);
         Check(HasInteriorExtremes(),"The example distinguishes session extrema from the opening and latest scores");
         var limitInput = (TextBox)settingsWindow.FindName("OverlayLimit");
         var limitError = (TextBlock)settingsWindow.FindName("MatchLimitError");
-        Check(limitInput.Text=="5" && limitError.Visibility==Visibility.Collapsed,
-            "The recent match count defaults to five");
+        Check(limitInput.Text=="10" && limitError.Visibility==Visibility.Collapsed,
+            "The recent match count defaults to ten");
         foreach (var invalid in new[] { "", "1", "51", "abc", "5.5" })
         {
             limitInput.Text = invalid;
-            Check(limitError.Visibility==Visibility.Visible && samplePlot.Points.Count==6,
+            Check(limitError.Visibility==Visibility.Visible && samplePlot.Points.Count==11,
                 "Invalid input immediately shows the error and preserves the last valid preview");
         }
         ((Button)settingsWindow.FindName("SaveButton")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
         Check(limitError.Visibility==Visibility.Visible && settingsWindow.Result==null,"An invalid count keeps settings open with a field-level error");
         limitInput.Text = "2";
         Check(limitError.Visibility==Visibility.Collapsed && samplePlot.Points.Count==3 &&
-            sampleCard.DataContext is RecentMatchDisplay {Summary.Matches.Count:2},
+            ReferenceEquals(sampleCard.DataContext,session),
             "Two matches and their starting score appear immediately at the lower endpoint");
         limitInput.Text = "50";
         Check(limitError.Visibility==Visibility.Collapsed && samplePlot.Points.Count>21,
             "Entering the upper endpoint immediately clears the error and updates the preview");
         limitInput.Text = "5";
-        Check(samplePlot.Points.Count == 6 && sampleCard.DataContext is RecentMatchDisplay {Summary.Matches.Count:5},
-            "Five matches and their starting score drive both the preview plot and interval metrics");
+        Check(samplePlot.Points.Count == 6 && ReferenceEquals(sampleCard.DataContext,session),
+            "The five-match chart keeps the full session metrics");
         Check(HasInteriorExtremes(),"The five-match preview also places both extrema inside the chart");
-        var metrics = (Grid)sampleCard.FindName("Metrics");
-        var switches = new[] {"OverlayExtremes","OverlayChange","OverlayWinRate"}
-            .Select(id => (CheckBox)settingsWindow.FindName(id)).ToArray();
-        for (var mask = 7; mask > 0; mask--)
+        foreach (var (toggle, metricName) in new[] { ("OverlayCurrent","CurrentMetric"), ("OverlayChange","ChangeMetric"),
+            ("OverlayCount","CountMetric"), ("OverlayWinRate","WinRateMetric") })
         {
-            for (var i = 0; i < switches.Length; i++) switches[i].IsChecked = (mask & (1 << i)) != 0;
-            foreach (var width in new[] {388d, 528d})
-            {
-                metrics.Measure(new Size(width, 72));
-                metrics.Arrange(new Rect(0, 0, width, 72));
-                var centers = metrics.Children.Cast<FrameworkElement>()
-                    .Where(item => item.Visibility == Visibility.Visible)
-                    .Select(item => item.TranslatePoint(new Point(item.ActualWidth / 2, 0), metrics).X).ToArray();
-                Check(Math.Abs((centers[0] + centers[^1]) / 2 - width / 2) <= 1 &&
-                    centers.Zip(centers.Skip(1), (left, right) => right - left).All(gap => Math.Abs(gap - width / 4) <= 1),
-                    $"Adjacent visible metrics stay a quarter-width apart and centered at width {width}, mask {mask}");
-            }
+            var check = (CheckBox)settingsWindow.FindName(toggle);
+            var item = (FrameworkElement)sampleCard.FindName(metricName);
+            Check(check.IsChecked==true && item.Visibility==Visibility.Visible, "Session metric is enabled by default");
+            check.IsChecked=false;
+            Check(item.Visibility==Visibility.Collapsed, "Each session metric can be hidden independently");
         }
-        foreach(var toggle in switches) toggle.IsChecked=false;
-        Check(((FrameworkElement)sampleCard.FindName("Metrics")).Visibility == Visibility.Collapsed,"Hiding all interval metrics removes the entire metrics row");
+        ((ComboBox)settingsWindow.FindName("TrendPosition")).SelectedIndex=1;
+        ((Slider)settingsWindow.FindName("TrendSpacing")).Value=22;
+        var trendPanel = (Border)sampleCard.FindName("TrendPanel");
+        Check(Grid.GetColumn(trendPanel)==0 && Grid.GetRow(trendPanel)>0 && sampleCard.Height==160,
+            "The stacked preview places the curve below the score bar");
+        ((CheckBox)settingsWindow.FindName("OverlayExtremes")).IsChecked=false;
         var helpSection = (Expander)settingsWindow.FindName("OverlayCaptureHelp");
         var overlayPage = (StackPanel)settingsWindow.FindName("OverlayPage");
         Check(!helpSection.IsExpanded && overlayPage.Children[overlayPage.Children.Count - 1] == helpSection,
@@ -212,7 +218,7 @@ internal static class RecentMatchesChecks
         ((CheckBox)settingsWindow.FindName("OverlayGreen")).IsChecked = true;
         var draft = (ConnectionSettings)typeof(SettingsWindow).GetMethod("Draft",flags)!.Invoke(settingsWindow,[true])!;
         Check(draft is {OverlayGreenScreen:true,OverlayBackgroundOpacity:37,OpenOverlayOnStartup:true,OverlayAlwaysOnTop:true,
-            OverlayStyle.MatchLimit:5,OverlayStyle.ShowExtremes:false},
+            OverlayStyle.TrendBelow:true,OverlayStyle.TrendSpacing:22,OverlayStyle.ShowTrend:true,OverlayStyle.ShowCount:false,OverlayStyle.MatchLimit:5,OverlayStyle.ShowExtremes:false},
             "The dedicated settings page preserves custom opacity independently of the green screen and startup toggle");
         draft.Save(path);
         Check(ConnectionSettings.Load(path) == draft,"Overlay options survive relaunch");
@@ -220,7 +226,7 @@ internal static class RecentMatchesChecks
         Check(ConnectionSettings.Load(path) is {OverlayGreenScreen:true, OverlayBackgroundOpacity:75,OpenOverlayOnStartup:false},
             "Existing green-screen preferences migrate with an independent opacity");
         settingsWindow.Close();
-        Check(stream.AllowsTransparency && Strings.StreamWindowTitle == "SF6 Recorder OBS",
+        Check(reopened.AllowsTransparency && Strings.StreamWindowTitle == "SF6 Recorder OBS",
             "The translucent stream retains its capture title");
         archive.SignedInId = null;
         var closed = false; stream.Closed += (_,_)=>closed=true;

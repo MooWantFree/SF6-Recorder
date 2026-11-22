@@ -7,7 +7,9 @@ namespace Sf6Prototype;
 
 public partial class RecentMatchesStreamWindow : UserControl
 {
-    internal const double DefaultWidth = 560, DefaultHeight = 232;
+    internal static Size BarSize(OverlayStyle style) => !style.ShowTrend ? new(560, 80)
+        : style.TrendBelow ? new(560, 160) : new(840, 80);
+    internal Size LayoutSize { get; private set; } = new(560, 80);
     private OverlayWindowHost? _host;
     private bool _closed;
     public event EventHandler? Closed;
@@ -23,7 +25,6 @@ public partial class RecentMatchesStreamWindow : UserControl
         Account = account;
         PinOverride = pinOverride;
         InitializeComponent();
-        Card.Heading.Margin = new Thickness(0,0,34,0);
         AllowsTransparency = NeedsTransparency(settings);
         ApplyBackground(settings);
     }
@@ -55,10 +56,22 @@ public partial class RecentMatchesStreamWindow : UserControl
 
     public void ApplyBackground(ConnectionSettings settings)
     {
+        SetTrendLayout(settings.OverlayStyle);
         Topmost = PinOverride ?? settings.OverlayAlwaysOnTop;
         PinButton.IsChecked = Topmost;
         _host?.Pin(Topmost);
         Card.ApplyAppearance(settings);
+    }
+
+    internal void SetTrendLayout(OverlayStyle style)
+    {
+        var size = BarSize(style);
+        if (LayoutSize == size) return;
+        var previous = LayoutSize;
+        LayoutSize = size;
+        MinWidth = style.ShowTrend && !style.TrendBelow ? 480 : 320;
+        MinHeight = style.ShowTrend && style.TrendBelow ? 96 : 48;
+        _host?.ScaleSize(size.Width / previous.Width, size.Height / previous.Height);
     }
 
     private void Pin_Changed(object sender, RoutedEventArgs e)

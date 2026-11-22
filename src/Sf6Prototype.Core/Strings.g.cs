@@ -284,6 +284,8 @@ public static class Strings
     public static string OverlayBlue => Localization.Get(nameof(OverlayBlue));
     public static string OverlayCaptureHelp => Localization.Get(nameof(OverlayCaptureHelp));
     public static string OverlayCaptureHint => Localization.Get(nameof(OverlayCaptureHint));
+    public static string OverlayCurrentLP => Localization.Get(nameof(OverlayCurrentLP));
+    public static string OverlayCurrentMR => Localization.Get(nameof(OverlayCurrentMR));
     public static string OverlayCurrentScore => Localization.Get(nameof(OverlayCurrentScore));
     public static string OverlayEndPreview => Localization.Get(nameof(OverlayEndPreview));
     public static string OverlayGreenOpacityHint => Localization.Get(nameof(OverlayGreenOpacityHint));
@@ -301,7 +303,16 @@ public static class Strings
     public static string OverlayRose => Localization.Get(nameof(OverlayRose));
     public static string OverlaySamplePreview => Localization.Get(nameof(OverlaySamplePreview));
     public static string OverlayScoreExtremes => Localization.Get(nameof(OverlayScoreExtremes));
+    public static string OverlaySessionChange => Localization.Get(nameof(OverlaySessionChange));
+    public static string OverlaySessionCount => Localization.Get(nameof(OverlaySessionCount));
+    public static string OverlaySessionWinRate => Localization.Get(nameof(OverlaySessionWinRate));
+    public static string OverlayShowTrend => Localization.Get(nameof(OverlayShowTrend));
     public static string OverlayStyleSettings => Localization.Get(nameof(OverlayStyleSettings));
+    public static string OverlayTrend => Localization.Get(nameof(OverlayTrend));
+    public static string OverlayTrendBelow => Localization.Get(nameof(OverlayTrendBelow));
+    public static string OverlayTrendPosition => Localization.Get(nameof(OverlayTrendPosition));
+    public static string OverlayTrendRight => Localization.Get(nameof(OverlayTrendRight));
+    public static string OverlayTrendSpacing => Localization.Get(nameof(OverlayTrendSpacing));
     public static string OverlayWhite => Localization.Get(nameof(OverlayWhite));
     public static string OverlayWinColor => Localization.Get(nameof(OverlayWinColor));
     public static string OverlayWindowTab => Localization.Get(nameof(OverlayWindowTab));

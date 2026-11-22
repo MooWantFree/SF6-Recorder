@@ -43,8 +43,8 @@ internal sealed class OverlayWindowHost(RecentMatchesStreamWindow view) : Forms.
         AssignHandle(hwnd);
         try
         {
-            var width = Pixels(RecentMatchesStreamWindow.DefaultWidth);
-            var height = Pixels(RecentMatchesStreamWindow.DefaultHeight);
+            var width = Pixels(view.LayoutSize.Width);
+            var height = Pixels(view.LayoutSize.Height);
             var rect = bounds ?? new System.Drawing.Rectangle(area.Left + (area.Width-width)/2,
                 area.Top + (area.Height-height)/2, width, height);
             SetWindowPos(hwnd, view.Topmost ? -1 : -2, rect.X, rect.Y, rect.Width, rect.Height, NoActivate);
@@ -61,6 +61,24 @@ internal sealed class OverlayWindowHost(RecentMatchesStreamWindow view) : Forms.
 
     private int Pixels(double dip) => (int)Math.Round(dip * GetDpiForWindow(Handle) / 96);
     internal System.Drawing.Rectangle Bounds { get; private set; }
+    internal void ScaleSize(double widthFactor, double heightFactor)
+    {
+        var width = (int)Math.Round(Bounds.Width * widthFactor);
+        var height = (int)Math.Round(Bounds.Height * heightFactor);
+        if (Minimized)
+        {
+            var placement = new WindowPlacement { Length = Marshal.SizeOf<WindowPlacement>() };
+            if (GetWindowPlacement(Handle, ref placement))
+            {
+                placement.Normal.Right = placement.Normal.Left + width;
+                placement.Normal.Bottom = placement.Normal.Top + height;
+                SetWindowPlacement(Handle, ref placement);
+                Bounds = new(Bounds.X, Bounds.Y, width, height);
+            }
+            return;
+        }
+        SetWindowPos(Handle, 0, 0, 0, width, height, NoMove | NoZOrder | NoActivate);
+    }
     internal bool Minimized => IsIconic(Handle);
     internal void Pin(bool pin) => SetWindowPos(Handle, pin ? -1 : -2, 0, 0, 0, 0, NoSize | NoMove | NoActivate);
     internal void EnableInput() => EnableWindow(Handle, true);
@@ -96,6 +114,10 @@ internal sealed class OverlayWindowHost(RecentMatchesStreamWindow view) : Forms.
         {
             case 0x0083: // WM_NCCALCSIZE: the entire frameless window is client area.
                 m.Result = 0; return;
+            case 0x0085 when !Minimized: // WM_NCPAINT
+                m.Result = 0; return;
+            case 0x0086 when !Minimized: // WM_NCACTIVATE: the WPF surface covers the resize frame.
+                m.Result = DefWindowProc(Handle, 0x0086, m.WParam, -1); return;
             case 0x0084: m.Result = HitTest(m.LParam); return;
             case 0x0024: // WM_GETMINMAXINFO
                 var limits = Marshal.PtrToStructure<MinMaxInfo>(m.LParam);
@@ -184,6 +206,14 @@ internal sealed class OverlayWindowHost(RecentMatchesStreamWindow view) : Forms.
     [DllImport("gdi32")] private static extern bool DeleteDC(nint dc);
     [DllImport("user32", SetLastError=true)] private static extern bool UpdateLayeredWindow(nint h,nint dest,nint pos,ref System.Drawing.Size size,nint src,ref System.Drawing.Point origin,uint key,ref uint blend,uint flags);
     [DllImport("user32")] private static extern uint GetDpiForWindow(nint h);
+    [StructLayout(LayoutKind.Sequential)] private struct WindowPlacement
+    {
+        public int Length, Flags, ShowCommand;
+        public System.Drawing.Point MinPosition, MaxPosition;
+        public NativeRect Normal;
+    }
+    [DllImport("user32")] private static extern bool GetWindowPlacement(nint hwnd, ref WindowPlacement placement);
+    [DllImport("user32")] private static extern bool SetWindowPlacement(nint hwnd, ref WindowPlacement placement);
     [DllImport("user32")] private static extern bool GetWindowRect(nint h, out NativeRect r);
     [DllImport("user32")] private static extern bool GetClientRect(nint h, out NativeRect r);
     [DllImport("user32")] private static extern bool SetWindowPos(nint h, nint after, int x, int y, int w, int height, uint flags);

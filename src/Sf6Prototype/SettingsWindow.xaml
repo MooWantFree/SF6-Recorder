@@ -62,8 +62,8 @@
             <TextBlock Text="{DynamicResource I18n.OverlaySamplePreview}" Style="{StaticResource Caption}" VerticalAlignment="Center"/>
           </DockPanel>
           <Border Background="{StaticResource OverlayPreviewGrid}" CornerRadius="6" Padding="6" Margin="0,0,0,10">
-            <Viewbox Stretch="Uniform" Height="155" IsHitTestVisible="False">
-              <local:OverlayMatchCard x:Name="SampleCard" Width="560" Height="208"/>
+            <Viewbox Stretch="Uniform" Height="84" IsHitTestVisible="False">
+              <local:OverlayMatchCard x:Name="SampleCard" Width="560" Height="80"/>
             </Viewbox>
           </Border>
 
@@ -73,6 +73,7 @@
                 <Button x:Name="ResetStyleButton" DockPanel.Dock="Right" Content="{DynamicResource I18n.OverlayResetStyle}" Click="ResetOverlayStyle"/>
                 <ListBox x:Name="OverlaySections" Style="{StaticResource Segmented}" SelectedIndex="0" AutomationProperties.Name="{DynamicResource I18n.OverlayStyleSettings}">
                   <ListBoxItem x:Name="MetricsTab" Content="{DynamicResource I18n.OverlayMetricsTab}"/>
+                  <ListBoxItem x:Name="TrendTab" Content="{DynamicResource I18n.OverlayTrend}"/>
                   <ListBoxItem x:Name="AppearanceTab" Content="{DynamicResource I18n.OverlayAppearanceTab}"/>
                   <ListBoxItem x:Name="WindowTab" Content="{DynamicResource I18n.OverlayWindowTab}"/>
                 </ListBox>
@@ -84,36 +85,60 @@
                       <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="24"/><ColumnDefinition/></Grid.ColumnDefinitions>
                       <Grid.RowDefinitions><RowDefinition/><RowDefinition/></Grid.RowDefinitions>
                       <CheckBox x:Name="OverlayCurrent" Style="{StaticResource LabeledSwitch}" Content="{DynamicResource I18n.OverlayCurrentScore}"/>
-                      <CheckBox x:Name="OverlayExtremes" Grid.Column="2" Style="{StaticResource LabeledSwitch}" Content="{DynamicResource I18n.OverlayScoreExtremes}"/>
-                      <CheckBox x:Name="OverlayChange" Grid.Row="1" Style="{StaticResource LabeledSwitch}" Content="{DynamicResource I18n.RangeChange}"/>
-                      <CheckBox x:Name="OverlayWinRate" Grid.Row="1" Grid.Column="2" Style="{StaticResource LabeledSwitch}" Content="{DynamicResource I18n.RangeWinRate}"/>
+                      <CheckBox x:Name="OverlayChange" Grid.Column="2" Style="{StaticResource LabeledSwitch}" Content="{DynamicResource I18n.OverlaySessionChange}"/>
+                      <CheckBox x:Name="OverlayCount" Grid.Row="1" Style="{StaticResource LabeledSwitch}" Content="{DynamicResource I18n.OverlaySessionCount}"/>
+                      <CheckBox x:Name="OverlayWinRate" Grid.Row="1" Grid.Column="2" Style="{StaticResource LabeledSwitch}" Content="{DynamicResource I18n.OverlaySessionWinRate}"/>
                     </Grid>
-                    <Border BorderBrush="{StaticResource LineSubtle}" BorderThickness="0,1,0,0" Padding="0,9,0,0" Margin="0,6,0,0">
-                      <StackPanel>
+                  </StackPanel>
+                  <StackPanel Visibility="{Binding IsSelected,ElementName=TrendTab,Converter={StaticResource VisibleWhenTrue}}">
+                    <CheckBox x:Name="OverlayTrend" Style="{StaticResource LabeledSwitch}" Content="{DynamicResource I18n.OverlayShowTrend}"/>
+                    <StackPanel Visibility="{Binding IsChecked,ElementName=OverlayTrend,Converter={StaticResource VisibleWhenTrue}}">
+                      <Border BorderBrush="{StaticResource LineSubtle}" BorderThickness="0,1,0,0" Padding="0,9,0,0" Margin="0,6,0,0">
+                        <StackPanel>
+                          <DockPanel>
+                            <TextBox x:Name="OverlayLimit" DockPanel.Dock="Right" Width="64" TextAlignment="Center"
+                                     AutomationProperties.Name="{DynamicResource I18n.OverlayMatchLimit}"/>
+                            <TextBlock Text="{DynamicResource I18n.OverlayMatchLimit}" VerticalAlignment="Center"/>
+                          </DockPanel>
+                          <TextBlock x:Name="MatchLimitError" Style="{StaticResource Caption}" Foreground="{StaticResource Loss}" HorizontalAlignment="Right"
+                                     Text="{DynamicResource I18n.OverlayLimitError}" Visibility="Collapsed" Margin="0,3,0,0"
+                                     AutomationProperties.LiveSetting="Polite"/>
+                        </StackPanel>
+                      </Border>
+                      <Grid Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="24"/><ColumnDefinition/></Grid.ColumnDefinitions>
                         <DockPanel>
-                          <TextBox x:Name="OverlayLimit" DockPanel.Dock="Right" Width="64" TextAlignment="Center"
-                                   AutomationProperties.Name="{DynamicResource I18n.OverlayMatchLimit}"/>
-                          <TextBlock Text="{DynamicResource I18n.OverlayMatchLimit}" VerticalAlignment="Center"/>
+                          <TextBlock Text="{DynamicResource I18n.OverlayTrendPosition}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                          <ComboBox x:Name="TrendPosition" AutomationProperties.Name="{DynamicResource I18n.OverlayTrendPosition}">
+                            <ComboBoxItem Content="{DynamicResource I18n.OverlayTrendRight}"/>
+                            <ComboBoxItem Content="{DynamicResource I18n.OverlayTrendBelow}"/>
+                          </ComboBox>
                         </DockPanel>
-                        <TextBlock x:Name="MatchLimitError" Style="{StaticResource Caption}" Foreground="{StaticResource Loss}" HorizontalAlignment="Right"
-                                   Text="{DynamicResource I18n.OverlayLimitError}" Visibility="Collapsed" Margin="0,3,0,0"
-                                   AutomationProperties.LiveSetting="Polite"/>
-                      </StackPanel>
-                    </Border>
+                        <DockPanel Grid.Column="2">
+                          <TextBlock Text="{DynamicResource I18n.OverlayTrendSpacing}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                          <Slider x:Name="TrendSpacing" Minimum="0" IsMoveToPointEnabled="True" IsSnapToTickEnabled="True" TickFrequency="1"
+                                  VerticalAlignment="Center" AutomationProperties.Name="{DynamicResource I18n.OverlayTrendSpacing}"/>
+                        </DockPanel>
+                      </Grid>
+                      <UniformGrid Columns="3" Margin="0,2,0,6">
+                        <StackPanel Margin="0,0,5,0"><TextBlock Text="{DynamicResource I18n.OverlayWinColor}" Style="{StaticResource Caption}" Margin="0,0,0,3"/>
+                          <ComboBox x:Name="WinColor" SelectedValuePath="Tag" AutomationProperties.Name="{DynamicResource I18n.OverlayWinColor}"/></StackPanel>
+                        <StackPanel Margin="3,0"><TextBlock Text="{DynamicResource I18n.OverlayLossColor}" Style="{StaticResource Caption}" Margin="0,0,0,3"/>
+                          <ComboBox x:Name="LossColor" SelectedValuePath="Tag" AutomationProperties.Name="{DynamicResource I18n.OverlayLossColor}"/></StackPanel>
+                        <StackPanel Margin="5,0,0,0"><TextBlock Text="{DynamicResource I18n.OverlayLineColor}" Style="{StaticResource Caption}" Margin="0,0,0,3"/>
+                          <ComboBox x:Name="LineColor" SelectedValuePath="Tag" AutomationProperties.Name="{DynamicResource I18n.OverlayLineColor}"/></StackPanel>
+                      </UniformGrid>
+                      <Grid>
+                        <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="24"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                        <CheckBox x:Name="OverlayExtremes" Style="{StaticResource LabeledSwitch}" Content="{DynamicResource I18n.OverlayScoreExtremes}"/>
+                        <CheckBox x:Name="OverlayPulse" Grid.Column="2" Style="{StaticResource LabeledSwitch}" Content="{DynamicResource I18n.OverlayHighlight}"/>
+                      </Grid>
+                    </StackPanel>
                   </StackPanel>
                   <StackPanel Visibility="{Binding IsSelected,ElementName=AppearanceTab,Converter={StaticResource VisibleWhenTrue}}">
-                    <UniformGrid Columns="3" Margin="0,2,0,6">
-                      <StackPanel Margin="0,0,5,0"><TextBlock Text="{DynamicResource I18n.OverlayWinColor}" Style="{StaticResource Caption}" Margin="0,0,0,3"/>
-                        <ComboBox x:Name="WinColor" SelectedValuePath="Tag" AutomationProperties.Name="{DynamicResource I18n.OverlayWinColor}"/></StackPanel>
-                      <StackPanel Margin="3,0"><TextBlock Text="{DynamicResource I18n.OverlayLossColor}" Style="{StaticResource Caption}" Margin="0,0,0,3"/>
-                        <ComboBox x:Name="LossColor" SelectedValuePath="Tag" AutomationProperties.Name="{DynamicResource I18n.OverlayLossColor}"/></StackPanel>
-                      <StackPanel Margin="5,0,0,0"><TextBlock Text="{DynamicResource I18n.OverlayLineColor}" Style="{StaticResource Caption}" Margin="0,0,0,3"/>
-                        <ComboBox x:Name="LineColor" SelectedValuePath="Tag" AutomationProperties.Name="{DynamicResource I18n.OverlayLineColor}"/></StackPanel>
-                    </UniformGrid>
                     <Grid Margin="0,0,0,4">
                       <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="24"/><ColumnDefinition/></Grid.ColumnDefinitions>
                       <CheckBox x:Name="OverlayGreen" Style="{StaticResource LabeledSwitch}" Content="{DynamicResource I18n.StreamGreenScreen}"/>
-                      <CheckBox x:Name="OverlayPulse" Grid.Column="2" Style="{StaticResource LabeledSwitch}" Content="{DynamicResource I18n.OverlayHighlight}"/>
                     </Grid>
                     <local:OverlayOpacityPicker x:Name="OverlayOpacity" Margin="0,2,0,0"/>
                   </StackPanel>

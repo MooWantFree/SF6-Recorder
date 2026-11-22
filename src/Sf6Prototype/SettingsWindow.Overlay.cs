@@ -73,8 +73,11 @@ public partial class SettingsWindow
         OverlayStartup.IsChecked = current.OpenOverlayOnStartup;
         OverlayTopmost.IsChecked = current.OverlayAlwaysOnTop;
         DisplaySample();
+        TrendSpacing.Maximum = OverlayStyle.MaxTrendSpacing;
         LoadStyle(current);
-        foreach (var check in new[] { OverlayGreen,OverlayTopmost,OverlayPulse,OverlayCurrent,OverlayExtremes,OverlayWinRate,OverlayChange })
+        TrendPosition.SelectionChanged += (_,_) => PreviewOverlay();
+        TrendSpacing.ValueChanged += (_,_) => PreviewOverlay();
+        foreach (var check in new[] { OverlayGreen,OverlayTopmost,OverlayPulse,OverlayTrend,OverlayCount,OverlayCurrent,OverlayExtremes,OverlayWinRate,OverlayChange })
         {
             check.Checked += (_,_) => PreviewOverlay();
             check.Unchecked += (_,_) => PreviewOverlay();
@@ -88,6 +91,10 @@ public partial class SettingsWindow
     {
         _loadingStyle = true;
         var style = settings.OverlayStyle;
+        OverlayTrend.IsChecked = style.ShowTrend;
+        TrendPosition.SelectedIndex = style.TrendBelow ? 1 : 0;
+        TrendSpacing.Value = style.TrendSpacing;
+        OverlayCount.IsChecked = style.ShowCount;
         OverlayCurrent.IsChecked = style.ShowCurrent;
         OverlayExtremes.IsChecked = style.ShowExtremes;
         OverlayChange.IsChecked = style.ShowChange;
@@ -106,7 +113,7 @@ public partial class SettingsWindow
     private bool TryOverlayLimit(out int limit) => int.TryParse(OverlayLimit.Text, NumberStyles.None, CultureInfo.InvariantCulture, out limit) &&
         limit is >= OverlayStyle.MinMatches and <= OverlayStyle.MaxMatches;
 
-    private bool ValidOverlayLimit() => TryOverlayLimit(out _);
+    private bool ValidOverlayLimit() => OverlayTrend.IsChecked != true || TryOverlayLimit(out _);
 
     private void ResetOverlayStyle(object sender,RoutedEventArgs e) => LoadStyle(new());
 
@@ -116,11 +123,15 @@ public partial class SettingsWindow
         var valid = TryOverlayLimit(out var limit);
         MatchLimitError.Visibility = valid ? Visibility.Collapsed : Visibility.Visible;
         OverlayOpacity.GreenScreen = OverlayGreen.IsChecked == true;
-        _draftStyle = new() { ShowCurrent=OverlayCurrent.IsChecked == true, ShowExtremes=OverlayExtremes.IsChecked == true,
+        _draftStyle = new() { TrendBelow=TrendPosition.SelectedIndex == 1, TrendSpacing=(int)TrendSpacing.Value,
+            ShowTrend=OverlayTrend.IsChecked == true, ShowCount=OverlayCount.IsChecked == true, ShowCurrent=OverlayCurrent.IsChecked == true, ShowExtremes=OverlayExtremes.IsChecked == true,
             ShowChange=OverlayChange.IsChecked == true, ShowWinRate=OverlayWinRate.IsChecked == true,
             HighlightNewMatch=OverlayPulse.IsChecked == true, MatchLimit=valid ? limit : _draftStyle.MatchLimit,
             WinColor=(OverlayColor)WinColor.SelectedValue, LossColor=(OverlayColor)LossColor.SelectedValue,
             LineColor=(OverlayColor)LineColor.SelectedValue };
+        var size = RecentMatchesStreamWindow.BarSize(_draftStyle);
+        SampleCard.Width = size.Width;
+        SampleCard.Height = size.Height;
         SampleCard.ApplyAppearance(OverlayAppearance(_current));
         OverlayPreviewChanged?.Invoke();
     }
