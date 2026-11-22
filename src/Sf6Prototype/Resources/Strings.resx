@@ -1358,7 +1358,7 @@ The saved sign-in will be removed from this device. Local match records will be 
   <data name="OverlayMatchLimit" xml:space="preserve"><value>Recent match count</value></data>
   <data name="OverlayPreviewOnStream" xml:space="preserve"><value>Preview in overlay</value></data>
   <data name="OverlayEndPreview" xml:space="preserve"><value>End preview</value></data>
-  <data name="OverlayLimitError" xml:space="preserve"><value>Enter a whole number from 5 to 50.</value></data>
+  <data name="OverlayLimitError" xml:space="preserve"><value>Enter a whole number from 2 to 50.</value></data>
   <data name="OverlayWinColor" xml:space="preserve"><value>Win points</value></data>
   <data name="OverlayLossColor" xml:space="preserve"><value>Loss points</value></data>
   <data name="OverlayLineColor" xml:space="preserve"><value>Line</value></data>

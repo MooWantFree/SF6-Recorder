@@ -13,19 +13,19 @@ public enum OverlayColor { Mint, Rose, Lavender, Blue, Orange, White }
 
 public sealed record OverlayStyle
 {
-    public const int MinMatches = 5, MaxMatches = 50;
+    public const int MinMatches = 2, DefaultMatches = 5, MaxMatches = 50;
     public bool ShowCurrent { get; init; } = true;
     public bool ShowExtremes { get; init; } = true;
     public bool ShowChange { get; init; } = true;
     public bool ShowWinRate { get; init; } = true;
     public bool HighlightNewMatch { get; init; } = true;
-    public int MatchLimit { get; init; } = MaxMatches;
+    public int MatchLimit { get; init; } = DefaultMatches;
     public OverlayColor WinColor { get; init; } = OverlayColor.Mint;
     public OverlayColor LossColor { get; init; } = OverlayColor.Rose;
     public OverlayColor LineColor { get; init; } = OverlayColor.Lavender;
 
     public OverlayStyle Normalized() => this with {
-        MatchLimit = MatchLimit is >= MinMatches and <= MaxMatches ? MatchLimit : MaxMatches,
+        MatchLimit = MatchLimit is >= MinMatches and <= MaxMatches ? MatchLimit : DefaultMatches,
         WinColor = Enum.IsDefined(WinColor) ? WinColor : OverlayColor.Mint,
         LossColor = Enum.IsDefined(LossColor) ? LossColor : OverlayColor.Rose,
         LineColor = Enum.IsDefined(LineColor) ? LineColor : OverlayColor.Lavender };

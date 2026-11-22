@@ -468,13 +468,12 @@ public partial class MainWindow : ChromeWindow
         var dialog = CreateSettingsWindow();
         dialog.OverlayPreviewChanged += () => ApplyOverlaySettings(dialog.OverlayAppearance(_settings));
         var openedForSample = false;
-        dialog.StreamSampleChanged += () =>
+        dialog.StreamSampleChanged += bringToFront =>
         {
             if (dialog.StreamSample != null && _streamWindow == null)
             {
                 openedForSample = true;
                 ShowStreamWindow(_archive.SignedInId, activate: false);
-                _streamWindow?.PlaceBehindSettings(dialog);
             }
             else if (dialog.StreamSample == null && openedForSample)
             {
@@ -482,6 +481,7 @@ public partial class MainWindow : ChromeWindow
                 _streamWindow?.Close();
             }
             else if (_streamWindow != null) UpdateRecentMatches();
+            if (bringToFront) _streamWindow?.BringToFront();
         };
         dialog.Loaded += (_,_) => _streamWindow?.AllowInputDuringSettings();
         if (overlayPage)

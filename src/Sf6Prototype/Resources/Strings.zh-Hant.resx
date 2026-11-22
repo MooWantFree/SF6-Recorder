@@ -1358,7 +1358,7 @@
   <data name="OverlayMatchLimit" xml:space="preserve"><value>最近對局數</value></data>
   <data name="OverlayPreviewOnStream" xml:space="preserve"><value>在浮窗中預覽</value></data>
   <data name="OverlayEndPreview" xml:space="preserve"><value>結束預覽</value></data>
-  <data name="OverlayLimitError" xml:space="preserve"><value>請輸入 5 到 50 之間的整數。</value></data>
+  <data name="OverlayLimitError" xml:space="preserve"><value>請輸入 2 到 50 之間的整數。</value></data>
   <data name="OverlayWinColor" xml:space="preserve"><value>勝點顏色</value></data>
   <data name="OverlayLossColor" xml:space="preserve"><value>敗點顏色</value></data>
   <data name="OverlayLineColor" xml:space="preserve"><value>折線顏色</value></data>

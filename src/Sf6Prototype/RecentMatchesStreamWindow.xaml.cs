@@ -75,6 +75,7 @@ public partial class RecentMatchesStreamWindow : UserControl
     }
 
     internal void AllowInputDuringSettings() => _host?.EnableInput();
+    internal void BringToFront() => _host?.BringToFront();
 
     internal void PlaceBehindSettings(Window settings)
     {

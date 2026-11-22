@@ -150,21 +150,30 @@ internal static class RecentMatchesChecks
         settingsWindow.ShowCategory((FrameworkElement)settingsWindow.FindName("OverlayPage"));
         var sampleCard = (OverlayMatchCard)settingsWindow.FindName("SampleCard");
         var samplePlot = (ScoreChart)sampleCard.FindName("Plot");
-        Check(samplePlot.Points.Count > 21 && samplePlot.Points.Any(p=>p.Kind=="loss") && samplePlot.Points.Any(p=>p.Kind=="win"),
+        Check(samplePlot.Points.Count == 6 && samplePlot.Points.Any(p=>p.Kind=="loss") && samplePlot.Points.Any(p=>p.Kind=="win"),
             "The preview shows fixed sample results without opening an overlay");
         bool HasInteriorExtremes() => DateRanges.Extrema(samplePlot.Points.Select(p=>p.Value).ToArray())
             .All(i=>i>0 && i<samplePlot.Points.Count-1);
         Check(HasInteriorExtremes(),"The example distinguishes session extrema from the opening and latest scores");
         var limitInput = (TextBox)settingsWindow.FindName("OverlayLimit");
         var limitError = (TextBlock)settingsWindow.FindName("MatchLimitError");
-        Check(limitInput.Text=="50" && limitError.Visibility==Visibility.Collapsed,
-            "The recent match count defaults to 50 with no permanent range hint");
-        limitInput.Text = "51";
-        Check(limitError.Visibility==Visibility.Collapsed,"Editing a custom count does not interrupt typing");
+        Check(limitInput.Text=="5" && limitError.Visibility==Visibility.Collapsed,
+            "The recent match count defaults to five");
+        foreach (var invalid in new[] { "", "1", "51", "abc", "5.5" })
+        {
+            limitInput.Text = invalid;
+            Check(limitError.Visibility==Visibility.Visible && samplePlot.Points.Count==6,
+                "Invalid input immediately shows the error and preserves the last valid preview");
+        }
         ((Button)settingsWindow.FindName("SaveButton")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
         Check(limitError.Visibility==Visibility.Visible && settingsWindow.Result==null,"An invalid count keeps settings open with a field-level error");
+        limitInput.Text = "2";
+        Check(limitError.Visibility==Visibility.Collapsed && samplePlot.Points.Count==3 &&
+            sampleCard.DataContext is RecentMatchDisplay {Summary.Matches.Count:2},
+            "Two matches and their starting score appear immediately at the lower endpoint");
         limitInput.Text = "50";
-        Check(limitError.Visibility==Visibility.Collapsed,"Entering the upper endpoint immediately clears the error");
+        Check(limitError.Visibility==Visibility.Collapsed && samplePlot.Points.Count>21,
+            "Entering the upper endpoint immediately clears the error and updates the preview");
         limitInput.Text = "5";
         Check(samplePlot.Points.Count == 6 && sampleCard.DataContext is RecentMatchDisplay {Summary.Matches.Count:5},
             "Five matches and their starting score drive both the preview plot and interval metrics");

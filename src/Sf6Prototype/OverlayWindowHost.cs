@@ -64,6 +64,11 @@ internal sealed class OverlayWindowHost(RecentMatchesStreamWindow view) : Forms.
     internal bool Minimized => IsIconic(Handle);
     internal void Pin(bool pin) => SetWindowPos(Handle, pin ? -1 : -2, 0, 0, 0, 0, NoSize | NoMove | NoActivate);
     internal void EnableInput() => EnableWindow(Handle, true);
+    internal void BringToFront()
+    {
+        if (Minimized) ShowWindow(Handle, 9); // SW_RESTORE
+        SetForegroundWindow(Handle);
+    }
     internal void PlaceBehind(nint window) => SetWindowPos(Handle, window, 0, 0, 0, 0, NoSize | NoMove | NoActivate | 0x200);
     internal void Drag() { ReleaseCapture(); SendMessage(Handle, 0x00A1, HitCaption, 0); }
     internal void Close() { if (Handle != 0) DestroyWindow(Handle); }
@@ -104,6 +109,11 @@ internal sealed class OverlayWindowHost(RecentMatchesStreamWindow view) : Forms.
                 if (!Minimized && GetWindowRect(Handle, out var rect))
                     Bounds = System.Drawing.Rectangle.FromLTRB(rect.Left, rect.Top, rect.Right, rect.Bottom);
                 break;
+            case 0x0003: // WM_MOVE
+                // A layered child can retain its previous screen position during a native drag.
+                if (view.AllowsTransparency && _content != null && !Minimized)
+                    SetWindowPos(_content.Handle, 0, 0, 0, 0, 0, NoSize | NoZOrder | NoActivate);
+                break;
             case 0x0005: // WM_SIZE
                 if (!Minimized && GetClientRect(Handle, out var client) && client.Right > 0 && client.Bottom > 0)
                 {
@@ -139,6 +149,7 @@ internal sealed class OverlayWindowHost(RecentMatchesStreamWindow view) : Forms.
     [DllImport("kernel32", CharSet=CharSet.Unicode)] private static extern nint GetModuleHandle(string? name);
     [DllImport("user32", CharSet=CharSet.Unicode)] private static extern nint LoadCursor(nint instance, nint name);
     [DllImport("user32")] private static extern bool ShowWindow(nint h, int cmd);
+    [DllImport("user32")] private static extern bool SetForegroundWindow(nint h);
     [DllImport("user32")] private static extern bool DestroyWindow(nint h);
     private void ResizeLayeredSurface(int width, int height)
     {

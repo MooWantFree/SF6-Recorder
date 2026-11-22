@@ -92,7 +92,7 @@
                       <StackPanel>
                         <DockPanel>
                           <TextBox x:Name="OverlayLimit" DockPanel.Dock="Right" Width="64" TextAlignment="Center"
-                                   AutomationProperties.Name="{DynamicResource I18n.OverlayMatchLimit}" LostKeyboardFocus="CheckOverlayLimit"/>
+                                   AutomationProperties.Name="{DynamicResource I18n.OverlayMatchLimit}"/>
                           <TextBlock Text="{DynamicResource I18n.OverlayMatchLimit}" VerticalAlignment="Center"/>
                         </DockPanel>
                         <TextBlock x:Name="MatchLimitError" Style="{StaticResource Caption}" Foreground="{StaticResource Loss}" HorizontalAlignment="Right"
