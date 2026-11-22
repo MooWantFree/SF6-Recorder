@@ -4,14 +4,16 @@
   <Border Style="{StaticResource Card}" Padding="14,10,10,4">
     <Grid>
       <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition/></Grid.RowDefinitions>
-      <Grid MinHeight="28" Margin="0,0,4,5"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+      <Grid MinHeight="28" Margin="0,0,4,5"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
         <TextBlock x:Name="RecentTitle" Text="{DynamicResource I18n.RecentMatches}" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
         <TextBlock x:Name="CharacterName" Grid.Column="1" Foreground="{StaticResource Ink2}" TextTrimming="CharacterEllipsis" Margin="12,0" VerticalAlignment="Center"/>
         <TextBlock x:Name="EmptyText" Grid.Column="1" Text="{DynamicResource I18n.NoRecentRankedMatches}" Style="{StaticResource Caption}" TextTrimming="CharacterEllipsis" Margin="12,0" VerticalAlignment="Center" Visibility="Collapsed"/>
         <ListBox x:Name="ScoreMetric" Grid.Column="2" Style="{StaticResource Segmented}" SelectedIndex="0" SelectionChanged="Metric_Changed" AutomationProperties.Name="{DynamicResource I18n.ScoreType}" FontSize="11" Margin="0,0,8,0">
           <ListBoxItem Content="LP" Padding="8,2"/><ListBoxItem Content="MR" Padding="8,2"/>
         </ListBox>
-        <Button x:Name="CollapseButton" Grid.Column="3" Style="{StaticResource IconButton}" Width="28" Height="28" MinHeight="0" Padding="0" FontSize="11" Content="&#xE70E;" Click="Collapse_Click"/>
+        <ToggleButton x:Name="StreamButton" Grid.Column="3" Style="{StaticResource OverlayWindowToggle}"
+                      Checked="StreamToggled" Unchecked="StreamToggled" Margin="0,0,4,0"/>
+        <Button x:Name="CollapseButton" Grid.Column="4" Style="{StaticResource IconButton}" Width="28" Height="28" MinHeight="0" Padding="0" FontSize="11" Content="&#xE70E;" Click="Collapse_Click"/>
       </Grid>
       <Grid x:Name="MetricsPanel" Grid.Row="1" Margin="0,0,4,0">
         <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>

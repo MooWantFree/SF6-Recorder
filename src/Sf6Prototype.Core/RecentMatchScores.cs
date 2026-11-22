@@ -20,7 +20,7 @@ public static class RecentMatchScores
         }
         var matches=session.Where(b=>b.CharacterId==latest?.CharacterId)
             .OrderBy(b=>b.PlayedAt).ThenBy(b=>b.ReplayId,StringComparer.Ordinal).ToArray();
-        var samples=new List<RecentScoreSample>();var deltas=new List<int>();
+        var samples=new List<RecentScoreSample>();
         foreach(var battle in matches)
         {
             if(!points.TryGetValue(battle.ReplayId,out var point)) continue;
@@ -28,8 +28,21 @@ public static class RecentMatchScores
             var value=after ?? (showMr ? point.Mr is >0 ? point.Mr : null : point.Lp);
             if(value==null || value<0) continue;
             samples.Add(new(battle,point,value.Value,after!=null));
-            if((showMr ? point.MrDelta : point.LpDelta) is { } delta) deltas.Add(delta);
         }
+        return Summarize(latest,matches,samples,showMr);
+    }
+
+    public static RecentMatchSummary LastMatches(RecentMatchSummary session,int limit,bool showMr)
+    {
+        if (limit <= 0 || limit >= session.Matches.Count) return session;
+        var matches = session.Matches.TakeLast(limit).ToArray();
+        var ids = matches.Select(b => b.ReplayId).ToHashSet(StringComparer.Ordinal);
+        return Summarize(session.Latest,matches,session.Samples.Where(s => ids.Contains(s.Battle.ReplayId)).ToList(),showMr);
+    }
+
+    private static RecentMatchSummary Summarize(Battle? latest,Battle[] matches,List<RecentScoreSample> samples,bool showMr)
+    {
+        var deltas = samples.Select(s => showMr ? s.Point.MrDelta : s.Point.LpDelta).OfType<int>().ToList();
         int? initial=samples.Count==0 ? null : showMr ? samples[0].Point.Mr : samples[0].Point.Lp;
         var values=samples.Select(s=>s.Value).ToList();if(initial is >=0)values.Add(initial.Value);
         var decided=matches.Count(b=>b.Outcome is "胜" or "负" or "平");

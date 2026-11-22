@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 
 namespace Sf6Prototype;
 
@@ -24,11 +25,37 @@ public sealed class ScoreChart : FrameworkElement
     public string Unit { get; set; } = "LP";
     public string EmptyText { get; set; } = "";
     public bool Compact {get;set;}
+    internal OverlayStyle? OverlayStyle { get; set; }
+    private (AnimationClock Radius, AnimationClock Opacity)? _highlight;
+
+    private static AnimationClock HighlightClock(double from, double to) =>
+        new DoubleAnimation(from, to, TimeSpan.FromSeconds(1.6)) { RepeatBehavior = RepeatBehavior.Forever }.CreateClock();
+
+    private void StopHighlight()
+    {
+        if (_highlight is not { } clocks) return;
+        clocks.Radius.Controller?.Remove();
+        clocks.Opacity.Controller?.Remove();
+        _highlight = null;
+    }
+
+    private void DrawLatestHighlight(DrawingContext dc, Point center, Brush color)
+    {
+        // Animate just the ring in WPF's retained drawing, keeping the plot and labels static.
+        var clocks = _highlight ??= (HighlightClock(7, 20), HighlightClock(0.85, 0));
+        dc.PushOpacity(0, clocks.Opacity);
+        dc.DrawEllipse(null, new Pen(color, 2), center, null, 7, clocks.Radius, 7, clocks.Radius);
+        dc.Pop();
+    }
     public ScoreChart()
     {
         Focusable = true; FocusVisualStyle = null;
         MouseLeave += (_, _) => ResetHover();
-        IsVisibleChanged += (_, _) => { if (!IsVisible) ResetHover(); };
+        IsVisibleChanged += (_, _) =>
+        {
+            if (!IsVisible) { StopHighlight(); ResetHover(); }
+            else InvalidateVisual();
+        };
         _tip.Opened += (_, _) => UiCapture.SaveLater(_tip, "ui-score-tooltip.png");
     }
     private void ResetHover() { _hover = -1; _tip.IsOpen = false; Cursor = Cursors.Arrow; InvalidateVisual(); }
@@ -92,6 +119,9 @@ public sealed class ScoreChart : FrameworkElement
     {
         base.OnRender(dc); _locations.Clear();
         var width = ActualWidth; var height = ActualHeight;
+        var highlightLatest = IsVisible && OverlayStyle?.HighlightNewMatch == true && _points.Count > 0 &&
+            SystemParameters.ClientAreaAnimation && width >= 150 && height >= 100;
+        if (!highlightLatest) StopHighlight();
         dc.DrawRectangle(Brushes.Transparent, null, new Rect(0, 0, width, height));
         if (width < 150 || height < 100) return;
         var dpi = VisualTreeHelper.GetDpi(this).PixelsPerDip;
@@ -129,22 +159,39 @@ public sealed class ScoreChart : FrameworkElement
                 start=end;
             }
         }
-        fill.Freeze(); dc.DrawGeometry(Res("ChartFill"),null,fill);
-        var line = new Pen(Res("Accent"), 2) { LineJoin = PenLineJoin.Round };
+        fill.Freeze();
+        var style = OverlayStyle;
+        var lineColor = style == null ? Res("Accent") : Res("Overlay" + style.LineColor);
+        if (style != null) dc.PushOpacity(0.12);
+        dc.DrawGeometry(style == null ? Res("ChartFill") : lineColor,null,fill);
+        if (style != null) dc.Pop();
+        var line = new Pen(lineColor, 2) { LineJoin = PenLineJoin.Round };
         for (var i = 1; i < _points.Count; i++) if (_points[i].Connect) dc.DrawLine(line, _locations[i - 1], _locations[i]);
         var halo = Res("ChartHalo"); var ring = new Pen(Res("Accent"), 1.5);
+        var win = Res(style == null ? "Win" : "Overlay" + style.WinColor);
+        var loss = Res(style == null ? "Loss" : "Overlay" + style.LossColor);
+        var neutral = Res("Neutral");
         var radius = _points.Count > 60 ? 1.75 : 2.5;
         for (var i = 0; i < _points.Count; i++)
         {
             var p = _points[i]; var at = _locations[i]; var selected = p.ReplayId == _selectedReplay;
             var active=i==_hover || selected;
-            var color = active ? Res(p.Kind switch { "win" => "Win", "loss" => "Loss", _ => "Neutral" }) : Res("Accent");
-            if (i == _hover || selected) dc.DrawEllipse(halo, null, at, 11, 11);
-            if (selected) dc.DrawEllipse(null, ring, at, 7, 7);
+            var color = style != null || active ? p.Kind switch { "win" => win, "loss" => loss, _ => neutral } : lineColor;
+            if (style == null && active) dc.DrawEllipse(halo, null, at, 11, 11);
+            if (style == null && selected) dc.DrawEllipse(null, ring, at, 7, 7);
             var pointRadius=p.Settled ? (active ? 4.5 : radius) : (active ? 5 : 4);
-            dc.DrawEllipse(p.Settled ? color : Res("Surface"), new Pen(color, p.Settled ? 1 : 1.5), at, pointRadius, pointRadius);
+            var brush = p.Settled ? color : Res("Surface");
+            var outline = new Pen(color,p.Settled ? 1 : 1.5);
+            if (style != null && p.Kind == "loss")
+            {
+                dc.PushTransform(new RotateTransform(45,at.X,at.Y));
+                dc.DrawRectangle(brush,outline,new Rect(at.X-pointRadius,at.Y-pointRadius,2*pointRadius,2*pointRadius));
+                dc.Pop();
+            }
+            else dc.DrawEllipse(brush,outline,at,pointRadius,pointRadius);
+            if (highlightLatest && i == _points.Count - 1) DrawLatestHighlight(dc, at, color);
         }
-        var extremes=DateRanges.Extrema(_points.Select(p=>p.Value).ToArray());
+        var extremes=style?.ShowExtremes == false ? [] : DateRanges.Extrema(_points.Select(p=>p.Value).ToArray());
         for(var n=0;n<extremes.Count;n++)
         {
             var i=extremes[n];var point=_locations[i];var label=Text(_points[i].Value.ToString("N0"),Res("AccentText"));

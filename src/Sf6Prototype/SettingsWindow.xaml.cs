@@ -31,6 +31,7 @@ public partial class SettingsWindow : ChromeWindow
     private Task _updateDownload=Task.CompletedTask;
     public Func<UpdateRelease,Task>? ApplyUpdate {get;set;}
     public Action<string>? ChangeLanguage {get;set;}
+    public event Action? OverlayPreviewChanged;
     private readonly DispatcherTimer _gameStatusTimer=new() {Interval=TimeSpan.FromSeconds(2)};
     public Func<Task>? BeforeImport { get; set; }
     public event Action? DatabaseImported;
@@ -45,6 +46,7 @@ public partial class SettingsWindow : ChromeWindow
         UpdateReleaseButton();
         ProxyEnabled.IsChecked = current.UseProxy; ProxyAddressBox.Text = current.ProxyAddress;
         StartupUpdateEnabled.IsChecked = current.CheckForUpdatesOnStartup;
+        InitializeOverlay(current);
         ReminderSecondsBox.Text=current.RefreshReminderSeconds.ToString(CultureInfo.InvariantCulture);
         AutoRefreshSecondsBox.Text=current.AutoRefreshSeconds.ToString(CultureInfo.InvariantCulture);
         RefreshAfterMatchEnabled.IsChecked=current.RefreshAfterMatch;
@@ -92,6 +94,7 @@ public partial class SettingsWindow : ChromeWindow
     /// <summary>The page holding the first value that would make saving fail.</summary>
     private FrameworkElement? InvalidPage()
     {
+        if (!ValidOverlayLimit()) { MetricsTab.IsSelected = true; return OverlayPage; }
         try
         {
             if(ProxyEnabled.IsChecked==true) (_current with {UseProxy=true,ProxyAddress=ProxyAddressBox.Text.Trim()}).ValidateProxy();
@@ -116,6 +119,7 @@ public partial class SettingsWindow : ChromeWindow
             if(ChangeLanguage is { } change) change(language);
             else LocalizationWpf.Apply(language);
             _current=_current with {Language=language};
+            DisplaySample();
             CheckUpdatesButton.ToolTip = AvailableUpdate?.AvailableMessage;
             AvailableUpdateNotice.RefreshLanguage();
         }
@@ -280,8 +284,10 @@ public partial class SettingsWindow : ChromeWindow
     }
     private ConnectionSettings Draft(bool includeIntervals=true)
     {
-        var settings = _current with { UseProxy = ProxyEnabled.IsChecked == true, ProxyAddress = ProxyAddressBox.Text.Trim(),
+        if (includeIntervals && !ValidOverlayLimit()) throw new ArgumentException(Strings.OverlayLimitError);
+        var settings = OverlayAppearance(_current) with { UseProxy = ProxyEnabled.IsChecked == true, ProxyAddress = ProxyAddressBox.Text.Trim(),
             WindowCloseAction=(CloseAction)CloseActionBox.SelectedIndex,
+            OpenOverlayOnStartup=OverlayStartup.IsChecked==true,
             CheckForUpdatesOnStartup=StartupUpdateEnabled.IsChecked==true,
             Language=LanguageBox.SelectedValue as string ?? Localization.SystemLanguage,
             RefreshAfterMatch=RefreshAfterMatchEnabled.IsChecked==true,

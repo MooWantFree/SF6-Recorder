@@ -103,6 +103,7 @@ public partial class MainWindow : ChromeWindow
         History.SelectionChanged += row => { if (!_reloadingLocal && PageTabs.SelectedIndex == 0) {if(History.ActiveArchive is { } archive) Detail.Bind(archive);Detail.Show(row);if(_ready) RefreshViewedPlayerUi();RecentMatches.SelectReplay(row?.Battle.ReplayId);} };
         RecentMatches.SelectionChanged+=row=>{Detail.Bind(_archive);Detail.Show(row);};
         RecentMatches.CollapsedChanged+=RecentMatchesCollapsedChanged;
+        RecentMatches.StreamRequested+=SetStreamWindowOpen;
         Scores.SelectionChanged += row => { if (!_reloadingLocal && PageTabs.SelectedIndex == 1) {Detail.Bind(_archive);Detail.Show(row);} };
         Detail.RanksRequested += OpenPlayerRanks;
         Detail.PlayerRequested += player => _ = ViewPlayerAsync(player);
@@ -154,6 +155,7 @@ public partial class MainWindow : ChromeWindow
         await _archive.PrepareAsync(_navigation.Current.Id,CancellationToken.None);
         if(_exitRequested || App.IsShuttingDown) return;
         _ready = true; ReloadLocal();
+        if (_settings.OpenOverlayOnStartup) ShowStreamWindow(_archive.SignedInId, activate: false);
         ConfigureRefreshReminder();
         ConfigureAutoRefresh();
         await ConfigureMatchEndDetectionAsync();
@@ -451,27 +453,56 @@ public partial class MainWindow : ChromeWindow
         _automaticUpdateCheck?.Cancel();
         StartupUpdateNotice.Dismiss();
     }
-    private async void OpenSettings(bool installUpdate = false)
+    private async void OpenSettings(bool installUpdate = false, bool overlayPage = false)
     {
         if (!_ready || _exitRequested || _savingSettings) return;
         if(OwnedWindows.OfType<SettingsWindow>().FirstOrDefault() is { } existing)
         {
+            if (overlayPage) existing.ShowCategory(existing.OverlayPage);
+            if (overlayPage && !existing.IsVisible) existing.Show();
             existing.Activate();
+            if (overlayPage) _streamWindow?.PlaceBehindSettings(existing);
             if (installUpdate) await existing.InstallAvailableUpdateAsync();
             return;
         }
         var dialog = CreateSettingsWindow();
+        dialog.OverlayHelpExpansionChanged += expanded =>
+        {
+            var next = _settings with { OverlayCaptureHelpExpanded = expanded };
+            try { next.Save(App.DataDirectory); _settings = next; }
+            catch (Exception error) { ReportError(error); }
+        };
+        dialog.OverlayPreviewChanged += () => ApplyOverlaySettings(dialog.OverlayAppearance(_settings));
+        dialog.Loaded += (_,_) => _streamWindow?.AllowInputDuringSettings();
+        if (overlayPage)
+        {
+            dialog.ShowCategory(dialog.OverlayPage);
+            if (!IsVisible || WindowState == WindowState.Minimized)
+                dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+            dialog.ContentRendered += (_,_) => _streamWindow?.PlaceBehindSettings(dialog);
+        }
         if (installUpdate) dialog.Loaded += InstallWhenLoaded;
         async void InstallWhenLoaded(object sender, RoutedEventArgs e)
         {
             dialog.Loaded -= InstallWhenLoaded;
             await dialog.InstallAvailableUpdateAsync();
         }
-        if (dialog.ShowDialog() != true || dialog.Result == null) return;
+        bool? saved;
+        _overlayEditor = dialog;
+        try { saved = dialog.ShowDialog(); }
+        finally { _overlayEditor = null; }
+        if (saved != true || dialog.Result == null)
+        {
+            ApplyOverlaySettings(_settings);
+            return;
+        }
         _savingSettings=true;
         try
         {
-            var settings=dialog.Result with {PlayerId=_settings.PlayerId,UpdateReminder=_settings.UpdateReminder}; settings.Save(App.DataDirectory); _settings=settings;
+            var settings=dialog.Result with {PlayerId=_settings.PlayerId, UpdateReminder=_settings.UpdateReminder,
+                OverlayCaptureTipAcknowledged=_settings.OverlayCaptureTipAcknowledged};
+            settings.Save(App.DataDirectory); _settings=settings;
+            ApplyOverlaySettings(_settings);
             if (!_settings.CheckForUpdatesOnStartup) CancelAutomaticUpdateCheck();
             ConfigureUpdateReminder();
             RequestGate.Shared.Interval=TimeSpan.FromSeconds(_settings.ApiIntervalSeconds);
@@ -480,7 +511,7 @@ public partial class MainWindow : ChromeWindow
             await ConfigureMatchEndDetectionAsync();
             SetStatus("settings_saved", _settings.UseProxy ? Strings.SettingsSavedProxy : Strings.SettingsSavedDirect);
         }
-        catch (Exception ex) { ReportError(ex); }
+        catch (Exception ex) { ApplyOverlaySettings(_settings); ReportError(ex); }
         finally {_savingSettings=false;}
     }
 

@@ -1,0 +1,28 @@
+<UserControl x:Class="Sf6Prototype.OverlayOpacityPicker"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             FontFamily="{DynamicResource UiFont}" Foreground="{StaticResource Ink}" Focusable="False">
+  <StackPanel>
+    <DockPanel>
+      <TextBlock DockPanel.Dock="Right" Text="{Binding Value,ElementName=OpacitySlider,StringFormat={}{0:0}%}" Style="{StaticResource Number}" Margin="8,0,0,0"/>
+      <TextBlock Text="{DynamicResource I18n.BackgroundOpacity}"/>
+    </DockPanel>
+    <Grid Margin="0,10,0,4">
+      <Slider x:Name="OpacitySlider" Style="{StaticResource OpacitySliderStyle}" Minimum="0" Maximum="100" TickFrequency="1"
+              IsSnapToTickEnabled="True" IsMoveToPointEnabled="True" SmallChange="1" LargeChange="10"
+              MouseEnter="PointerMoved" PreviewMouseMove="PointerMoved" MouseLeave="PointerLeft" LostMouseCapture="PointerLeft"
+              AutomationProperties.Name="{DynamicResource I18n.BackgroundOpacity}"/>
+      <Canvas x:Name="HintLayer" Height="0" VerticalAlignment="Center" IsHitTestVisible="False" Visibility="Hidden">
+        <Border x:Name="HintBubble" Canvas.Bottom="6" Width="44" Background="{StaticResource Ink}" CornerRadius="4" Padding="0,2">
+          <TextBlock x:Name="HoverPercent" Style="{StaticResource Number}" Foreground="{StaticResource OnAccent}" FontSize="12" HorizontalAlignment="Center"/>
+        </Border>
+        <Path x:Name="HintArrow" Canvas.Bottom="2" Width="8" Data="M0,0 L8,0 L4,4 Z" Fill="{StaticResource Ink}"/>
+      </Canvas>
+    </Grid>
+    <TextBlock x:Name="GreenHint" Text="{DynamicResource I18n.OverlayGreenOpacityHint}" Style="{StaticResource Caption}"
+               TextWrapping="Wrap" Visibility="Collapsed"/>
+    <Expander Style="{StaticResource OverlayDisclosure}" x:Name="CaptureHelp" Visibility="Collapsed" Header="{DynamicResource I18n.OverlayCaptureHelp}" HorizontalContentAlignment="Stretch">
+
+      <TextBlock Text="{DynamicResource I18n.OverlayCaptureHint}" Style="{StaticResource Caption}" TextWrapping="Wrap"/>
+    </Expander>
+  </StackPanel>
+</UserControl>

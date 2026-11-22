@@ -13,6 +13,8 @@ public partial class RecentMatchesView : UserControl
         new PropertyMetadata(false,(d,_)=>((RecentMatchesView)d).CollapsedStateChanged()));
     public bool IsCollapsed {get=>(bool)GetValue(IsCollapsedProperty);set=>SetValue(IsCollapsedProperty,value);}
     public event Action<bool>? CollapsedChanged;
+    public event Action<bool>? StreamRequested;
+    public event Action<RecentMatchDisplay>? DisplayChanged;
     private Archive? _archive;
     private DateTimeOffset _startedAt;
     private int? _characterId;
@@ -53,6 +55,7 @@ public partial class RecentMatchesView : UserControl
         MetricsPanel.BeginAnimation(OpacityProperty,reveal);Chart.BeginAnimation(OpacityProperty,reveal);
     }
     private void Collapse_Click(object sender,RoutedEventArgs e)=>IsCollapsed=!IsCollapsed;
+    private void StreamToggled(object sender,RoutedEventArgs e)=>StreamRequested?.Invoke(StreamButton.IsChecked == true);
     public void Reload(Archive archive,DateTimeOffset startedAt)
     {
         _archive=archive;_startedAt=startedAt;
@@ -77,35 +80,21 @@ public partial class RecentMatchesView : UserControl
         _shownEmpty=IsEmpty;
         CharacterName.Text=summary.Latest is { } latest ? archive.Profiles.Names.Display(latest.CharacterId,latest.Character) : "";
         RecentTitle.ToolTip=$"{Strings.RecentMatchesScope}\n{_startedAt.ToLocalTime():yyyy-MM-dd HH:mm:ss}";
-        HighestScore.Text=summary.Highest?.ToString("N0") ?? "—";
-        LowestScore.Text=summary.Lowest?.ToString("N0") ?? "—";
-        var uncertain=summary.Pending || summary.Estimated;
-        ScoreChange.Text=summary.Change is { } net ? net.ToString("+0;−0;0")+(uncertain ? "*" : "") : "—";
-        ScoreChange.SetResourceReference(TextBlock.ForegroundProperty,summary.Change>0 ? "Win" : summary.Change<0 ? "Loss" : "Ink");
+        var display=RecentMatchDisplay.From(summary,CharacterName.Text,mr);
+        HighestScore.Text=display.Highest;
+        LowestScore.Text=display.Lowest;
+        ScoreChange.Text=display.Change;
+        ScoreChange.SetResourceReference(TextBlock.ForegroundProperty,display.ChangeBrush);
         ScoreChange.ToolTip=summary.Pending ? Strings.RecentScoresPending : summary.Estimated ? ScoreDisplay.EstimateExplanation : null;
-        ScoreWinRate.Text=summary.WinRate is { } winRate ? $"{winRate:F1}%" : "—";
+        ScoreWinRate.Text=display.WinRate;
         ScoreWinRate.ToolTip=Localization.Format(Strings.MatchCount,summary.Matches.Count);
         _battles=summary.Matches.ToDictionary(b=>b.ReplayId);
-        var chart=new List<ChartPoint>();var previousSettled=false;
-        if(summary.InitialScore is { } initial && summary.Samples.FirstOrDefault() is { } first)
-        {
-            chart.Add(new("$session-start",first.Point.Time[..16],initial,false,true,"neutral",Strings.SessionBaseline));
-            previousSettled=true;
-        }
-        foreach(var sample in summary.Samples)
-        {
-            var p=sample.Point;var b=sample.Battle;var delta=mr ? p.MrDelta : p.LpDelta;
-            var change=delta is { } value ? value.ToString("+0;−0;0") : Strings.SettlementUnknown;
-            var estimate=delta!=null && p.Estimated ? "\n"+ScoreDisplay.EstimateExplanation : "";
-            chart.Add(new(b.ReplayId,p.Time[..16],sample.Value,sample.Settled && previousSettled,sample.Settled,Kinds.Of(b.Outcome),
-                $"{Localization.Outcome(b.Outcome)} {b.Score}  ·  {change}  ·  {b.Opponent}{estimate}"));
-            previousSettled=sample.Settled;
-        }
         var selected=Chart.SelectedReplay;
-        Chart.Unit=mr ? "MR" : "LP";
-        Chart.EmptyText=summary.Matches.Count==0 ? Strings.NoRecentRankedMatches : mr ? Strings.NoMrForMatches : Strings.NoScores;
-        Chart.Points=chart;
-        Chart.SelectedReplay=chart.Any(p=>p.ReplayId==selected) ? selected : chart.LastOrDefault()?.ReplayId;
+        Chart.Unit=display.Unit;
+        Chart.EmptyText=display.EmptyText;
+        Chart.Points=display.Points;
+        Chart.SelectedReplay=display.Points.Any(p=>p.ReplayId==selected) ? selected : display.Points.LastOrDefault()?.ReplayId;
+        DisplayChanged?.Invoke(display);
     }
     public void SelectReplay(string? replay)=>Chart.SelectedReplay=_battles.ContainsKey(replay ?? "") ? replay : null;
     private void Metric_Changed(object sender,SelectionChangedEventArgs e) {if(!_updating)Update();}

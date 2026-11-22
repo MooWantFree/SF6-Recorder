@@ -22,6 +22,7 @@
         <ListBoxItem Content="{DynamicResource I18n.SettingsGeneral}" Tag="GeneralPage"/>
         <ListBoxItem Content="{DynamicResource I18n.SettingsNetwork}" Tag="NetworkPage"/>
         <ListBoxItem Content="{DynamicResource I18n.SettingsRefresh}" Tag="RefreshPage"/>
+        <ListBoxItem Content="{DynamicResource I18n.StreamWindow}" Tag="OverlayPage"/>
         <ListBoxItem Content="{DynamicResource I18n.SettingsData}" Tag="DataPage"/>
         <ListBoxItem Content="{DynamicResource I18n.SettingsAbout}" Tag="AboutPage"/>
       </ListBox>
@@ -47,6 +48,105 @@
                   <ComboBox x:Name="CloseActionBox" Grid.Column="1" SelectedIndex="0" AutomationProperties.Name="{DynamicResource I18n.WhenWindowCloses}">
                     <ComboBoxItem Content="{DynamicResource I18n.AskEveryTime}"/><ComboBoxItem Content="{DynamicResource I18n.MinimizeToTray}"/><ComboBoxItem Content="{DynamicResource I18n.Exit}"/>
                   </ComboBox>
+                </Grid>
+              </Border>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+
+        <StackPanel x:Name="OverlayPage" Visibility="Hidden">
+          <Expander x:Name="OverlayCaptureHelp" Header="{DynamicResource I18n.OverlayCaptureTitle}" Margin="0,0,0,10"
+                    AutomationProperties.Name="{DynamicResource I18n.OverlayCaptureTitle}">
+            <Expander.Template>
+              <ControlTemplate TargetType="Expander">
+                <Border Style="{StaticResource Card}" Padding="14,2">
+                  <StackPanel>
+                    <ToggleButton x:Name="HelpButton" HorizontalContentAlignment="Stretch" Cursor="Hand" FocusVisualStyle="{StaticResource FocusRing}"
+                                  IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
+                      <ToggleButton.Template><ControlTemplate TargetType="ToggleButton">
+                        <Border Background="Transparent" Padding="0,6"><ContentPresenter/></Border>
+                      </ControlTemplate></ToggleButton.Template>
+                      <DockPanel>
+                        <TextBlock x:Name="HelpAction" DockPanel.Dock="Right" Text="{DynamicResource I18n.OverlayExpandHelp}" Foreground="{StaticResource AccentText}" VerticalAlignment="Center"/>
+                        <TextBlock Text="{TemplateBinding Header}" FontWeight="SemiBold"/>
+                      </DockPanel>
+                    </ToggleButton>
+                    <ContentPresenter Margin="0,0,0,8" Visibility="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource VisibleWhenTrue}}"/>
+                  </StackPanel>
+                </Border>
+                <ControlTemplate.Triggers>
+                  <Trigger Property="IsExpanded" Value="True"><Setter TargetName="HelpAction" Property="Text" Value="{DynamicResource I18n.OverlayCollapseHelp}"/></Trigger>
+                </ControlTemplate.Triggers>
+              </ControlTemplate>
+            </Expander.Template>
+            <StackPanel>
+              <TextBlock Text="{DynamicResource I18n.OverlayCaptureSource}" Foreground="{StaticResource Ink2}" TextWrapping="Wrap"/>
+              <TextBlock Text="{DynamicResource I18n.OverlayCaptureOpacityTip}" Foreground="{StaticResource Ink2}" TextWrapping="Wrap" Margin="0,2,0,0"/>
+            </StackPanel>
+          </Expander>
+
+          <TextBlock Text="{DynamicResource I18n.OverlaySamplePreview}" Style="{StaticResource Caption}" Margin="0,0,0,4"/>
+          <Border Background="{StaticResource OverlayPreviewGrid}" CornerRadius="6" Padding="6" Margin="0,0,0,10">
+            <Viewbox Stretch="Uniform" Height="155" IsHitTestVisible="False">
+              <local:OverlayMatchCard x:Name="SampleCard" Width="560" Height="208"/>
+            </Viewbox>
+          </Border>
+
+          <Border Style="{StaticResource Card}" Padding="14,10">
+            <StackPanel>
+              <DockPanel LastChildFill="False" Margin="0,0,0,8">
+                <Button x:Name="ResetStyleButton" DockPanel.Dock="Right" Content="{DynamicResource I18n.OverlayResetStyle}" Click="ResetOverlayStyle"/>
+                <ListBox x:Name="OverlaySections" Style="{StaticResource Segmented}" SelectedIndex="0" AutomationProperties.Name="{DynamicResource I18n.OverlayStyleSettings}">
+                  <ListBoxItem x:Name="MetricsTab" Content="{DynamicResource I18n.OverlayMetricsTab}"/>
+                  <ListBoxItem x:Name="AppearanceTab" Content="{DynamicResource I18n.OverlayAppearanceTab}"/>
+                  <ListBoxItem x:Name="WindowTab" Content="{DynamicResource I18n.OverlayWindowTab}"/>
+                </ListBox>
+              </DockPanel>
+              <Border BorderBrush="{StaticResource LineSubtle}" BorderThickness="0,1,0,0" Padding="0,7,0,0">
+                <Grid MinHeight="164">
+                  <StackPanel Visibility="{Binding IsSelected,ElementName=MetricsTab,Converter={StaticResource VisibleWhenTrue}}">
+                    <Grid>
+                      <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="24"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                      <Grid.RowDefinitions><RowDefinition/><RowDefinition/></Grid.RowDefinitions>
+                      <CheckBox x:Name="OverlayCurrent" Style="{StaticResource LabeledSwitch}" Content="{DynamicResource I18n.OverlayCurrentScore}"/>
+                      <CheckBox x:Name="OverlayExtremes" Grid.Column="2" Style="{StaticResource LabeledSwitch}" Content="{DynamicResource I18n.OverlayScoreExtremes}"/>
+                      <CheckBox x:Name="OverlayChange" Grid.Row="1" Style="{StaticResource LabeledSwitch}" Content="{DynamicResource I18n.RangeChange}"/>
+                      <CheckBox x:Name="OverlayWinRate" Grid.Row="1" Grid.Column="2" Style="{StaticResource LabeledSwitch}" Content="{DynamicResource I18n.RangeWinRate}"/>
+                    </Grid>
+                    <Border BorderBrush="{StaticResource LineSubtle}" BorderThickness="0,1,0,0" Padding="0,9,0,0" Margin="0,6,0,0">
+                      <DockPanel>
+                        <StackPanel x:Name="LimitControls" DockPanel.Dock="Right" Orientation="Horizontal" Margin="12,0,0,0">
+                          <Button Content="−" Width="28" Padding="0" Click="DecreaseLimit"/>
+                          <TextBox x:Name="OverlayLimit" Width="54" TextAlignment="Center" Margin="3,0" AutomationProperties.Name="{DynamicResource I18n.OverlayMatchLimit}"/>
+                          <Button Content="+" Width="28" Padding="0" Click="IncreaseLimit"/>
+                        </StackPanel>
+                        <CheckBox x:Name="OverlayAll" DockPanel.Dock="Right" Style="{StaticResource LabeledSwitch}" MinWidth="108" Content="{DynamicResource I18n.OverlayAllSession}"/>
+                        <TextBlock Text="{DynamicResource I18n.OverlayMatchLimit}" VerticalAlignment="Center"/>
+                      </DockPanel>
+                    </Border>
+                  </StackPanel>
+                  <StackPanel Visibility="{Binding IsSelected,ElementName=AppearanceTab,Converter={StaticResource VisibleWhenTrue}}">
+                    <UniformGrid Columns="3" Margin="0,2,0,6">
+                      <StackPanel Margin="0,0,5,0"><TextBlock Text="{DynamicResource I18n.OverlayWinColor}" Style="{StaticResource Caption}" Margin="0,0,0,3"/>
+                        <ComboBox x:Name="WinColor" SelectedValuePath="Tag" AutomationProperties.Name="{DynamicResource I18n.OverlayWinColor}"/></StackPanel>
+                      <StackPanel Margin="3,0"><TextBlock Text="{DynamicResource I18n.OverlayLossColor}" Style="{StaticResource Caption}" Margin="0,0,0,3"/>
+                        <ComboBox x:Name="LossColor" SelectedValuePath="Tag" AutomationProperties.Name="{DynamicResource I18n.OverlayLossColor}"/></StackPanel>
+                      <StackPanel Margin="5,0,0,0"><TextBlock Text="{DynamicResource I18n.OverlayLineColor}" Style="{StaticResource Caption}" Margin="0,0,0,3"/>
+                        <ComboBox x:Name="LineColor" SelectedValuePath="Tag" AutomationProperties.Name="{DynamicResource I18n.OverlayLineColor}"/></StackPanel>
+                    </UniformGrid>
+                    <Grid Margin="0,0,0,4">
+                      <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="24"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                      <CheckBox x:Name="OverlayGreen" Style="{StaticResource LabeledSwitch}" Content="{DynamicResource I18n.StreamGreenScreen}"/>
+                      <CheckBox x:Name="OverlayPulse" Grid.Column="2" Style="{StaticResource LabeledSwitch}" Content="{DynamicResource I18n.OverlayHighlight}"/>
+                    </Grid>
+                    <local:OverlayOpacityPicker x:Name="OverlayOpacity" IncludeCaptureHelp="False" Margin="0,2,0,0"/>
+                  </StackPanel>
+                  <StackPanel Visibility="{Binding IsSelected,ElementName=WindowTab,Converter={StaticResource VisibleWhenTrue}}">
+                    <CheckBox x:Name="OverlayStartup" Style="{StaticResource LabeledSwitch}" Content="{DynamicResource I18n.OpenOverlayOnStartup}"/>
+                    <Border BorderBrush="{StaticResource LineSubtle}" BorderThickness="0,1,0,0" Margin="0,4" Padding="0,4,0,0">
+                      <CheckBox x:Name="OverlayTopmost" Style="{StaticResource LabeledSwitch}" Content="{DynamicResource I18n.OverlayAlwaysOnTop}"/>
+                    </Border>
+                  </StackPanel>
                 </Grid>
               </Border>
             </StackPanel>

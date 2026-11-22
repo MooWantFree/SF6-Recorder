@@ -17,6 +17,9 @@ internal static class RecentMatchScoresChecks
         Check(session.Latest?.ReplayId=="c" && session.Matches.Select(m=>m.ReplayId).SequenceEqual(["a","b","c"]),"Session membership uses official match time, including newly downloaded historical records only when they actually occurred after startup");
         Check(session.InitialScore==1000 && session.Highest==1050 && session.Lowest==1000,"The range includes the first match's pre-match baseline and confirmed post-match scores");
         Check(session.Change==10 && session.Pending && !session.Samples[^1].Settled,"Known changes exclude the unsettled final match and keep its hollow point pending");
+        var limited=RecentMatchScores.LastMatches(session,2,false);
+        Check(limited.Matches[0]==b && limited.Samples[0].Battle==b && limited.InitialScore==1050 &&
+            limited.Change==-40 && limited.WinRate==50 && limited.Pending,"Limiting recent results rebases the plot and every interval statistic on the same matches");
         Check(Math.Abs(session.WinRate!.Value-200d/3)<.001,"The interval win rate includes known outcomes even when the final score is pending");
         var foreign=c with {OwnerId="9876543210",CharacterId=2,PlayedAt=at+999};
         Check(RecentMatchScores.Build(rows.Append(foreign),points,owner,start,false).Latest?.ReplayId=="c","Another account's newer match cannot choose this account's character");
@@ -35,6 +38,9 @@ internal static class RecentMatchScoresChecks
         var seasonal=RecentMatchScores.Build(seasons,BattleStore.Scores(seasons).ToDictionary(p=>p.ReplayId),owner,start,true);
         Check(seasonal.Change==null && seasonal.Pending,"A season reset never appears as a combined MR change");
         var noMr=RecentMatchScores.Build(rows,points,owner,start,true);
+        var limitedNoMr=RecentMatchScores.LastMatches(noMr,2,true);
+        Check(limitedNoMr.Matches.Count==2 && limitedNoMr.Samples.Count==0 && limitedNoMr.WinRate==50 && limitedNoMr.Change==null,
+            "Matches without a score still count toward the selected window and its win rate");
         Check(noMr.Samples.Count==0 && noMr.Highest==null && noMr.Lowest==null && noMr.Change==null,"Non-master sessions never acquire a fabricated MR curve");
         var settled=BattleStore.Scores(rows,new CurrentScores(start.AddMinutes(4),1,[new CharacterRank(1,"隆",1070,null,24,0)]));
         var complete=RecentMatchScores.Build(rows,settled.ToDictionary(p=>p.ReplayId),owner,start,false);

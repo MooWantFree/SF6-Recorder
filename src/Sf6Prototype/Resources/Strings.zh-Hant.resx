@@ -1335,4 +1335,47 @@
   <data name="DurationShortSeconds" xml:space="preserve"><value>{0}秒</value></data>
   <data name="RefreshHeaderPagesElapsed" xml:space="preserve"><value>已讀 {0} 頁 · {1}</value></data>
   <data name="RefreshHeaderRemaining" xml:space="preserve"><value>約剩 {0}</value></data>
+  <data name="StreamWindow" xml:space="preserve"><value>戰績浮窗</value></data>
+  <data name="StreamWindowHint" xml:space="preserve"><value>開啟戰績浮窗，按右鍵可開啟設定</value></data>
+  <data name="OpenOverlayOnStartup" xml:space="preserve"><value>啟動軟體時開啟戰績浮窗</value></data>
+  <data name="EnableGreenScreen" xml:space="preserve"><value>開啟綠幕</value></data>
+  <data name="DisableGreenScreen" xml:space="preserve"><value>關閉綠幕</value></data>
+  <data name="OverlayGreenOpacityHint" xml:space="preserve"><value>關閉綠幕後使用此不透明度。</value></data>
+  <data name="BackgroundOpacity" xml:space="preserve"><value>背景不透明度</value></data>
+  <data name="StreamGreenScreen" xml:space="preserve"><value>綠幕（OBS）</value></data>
+  <data name="StreamWindowTitle" xml:space="preserve"><value>SF6 Recorder OBS</value></data>
+  <data name="OpenOverlayWindow" xml:space="preserve"><value>開啟戰績浮窗</value></data>
+  <data name="CloseOverlayWindow" xml:space="preserve"><value>關閉戰績浮窗</value></data>
+  <data name="OverlayCaptureTitle" xml:space="preserve"><value>「視窗擷取」</value></data>
+  <data name="OverlayCaptureSource" xml:space="preserve"><value>在 OBS「來源」中新增「視窗擷取」，選擇「SF6 Recorder OBS」視窗。</value></data>
+  <data name="OverlayCaptureOpacityTip" xml:space="preserve"><value>為了保留設定的不透明度，請在 OBS「視窗擷取」屬性中將擷取方式設為 Windows Graphics Capture（WGC）。</value></data>
+  <data name="GotIt" xml:space="preserve"><value>我知道了</value></data>
+  <data name="OverlayCaptureHelp" xml:space="preserve"><value>OBS 擷取時黑畫面？</value></data>
+  <data name="OverlayCaptureHint" xml:space="preserve"><value>使用「自動」擷取時，將不透明度調到 100%，或開啟綠幕。若要保留半透明效果，請在 OBS「視窗擷取」屬性中選擇 Windows Graphics Capture（WGC）。</value></data>
+  <data name="OverlayAlwaysOnTop" xml:space="preserve"><value>一律置頂</value></data>
+  <data name="PinOverlay" xml:space="preserve"><value>置頂浮窗</value></data>
+  <data name="UnpinOverlay" xml:space="preserve"><value>取消置頂</value></data>
+  <data name="OverlayStyleSettings" xml:space="preserve"><value>樣式設定</value></data>
+  <data name="OverlaySamplePreview" xml:space="preserve"><value>效果預覽 · 範例戰績</value></data>
+  <data name="OverlayCurrentScore" xml:space="preserve"><value>目前分數</value></data>
+  <data name="OverlayScoreExtremes" xml:space="preserve"><value>最高分與最低分</value></data>
+  <data name="OverlayMatchLimit" xml:space="preserve"><value>最近對局數</value></data>
+  <data name="OverlayAllSession" xml:space="preserve"><value>本次全部</value></data>
+  <data name="OverlayLimitError" xml:space="preserve"><value>請輸入 5 或更大的整數。</value></data>
+  <data name="OverlayWinColor" xml:space="preserve"><value>勝點顏色</value></data>
+  <data name="OverlayLossColor" xml:space="preserve"><value>敗點顏色</value></data>
+  <data name="OverlayLineColor" xml:space="preserve"><value>折線顏色</value></data>
+  <data name="OverlayHighlight" xml:space="preserve"><value>新對局高亮</value></data>
+  <data name="OverlayResetStyle" xml:space="preserve"><value>還原預設樣式</value></data>
+  <data name="OverlayMint" xml:space="preserve"><value>薄荷綠</value></data>
+  <data name="OverlayRose" xml:space="preserve"><value>玫瑰紅</value></data>
+  <data name="OverlayLavender" xml:space="preserve"><value>淡紫</value></data>
+  <data name="OverlayBlue" xml:space="preserve"><value>天藍</value></data>
+  <data name="OverlayOrange" xml:space="preserve"><value>橙色</value></data>
+  <data name="OverlayWhite" xml:space="preserve"><value>白色</value></data>
+  <data name="OverlayExpandHelp" xml:space="preserve"><value>展開說明</value></data>
+  <data name="OverlayCollapseHelp" xml:space="preserve"><value>收合說明</value></data>
+  <data name="OverlayMetricsTab" xml:space="preserve"><value>戰績</value></data>
+  <data name="OverlayAppearanceTab" xml:space="preserve"><value>外觀</value></data>
+  <data name="OverlayWindowTab" xml:space="preserve"><value>視窗</value></data>
 </root>

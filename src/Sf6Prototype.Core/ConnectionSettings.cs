@@ -9,6 +9,27 @@ namespace Sf6Prototype;
 
 public enum CloseAction { Ask, MinimizeToTray, Exit }
 
+public enum OverlayColor { Mint, Rose, Lavender, Blue, Orange, White }
+
+public sealed record OverlayStyle
+{
+    public bool ShowCurrent { get; init; } = true;
+    public bool ShowExtremes { get; init; } = true;
+    public bool ShowChange { get; init; } = true;
+    public bool ShowWinRate { get; init; } = true;
+    public bool HighlightNewMatch { get; init; } = true;
+    public int MatchLimit { get; init; } // Zero means the entire session.
+    public OverlayColor WinColor { get; init; } = OverlayColor.Mint;
+    public OverlayColor LossColor { get; init; } = OverlayColor.Rose;
+    public OverlayColor LineColor { get; init; } = OverlayColor.Lavender;
+
+    public OverlayStyle Normalized() => this with {
+        MatchLimit = MatchLimit > 0 ? Math.Max(5, MatchLimit) : 0,
+        WinColor = Enum.IsDefined(WinColor) ? WinColor : OverlayColor.Mint,
+        LossColor = Enum.IsDefined(LossColor) ? LossColor : OverlayColor.Rose,
+        LineColor = Enum.IsDefined(LineColor) ? LineColor : OverlayColor.Lavender };
+}
+
 public record ConnectionSettings
 {
     public const int DefaultRefreshReminderSeconds = 0;
@@ -22,6 +43,13 @@ public record ConnectionSettings
     public bool RefreshAfterMatch { get; init; } = true;
     public bool FocusLatestMatchAfterRefresh { get; init; } = true;
     public bool RecentMatchesCollapsed {get;init;} = false;
+    public int OverlayBackgroundOpacity { get; init; } = 75;
+    public bool OverlayGreenScreen { get; init; }
+    public bool OpenOverlayOnStartup { get; init; }
+    public bool OverlayAlwaysOnTop { get; init; }
+    public OverlayStyle OverlayStyle { get; init; } = new();
+    public bool OverlayCaptureTipAcknowledged { get; init; }
+    public bool OverlayCaptureHelpExpanded { get; init; } = true;
     public int MatchEndWaitSeconds { get; init; } = DefaultMatchEndWaitSeconds;
     public int MatchEndRetrySeconds { get; init; } = 8;
     public double MatchEndSamplesPerSecond { get; init; } = 4;
@@ -106,12 +134,23 @@ public record ConnectionSettings
             MatchEndSamplesPerSecond=ValidMatchEndFrequency(settings.MatchEndSamplesPerSecond) ? settings.MatchEndSamplesPerSecond : 4,
             ApiIntervalSeconds=ValidApiInterval(settings.ApiIntervalSeconds) ? settings.ApiIntervalSeconds : DefaultApiIntervalSeconds,
             WindowCloseAction=Enum.IsDefined(settings.WindowCloseAction) ? settings.WindowCloseAction : CloseAction.Ask,
+            OverlayBackgroundOpacity=Math.Clamp(settings.OverlayBackgroundOpacity,0,100),
+            OverlayStyle=(settings.OverlayStyle ?? new()).Normalized(),
             UpdateReminder=settings.UpdateReminder ?? new(),
             Language=Localization.Normalize(settings.Language)
         };
     }
-    private static ConnectionSettings ReadSettings(string path) =>
-        JsonSerializer.Deserialize<ConnectionSettings>(File.ReadAllText(path)) ?? throw new JsonException("Empty settings document");
+    private static ConnectionSettings ReadSettings(string path)
+    {
+        using var document = JsonDocument.Parse(File.ReadAllText(path));
+        var root = document.RootElement;
+        var settings = root.Deserialize<ConnectionSettings>() ?? throw new JsonException("Empty settings document");
+        // Previous builds stored 50%, 75%, 100% and green screen as a single choice.
+        if (!root.TryGetProperty(nameof(OverlayBackgroundOpacity), out _) &&
+            root.TryGetProperty("StreamBackground", out var legacy) && legacy.ValueKind == JsonValueKind.Number && legacy.TryGetInt32(out var preset))
+            return settings with { OverlayBackgroundOpacity = preset switch { 0 => 50, 2 => 100, _ => 75 }, OverlayGreenScreen = preset == 3 };
+        return settings;
+    }
     public static int ParseReminderSeconds(string value)
     {
         return ParseIntervalSeconds(value,Strings.RefreshReminder);

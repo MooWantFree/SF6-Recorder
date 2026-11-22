@@ -2,6 +2,8 @@ using System.IO;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Sf6Prototype;
 
@@ -69,10 +71,141 @@ internal static class RecentMatchesChecks
         archive.Load(owner,false);Update();
         Check(chart.Points[^1] is {ReplayId:"second",Value:1010,Settled:true,Connect:true} && chart.Points[1].Connect,
             "Publishing a current score immediately connects the pending last point and retains the confirmed earlier segment");
+        var settledChange = ((TextBlock)recent.FindName("ScoreChange")).Text;
         Set("_ready",false);((ListBox)main.FindName("PageTabs")).SelectedIndex=1;Set("_ready",true);Update();
         Check(recent.Visibility==Visibility.Collapsed && ((FrameworkElement)main.FindName("HistoryHost")).Visibility==Visibility.Collapsed,"The full Scores page does not overlap the recent-history panel");
         Set("_ready",false);((ListBox)main.FindName("PageTabs")).SelectedIndex=0;Set("_ready",true);navigation.Visit(new("9876543210","Other"));Update();
         Check(recent.Visibility==Visibility.Collapsed,"Browsing another player does not display the signed-in account's session under their records");
+        var preferences = new ConnectionSettings();
+        var stream = new RecentMatchesStreamWindow(owner, preferences);
+        Set("_streamWindow", stream);
+        recent.DisplayChanged += stream.Display;
+        // The main archive now belongs to the other player. Only the signed-in account may go on air.
+        archive.Load("9876543210", false);
+        Update();
+        var card = (OverlayMatchCard)stream.FindName("Card");
+        var plot = (ScoreChart)card.FindName("Plot");
+        Check(plot.Points[^1] is { ReplayId: "second", Value: 1010 } && stream.DataContext is RecentMatchDisplay { Unit: "LP" } display && display.Change == settledChange,
+            "A hidden recent panel continues publishing the signed-in player's settled session on another player's page");
+        var metric = (ListBox)recent.FindName("ScoreMetric");
+        metric.SelectedIndex = 1;
+        Check(plot.Unit == "MR" && plot.Points.Count == 0, "Switching the score metric updates the live display immediately");
+        metric.SelectedIndex = 0;
+        var panel = (FrameworkElement)stream.Content;
+        panel.Measure(new Size(stream.Width, stream.Height));
+        panel.Arrange(new Rect(0, 0, stream.Width, stream.Height));
+        panel.UpdateLayout();
+        stream.Dispatcher.Invoke(()=>{}, DispatcherPriority.ContextIdle);
+        var bitmap = new RenderTargetBitmap((int)stream.Width,(int)stream.Height,96,96,PixelFormats.Pbgra32);
+        bitmap.Render(panel);
+        var pixel = new byte[4];
+        bitmap.CopyPixels(new Int32Rect(10,10,1,1),pixel,4,0);
+        Check(pixel[3] is >=190 and <=192 && plot.ActualHeight >=100 && stream.Opacity == 1,
+            "Only the stream background is translucent and the compact plot has enough height to render");
+        if(Environment.GetEnvironmentVariable("SF6_LAYOUT_CAPTURES") is {Length:>0} captures)
+        {
+            Directory.CreateDirectory(captures);
+            var png = new PngBitmapEncoder(); png.Frames.Add(BitmapFrame.Create(bitmap));
+            using var file = File.Create(Path.Combine(captures,"recent-stream.png")); png.Save(file);
+        }
+        var custom = preferences with {OverlayBackgroundOpacity = 37};
+        Check(!stream.Topmost && stream.ResizeMode == ResizeMode.CanResize, "The overlay starts unpinned and resizable");
+        var alwaysPinned = custom with {OverlayAlwaysOnTop = true};
+        stream.ApplyBackground(alwaysPinned);
+        var pin = (System.Windows.Controls.Primitives.ToggleButton)stream.FindName("PinButton");
+        Check(stream.Topmost && pin.IsChecked == true, "The saved pin preference applies when no temporary override exists");
+        pin.IsChecked = false;
+        stream.ApplyBackground(alwaysPinned with {OverlayBackgroundOpacity = 42});
+        Check(!stream.Topmost && pin.IsChecked == false, "Changing another preference preserves a manual unpin");
+        var reopened = new RecentMatchesStreamWindow(owner, alwaysPinned);
+        Check(reopened.Topmost, "Reopening restores the saved pin preference");
+        reopened.Close();
+        panel.Measure(new Size(stream.MinWidth,stream.MinHeight));
+        panel.Arrange(new Rect(0,0,stream.MinWidth,stream.MinHeight));
+        panel.UpdateLayout();
+        Check(plot.ActualHeight >= 100 && plot.ActualWidth >= 150, "The plot still renders at the minimum overlay size");
+        var menu = new OverlayContextMenu();
+        menu.SetAppearance(custom with {OverlayGreenScreen = true});
+        var picker = (OverlayOpacityPicker)menu.FindName("Picker");
+        var opacitySlider = (Slider)picker.FindName("OpacitySlider");
+        opacitySlider.ApplyTemplate();
+        var marks = (System.Windows.Controls.Primitives.TickBar)opacitySlider.Template.FindName("OpacityMarks",opacitySlider);
+        Check(marks.Ticks.SequenceEqual(new double[] {0,25,50,75,100}) && opacitySlider.TickFrequency == 1,
+            "The five visual marks leave all integer opacity values selectable");
+        Check(picker.Value == 37 && ((TextBlock)picker.FindName("GreenHint")).Visibility == Visibility.Visible,
+            "Opening the quick controls with green screen on shows the saved opacity and explains when it applies");
+        menu.SetAppearance(custom);
+        Check(picker.Value == 37 && ((TextBlock)picker.FindName("GreenHint")).Visibility == Visibility.Collapsed,
+            "The context menu restores the same custom opacity after green screen is disabled");
+        var help = (Expander)picker.FindName("CaptureHelp");
+        Check(help.Visibility == Visibility.Visible && !help.IsExpanded, "Translucent capture offers help on demand");
+        help.IsExpanded = true;
+        picker.Value = 100;
+        Check(help.Visibility == Visibility.Collapsed && !help.IsExpanded, "Opaque automatic capture clears the help");
+        menu.SetAppearance(custom with {OverlayGreenScreen = true});
+        Check(help.Visibility == Visibility.Collapsed, "Green-screen capture needs no WGC hint");
+        stream.ApplyBackground(custom);
+        Check(((Border)card.FindName("Backdrop")).Opacity == 0.37,"Custom opacity only adjusts the backdrop");
+        var keyed = new RecentMatchesStreamWindow(owner, custom with {OverlayGreenScreen = true});
+        var backdrop = (Border)((OverlayMatchCard)keyed.FindName("Card")).FindName("Backdrop");
+        Check(!keyed.AllowsTransparency && backdrop.Opacity == 1 && ((SolidColorBrush)backdrop.Background).Color == Colors.Lime,
+            "Green-screen capture uses a non-layered window and a solid key color");
+        keyed.Close();
+        var settingsWindow = new SettingsWindow(null!, custom);
+        settingsWindow.ShowCategory((FrameworkElement)settingsWindow.FindName("OverlayPage"));
+        var sampleCard = (OverlayMatchCard)settingsWindow.FindName("SampleCard");
+        var samplePlot = (ScoreChart)sampleCard.FindName("Plot");
+        Check(samplePlot.Points.Count > 21 && samplePlot.Points.Any(p=>p.Kind=="loss") && samplePlot.Points.Any(p=>p.Kind=="win"),
+            "The preview shows fixed sample results without opening an overlay");
+        bool HasInteriorExtremes() => DateRanges.Extrema(samplePlot.Points.Select(p=>p.Value).ToArray())
+            .All(i=>i>0 && i<samplePlot.Points.Count-1);
+        Check(HasInteriorExtremes(),"The example distinguishes session extrema from the opening and latest scores");
+        ((CheckBox)settingsWindow.FindName("OverlayAll")).IsChecked = false;
+        Check(samplePlot.Points.Count == 6 && sampleCard.DataContext is RecentMatchDisplay {Summary.Matches.Count:5},
+            "Five matches and their starting score drive both the preview plot and interval metrics");
+        Check(HasInteriorExtremes(),"The five-match preview also places both extrema inside the chart");
+        var metrics = (Grid)sampleCard.FindName("Metrics");
+        var switches = new[] {"OverlayExtremes","OverlayChange","OverlayWinRate"}
+            .Select(id => (CheckBox)settingsWindow.FindName(id)).ToArray();
+        for (var mask = 7; mask > 0; mask--)
+        {
+            for (var i = 0; i < switches.Length; i++) switches[i].IsChecked = (mask & (1 << i)) != 0;
+            foreach (var width in new[] {388d, 528d})
+            {
+                metrics.Measure(new Size(width, 72));
+                metrics.Arrange(new Rect(0, 0, width, 72));
+                var centers = metrics.Children.Cast<FrameworkElement>()
+                    .Where(item => item.Visibility == Visibility.Visible)
+                    .Select(item => item.TranslatePoint(new Point(item.ActualWidth / 2, 0), metrics).X).ToArray();
+                Check(Math.Abs((centers[0] + centers[^1]) / 2 - width / 2) <= 1 &&
+                    centers.Zip(centers.Skip(1), (left, right) => right - left).All(gap => Math.Abs(gap - width / 4) <= 1),
+                    $"Adjacent visible metrics stay a quarter-width apart and centered at width {width}, mask {mask}");
+            }
+        }
+        foreach(var toggle in switches) toggle.IsChecked=false;
+        Check(((FrameworkElement)sampleCard.FindName("Metrics")).Visibility == Visibility.Collapsed,"Hiding all interval metrics removes the entire metrics row");
+        var helpSection = (Expander)settingsWindow.FindName("OverlayCaptureHelp");
+        Check(helpSection.IsExpanded,"Settings open with OBS capture help expanded by default");
+        helpSection.IsExpanded = false;
+        ((CheckBox)settingsWindow.FindName("OverlayStartup")).IsChecked = true;
+        ((CheckBox)settingsWindow.FindName("OverlayTopmost")).IsChecked = true;
+        ((CheckBox)settingsWindow.FindName("OverlayGreen")).IsChecked = true;
+        var draft = (ConnectionSettings)typeof(SettingsWindow).GetMethod("Draft",flags)!.Invoke(settingsWindow,[true])!;
+        Check(draft is {OverlayGreenScreen:true,OverlayBackgroundOpacity:37,OpenOverlayOnStartup:true,OverlayAlwaysOnTop:true,
+            OverlayCaptureHelpExpanded:false,OverlayStyle.MatchLimit:5,OverlayStyle.ShowExtremes:false},
+            "The dedicated settings page preserves custom opacity independently of the green screen and startup toggle");
+        draft.Save(path);
+        Check(ConnectionSettings.Load(path) == draft,"Overlay options survive relaunch");
+        File.WriteAllText(Path.Combine(path,"settings.json"),"""{"StreamBackground":3}""");
+        Check(ConnectionSettings.Load(path) is {OverlayGreenScreen:true, OverlayBackgroundOpacity:75,OpenOverlayOnStartup:false},
+            "Existing green-screen preferences migrate with an independent opacity");
+        settingsWindow.Close();
+        Check(stream.Owner == null && stream.ShowInTaskbar && stream.AllowsTransparency && stream.Title == "SF6 Recorder OBS",
+            "The stream is independently capturable under a stable title");
+        archive.SignedInId = null;
+        var closed = false; stream.Closed += (_,_)=>closed=true;
+        Update();
+        Check(closed, "Signing out closes the old account's stream");
         Check(new System.Windows.Interop.WindowInteropHelper(main).Handle==IntPtr.Zero && App.DataDirectory=="","Recent matches checks never create a native window or use user data");
         return count;
     }

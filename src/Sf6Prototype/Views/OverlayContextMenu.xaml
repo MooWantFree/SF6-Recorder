@@ -1,0 +1,12 @@
+<ContextMenu x:Class="Sf6Prototype.OverlayContextMenu"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Sf6Prototype" Style="{StaticResource OverlayActions}" Width="250">
+  <MenuItem x:Name="GreenAction" Tag="&#xE7F4;" Click="Green_Click"/>
+  <Separator Style="{StaticResource OverlayActionSeparator}"/>
+  <MenuItem StaysOpenOnClick="True" Focusable="False" Style="{StaticResource OverlayPickerItem}" AutomationProperties.Name="{DynamicResource I18n.BackgroundOpacity}">
+    <MenuItem.Header><local:OverlayOpacityPicker x:Name="Picker"/></MenuItem.Header>
+  </MenuItem>
+  <Separator Style="{StaticResource OverlayActionSeparator}"/>
+  <MenuItem Header="{DynamicResource I18n.OverlayStyleSettings}" Tag="&#xE713;" Click="Settings_Click"/>
+  <MenuItem Header="{DynamicResource I18n.Close}" Tag="&#xE8BB;" Click="Close_Click"/>
+</ContextMenu>

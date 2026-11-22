@@ -57,6 +57,78 @@
   </ControlTemplate>
   <Style x:Key="FocusRing"><Setter Property="Control.Template"><Setter.Value><ControlTemplate><Border Margin="-2" BorderBrush="{StaticResource Accent}" BorderThickness="1.5" CornerRadius="6" SnapsToDevicePixels="True"/></ControlTemplate></Setter.Value></Setter></Style>
   <Style x:Key="Number" TargetType="TextBlock"><Setter Property="FontFamily" Value="Segoe UI"/><Setter Property="Typography.NumeralAlignment" Value="Tabular"/></Style>
+  <Style x:Key="StreamNumber" TargetType="TextBlock" BasedOn="{StaticResource Number}">
+    <Setter Property="FontSize" Value="20"/><Setter Property="FontWeight" Value="SemiBold"/><Setter Property="Foreground" Value="{DynamicResource Ink}"/>
+  </Style>
+  <Style x:Key="StreamMetricLabel" TargetType="TextBlock">
+    <Setter Property="FontSize" Value="12"/><Setter Property="Foreground" Value="{DynamicResource Ink2}"/>
+  </Style>
+  <Style x:Key="OverlayWindowToggle" TargetType="ToggleButton">
+    <Setter Property="Content" Value="{DynamicResource I18n.OpenOverlayWindow}"/>
+    <Setter Property="ToolTip" Value="{DynamicResource I18n.StreamWindowHint}"/>
+    <Setter Property="Foreground" Value="{StaticResource Ink}"/><Setter Property="Background" Value="{StaticResource Surface}"/>
+    <Setter Property="BorderBrush" Value="{StaticResource Line}"/><Setter Property="Cursor" Value="Hand"/>
+    <Setter Property="MinHeight" Value="26"/><Setter Property="FontSize" Value="12"/><Setter Property="FocusVisualStyle" Value="{StaticResource FocusRing}"/>
+    <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ToggleButton">
+      <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" CornerRadius="5" Padding="8,2">
+        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+      </Border>
+    </ControlTemplate></Setter.Value></Setter>
+    <Style.Triggers>
+      <Trigger Property="IsChecked" Value="True">
+        <Setter Property="Content" Value="{DynamicResource I18n.CloseOverlayWindow}"/><Setter Property="ToolTip" Value="{DynamicResource I18n.CloseOverlayWindow}"/>
+        <Setter Property="Background" Value="{StaticResource SurfaceSelected}"/><Setter Property="Foreground" Value="{StaticResource AccentText}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource Accent}"/>
+      </Trigger>
+      <Trigger Property="IsMouseOver" Value="True"><Setter Property="BorderBrush" Value="{StaticResource Accent}"/></Trigger>
+    </Style.Triggers>
+  </Style>
+  <Style x:Key="OverlayPinButton" TargetType="ToggleButton">
+    <Setter Property="Width" Value="28"/><Setter Property="Height" Value="24"/><Setter Property="Margin" Value="6,0,0,0"/>
+    <Setter Property="ToolTip" Value="{DynamicResource I18n.PinOverlay}"/><Setter Property="Content" Value="&#xE718;"/>
+    <Setter Property="Opacity" Value="0"/><Setter Property="Cursor" Value="Hand"/>
+    <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ToggleButton">
+      <Border Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Ink3}" BorderThickness="1" CornerRadius="4">
+        <TextBlock Text="{TemplateBinding Content}" FontFamily="Segoe Fluent Icons" FontSize="13" Foreground="{DynamicResource Ink}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+      </Border>
+    </ControlTemplate></Setter.Value></Setter>
+    <Style.Triggers>
+      <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=Window}}" Value="True"><Setter Property="Opacity" Value="1"/></DataTrigger>
+      <Trigger Property="IsKeyboardFocused" Value="True"><Setter Property="Opacity" Value="1"/></Trigger>
+      <Trigger Property="IsChecked" Value="True"><Setter Property="ToolTip" Value="{DynamicResource I18n.UnpinOverlay}"/><Setter Property="Content" Value="&#xE77A;"/></Trigger>
+    </Style.Triggers>
+  </Style>
+  <Style x:Key="OpacityTrackButton" TargetType="RepeatButton">
+    <Setter Property="Focusable" Value="False"/>
+    <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="RepeatButton">
+      <Border Background="Transparent"/>
+    </ControlTemplate></Setter.Value></Setter>
+  </Style>
+  <Style x:Key="OpacitySliderStyle" TargetType="Slider">
+    <Setter Property="Height" Value="28"/><Setter Property="FocusVisualStyle" Value="{StaticResource FocusRing}"/>
+    <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Slider">
+      <Grid Background="Transparent">
+        <ProgressBar Height="4" Margin="8,0" IsHitTestVisible="False" Focusable="False" Minimum="{TemplateBinding Minimum}"
+                     Maximum="{TemplateBinding Maximum}" Value="{Binding Value,RelativeSource={RelativeSource TemplatedParent},Mode=OneWay}">
+          <ProgressBar.Template><ControlTemplate TargetType="ProgressBar">
+            <Grid x:Name="PART_Track"><Border Background="{StaticResource SegmentTrack}" CornerRadius="2"/>
+              <Border x:Name="PART_Indicator" HorizontalAlignment="Left" Background="{StaticResource Accent}" CornerRadius="2"/>
+            </Grid>
+          </ControlTemplate></ProgressBar.Template>
+        </ProgressBar>
+        <TickBar x:Name="OpacityMarks" Height="4" VerticalAlignment="Center" Placement="Bottom"
+                 Minimum="{TemplateBinding Minimum}" Maximum="{TemplateBinding Maximum}" Ticks="0,25,50,75,100"
+                 ReservedSpace="16" Fill="{StaticResource Ink}" Opacity="0.75" IsHitTestVisible="False"/>
+        <Track x:Name="PART_Track">
+          <Track.DecreaseRepeatButton><RepeatButton Style="{StaticResource OpacityTrackButton}" Command="Slider.DecreaseLarge"/></Track.DecreaseRepeatButton>
+          <Track.Thumb><Thumb Width="16" Height="16"><Thumb.Template><ControlTemplate TargetType="Thumb">
+            <Ellipse Fill="{StaticResource OnAccent}" Stroke="{StaticResource Accent}" StrokeThickness="3"/>
+          </ControlTemplate></Thumb.Template></Thumb></Track.Thumb>
+          <Track.IncreaseRepeatButton><RepeatButton Style="{StaticResource OpacityTrackButton}" Command="Slider.IncreaseLarge"/></Track.IncreaseRepeatButton>
+        </Track>
+      </Grid>
+    </ControlTemplate></Setter.Value></Setter>
+  </Style>
   <Style x:Key="MatchScoreBadge" TargetType="Border">
     <Setter Property="Background" Value="{StaticResource Neutral}"/><Setter Property="CornerRadius" Value="4"/>
     <Setter Property="Padding" Value="8,3"/><Setter Property="SnapsToDevicePixels" Value="True"/>
@@ -124,6 +196,32 @@
         <ScrollViewer MaxHeight="360" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" CanContentScroll="True"><ItemsPresenter/></ScrollViewer>
       </ContentControl>
     </ControlTemplate></Setter.Value></Setter>
+  </Style>
+  <Style x:Key="OverlayActionItem" TargetType="MenuItem">
+    <Setter Property="Height" Value="32"/><Setter Property="MinWidth" Value="148"/>
+    <Setter Property="Foreground" Value="{StaticResource Ink}"/>
+    <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="MenuItem">
+      <Border x:Name="Row" Background="Transparent" CornerRadius="4" Padding="9,0,10,0">
+        <DockPanel VerticalAlignment="Center">
+          <TextBlock DockPanel.Dock="Left" FontFamily="Segoe Fluent Icons" FontSize="14" Width="23" Foreground="{StaticResource Ink3}" Text="{TemplateBinding Tag}"/>
+          <ContentPresenter ContentSource="Header" RecognizesAccessKey="True"/>
+        </DockPanel>
+      </Border>
+      <ControlTemplate.Triggers><Trigger Property="IsHighlighted" Value="True"><Setter TargetName="Row" Property="Background" Value="{StaticResource SurfaceSelected}"/></Trigger></ControlTemplate.Triggers>
+    </ControlTemplate></Setter.Value></Setter>
+  </Style>
+  <Style x:Key="OverlayActions" TargetType="ContextMenu" BasedOn="{StaticResource NavigationMenu}">
+    <Setter Property="Width" Value="Auto"/><Setter Property="ItemContainerStyle" Value="{StaticResource OverlayActionItem}"/>
+  </Style>
+  <Style x:Key="OverlayPickerItem" TargetType="MenuItem">
+    <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="MenuItem">
+      <ContentPresenter ContentSource="Header" Margin="9,5"/>
+    </ControlTemplate></Setter.Value></Setter>
+  </Style>
+  <Style x:Key="OverlayActionSeparator" TargetType="Separator">
+    <Setter Property="Margin" Value="5,3"/><Setter Property="Template"><Setter.Value>
+      <ControlTemplate TargetType="Separator"><Border Height="1" Background="{StaticResource Line}"/></ControlTemplate>
+    </Setter.Value></Setter>
   </Style>
   <Style TargetType="Image"><Setter Property="RenderOptions.BitmapScalingMode" Value="HighQuality"/></Style>
   <DrawingImage x:Key="AppIcon"><DrawingImage.Drawing><DrawingGroup>
@@ -327,12 +425,18 @@
   <Style x:Key="Switch" TargetType="CheckBox">
     <Setter Property="Cursor" Value="Hand"/><Setter Property="VerticalAlignment" Value="Center"/><Setter Property="Width" Value="34"/><Setter Property="Height" Value="20"/><Setter Property="FocusVisualStyle" Value="{StaticResource FocusRing}"/>
     <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="CheckBox">
-      <Border x:Name="Track" Background="{StaticResource SwitchTrack}" CornerRadius="10"><Ellipse x:Name="Thumb" Width="16" Height="16" Fill="{StaticResource Surface}" HorizontalAlignment="Left" Margin="2"/></Border>
+      <DockPanel Background="Transparent">
+        <Border x:Name="Track" DockPanel.Dock="Right" Width="34" Height="20" VerticalAlignment="Center" Background="{StaticResource SwitchTrack}" CornerRadius="10"><Ellipse x:Name="Thumb" Width="16" Height="16" Fill="{StaticResource Surface}" HorizontalAlignment="Left" Margin="2"/></Border>
+        <ContentPresenter VerticalAlignment="Center" RecognizesAccessKey="True"/>
+      </DockPanel>
       <ControlTemplate.Triggers><Trigger Property="IsChecked" Value="True"><Setter TargetName="Track" Property="Background" Value="{StaticResource Accent}"/><Setter TargetName="Thumb" Property="HorizontalAlignment" Value="Right"/></Trigger><Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.45"/></Trigger></ControlTemplate.Triggers>
     </ControlTemplate></Setter.Value></Setter>
   </Style>
 
   <!-- Underlined tabs distinguish match categories from page navigation. -->
+  <Style x:Key="LabeledSwitch" TargetType="CheckBox" BasedOn="{StaticResource Switch}">
+    <Setter Property="Width" Value="Auto"/><Setter Property="Height" Value="32"/>
+  </Style>
   <Style x:Key="CategoryTab" TargetType="ListBoxItem">
     <Setter Property="AutomationProperties.HelpText" Value="{Binding CountTip}"/>
     <Setter Property="Padding" Value="2,8"/><Setter Property="Margin" Value="0,0,20,0"/><Setter Property="Foreground" Value="{StaticResource Ink3}"/><Setter Property="Cursor" Value="Hand"/><Setter Property="FocusVisualStyle" Value="{StaticResource FocusRing}"/>
@@ -414,5 +518,31 @@
   <Style TargetType="DataGridCell"><Setter Property="BorderThickness" Value="0"/><Setter Property="Padding" Value="10,0"/><Setter Property="Foreground" Value="{StaticResource Ink}"/>
     <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="DataGridCell"><Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}"><ContentPresenter VerticalAlignment="Center"/></Border></ControlTemplate></Setter.Value></Setter>
     <Style.Triggers><Trigger Property="IsSelected" Value="True"><Setter Property="Background" Value="{StaticResource SurfaceSelected}"/><Setter Property="Foreground" Value="{StaticResource Ink}"/></Trigger></Style.Triggers>
+  </Style>
+  <Style x:Key="OverlayDisclosure" TargetType="Expander">
+      <Setter Property="Template"><Setter.Value>
+        <ControlTemplate TargetType="Expander">
+          <StackPanel>
+            <ToggleButton HorizontalAlignment="Left" Background="Transparent" BorderThickness="0"
+                          IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                          Content="{TemplateBinding Header}" Cursor="Hand" FocusVisualStyle="{StaticResource FocusRing}">
+              <ToggleButton.Template>
+                <ControlTemplate TargetType="ToggleButton">
+                  <StackPanel Orientation="Horizontal" Background="Transparent" Margin="0,2">
+                    <TextBlock x:Name="Arrow" FontFamily="Segoe Fluent Icons" FontSize="10" VerticalAlignment="Center"
+                               Foreground="{DynamicResource Ink2}" Text="&#xE76C;" Margin="0,0,5,0"/>
+                    <TextBlock x:Name="Label" Text="{TemplateBinding Content}" Style="{StaticResource Caption}"/>
+                  </StackPanel>
+                  <ControlTemplate.Triggers>
+                    <Trigger Property="IsChecked" Value="True"><Setter TargetName="Arrow" Property="Text" Value="&#xE70D;"/></Trigger>
+                    <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Label" Property="Foreground" Value="{DynamicResource Accent}"/></Trigger>
+                  </ControlTemplate.Triggers>
+                </ControlTemplate>
+              </ToggleButton.Template>
+            </ToggleButton>
+            <ContentPresenter Margin="0,4,0,0" Visibility="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource VisibleWhenTrue}}"/>
+          </StackPanel>
+        </ControlTemplate>
+      </Setter.Value></Setter>
   </Style>
 </ResourceDictionary>

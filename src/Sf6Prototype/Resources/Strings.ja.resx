@@ -1335,4 +1335,47 @@
   <data name="DurationShortSeconds" xml:space="preserve"><value>{0}秒</value></data>
   <data name="RefreshHeaderPagesElapsed" xml:space="preserve"><value>{0}ページ · {1}</value></data>
   <data name="RefreshHeaderRemaining" xml:space="preserve"><value>残り約 {0}</value></data>
+  <data name="StreamWindow" xml:space="preserve"><value>戦績オーバーレイ</value></data>
+  <data name="StreamWindowHint" xml:space="preserve"><value>戦績オーバーレイを開きます。右クリックで設定を開けます。</value></data>
+  <data name="OpenOverlayOnStartup" xml:space="preserve"><value>起動時に戦績オーバーレイを開く</value></data>
+  <data name="EnableGreenScreen" xml:space="preserve"><value>グリーンバックをオン</value></data>
+  <data name="DisableGreenScreen" xml:space="preserve"><value>グリーンバックをオフ</value></data>
+  <data name="OverlayGreenOpacityHint" xml:space="preserve"><value>グリーンバックがオフのときの不透明度です。</value></data>
+  <data name="BackgroundOpacity" xml:space="preserve"><value>背景の不透明度</value></data>
+  <data name="StreamGreenScreen" xml:space="preserve"><value>グリーンバック（OBS）</value></data>
+  <data name="StreamWindowTitle" xml:space="preserve"><value>SF6 Recorder OBS</value></data>
+  <data name="OpenOverlayWindow" xml:space="preserve"><value>戦績ウィンドウを開く</value></data>
+  <data name="CloseOverlayWindow" xml:space="preserve"><value>戦績ウィンドウを閉じる</value></data>
+  <data name="OverlayCaptureTitle" xml:space="preserve"><value>「ウィンドウキャプチャ」</value></data>
+  <data name="OverlayCaptureSource" xml:space="preserve"><value>OBS の「ソース」に「ウィンドウキャプチャ」を追加し、ウィンドウに「SF6 Recorder OBS」を選んでください。</value></data>
+  <data name="OverlayCaptureOpacityTip" xml:space="preserve"><value>設定した不透明度を反映するには、OBS の「ウィンドウキャプチャ」のプロパティで Windows Graphics Capture（WGC）を選んでください。</value></data>
+  <data name="GotIt" xml:space="preserve"><value>わかりました</value></data>
+  <data name="OverlayCaptureHelp" xml:space="preserve"><value>OBS に何も映らないとき</value></data>
+  <data name="OverlayCaptureHint" xml:space="preserve"><value>自動キャプチャを使うには、不透明度を 100% にするか、グリーンバックをオンにします。半透明のまま取り込むには、OBS の「ウィンドウキャプチャ」のプロパティで Windows Graphics Capture（WGC）を選んでください。</value></data>
+  <data name="OverlayAlwaysOnTop" xml:space="preserve"><value>常に最前面に表示</value></data>
+  <data name="PinOverlay" xml:space="preserve"><value>最前面に固定</value></data>
+  <data name="UnpinOverlay" xml:space="preserve"><value>最前面の固定を解除</value></data>
+  <data name="OverlayStyleSettings" xml:space="preserve"><value>スタイル設定</value></data>
+  <data name="OverlaySamplePreview" xml:space="preserve"><value>プレビュー · サンプル戦績</value></data>
+  <data name="OverlayCurrentScore" xml:space="preserve"><value>現在のスコア</value></data>
+  <data name="OverlayScoreExtremes" xml:space="preserve"><value>最高・最低スコア</value></data>
+  <data name="OverlayMatchLimit" xml:space="preserve"><value>直近の試合数</value></data>
+  <data name="OverlayAllSession" xml:space="preserve"><value>今回の全試合</value></data>
+  <data name="OverlayLimitError" xml:space="preserve"><value>5 以上の整数を入力してください。</value></data>
+  <data name="OverlayWinColor" xml:space="preserve"><value>勝利点の色</value></data>
+  <data name="OverlayLossColor" xml:space="preserve"><value>敗北点の色</value></data>
+  <data name="OverlayLineColor" xml:space="preserve"><value>折れ線の色</value></data>
+  <data name="OverlayHighlight" xml:space="preserve"><value>新しい試合を強調</value></data>
+  <data name="OverlayResetStyle" xml:space="preserve"><value>標準スタイルに戻す</value></data>
+  <data name="OverlayMint" xml:space="preserve"><value>ミント</value></data>
+  <data name="OverlayRose" xml:space="preserve"><value>ローズ</value></data>
+  <data name="OverlayLavender" xml:space="preserve"><value>ラベンダー</value></data>
+  <data name="OverlayBlue" xml:space="preserve"><value>スカイブルー</value></data>
+  <data name="OverlayOrange" xml:space="preserve"><value>オレンジ</value></data>
+  <data name="OverlayWhite" xml:space="preserve"><value>ホワイト</value></data>
+  <data name="OverlayExpandHelp" xml:space="preserve"><value>説明を開く</value></data>
+  <data name="OverlayCollapseHelp" xml:space="preserve"><value>説明を閉じる</value></data>
+  <data name="OverlayMetricsTab" xml:space="preserve"><value>戦績</value></data>
+  <data name="OverlayAppearanceTab" xml:space="preserve"><value>外観</value></data>
+  <data name="OverlayWindowTab" xml:space="preserve"><value>ウィンドウ</value></data>
 </root>
