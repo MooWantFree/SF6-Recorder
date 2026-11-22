@@ -8,33 +8,26 @@
 
 ### 自动构建
 
-在 [release](https://github.com/MooWantFree/SF6-Recorder/releases/latest) 下载
-
-- [下载完整版（自带 .NET 运行时）](https://github.com/MooWantFree/SF6-Recorder/releases/latest/download/SF6-Recorder-win-x64-self-contained.zip)
-- [下载精简版](https://github.com/MooWantFree/SF6-Recorder/releases/latest/download/SF6-Recorder-win-x64-framework-dependent.zip): 需要预装 .NET 10 Windows Desktop Runtime (x64)
+- [完整版 (自带 .NET 运行时)](https://github.com/MooWantFree/SF6-Recorder/releases/latest/download/SF6-Recorder-win-x64-self-contained.zip)
+- [精简版](https://github.com/MooWantFree/SF6-Recorder/releases/latest/download/SF6-Recorder-win-x64-framework-dependent.zip): 需要安装 .NET 10 Windows Desktop Runtime (x64)
 
 ### 本地构建
-
-本地构建并打包两种版本:
 
 ```powershell
 pwsh -File .\build.ps1 -ChecksOnly
 pwsh -File .\scripts\Publish-Packages.ps1
 ```
 
-ZIP 默认保存在 `artifacts\packages`.
-
 ## 运行环境与启动
 
-- Windows 10 或 Windows 11 (64 位)
-- 不带运行时的版本需要安装 .NET 10 Windows Desktop Runtime (x64); 带运行时的版本无需另外安装 .NET
+- Windows 10/11 (64 位)
 - Microsoft Edge WebView2 Runtime (Windows 11 通常已自带)
 
 解压后直接运行 `SF6 Recorder.exe`
 
-![image-20261113233624167](image/image-20261113233624167.png)
+![战绩页: 按日期分组的对局记录, 以及选中对局的详情](image/match-history.png)
 
-![image-20261113234059975](image/image-20261113234059975.png)
+![分数页: 韩蛛俐的 LP 走势, 区间加减分和胜率](image/score-history.png)
 
 ## 登录与账号管理
 
@@ -48,25 +41,11 @@ ZIP 默认保存在 `artifacts\packages`.
 
 登出账号只清除这台电脑上保存的登录凭据, 已下载到本地的战绩和分数会继续保留.
 
-## 同步与查看战绩
+## 自动同步战绩
 
-### 手动刷新战绩
+在 "设置 → 刷新" 开启 "对局结束后刷新" (Refresh after each match, 默认开启). 游戏在前台时, 程序会按设定频率检测结算画面, 并在对局结束后按设定的延迟刷新战绩. 开启 "刷新后定位最新对局"(Show latest match after refresh, 默认开启), 列表会自动选中当前筛选条件下的最新对局.
 
-主窗口顶部的 "战绩" 页按日期分组展示对局列表, 上方分类栏包含 "全部" "排位赛" "比赛间对战" "休闲赛" "格斗中心对战" 和 "收藏".
-
-点击左上角的刷新按钮 (`Ctrl+R`) 增量同步当前查看玩家的战绩.
-
-筛选栏可以组合筛选本地记录:
-
-- 文本搜索框 (`Ctrl+F`) 支持按对手昵称, 完整或部分 UID, 回放 ID 搜索
-- 下拉框可分别筛选己方角色, 对手角色和胜负结果 (胜, 负, 平, 待确认)
-- 日期范围选择器支持查看单日 (在日历上双击同一天), 跨天区间
-
-### 自动刷新战绩
-
-<img src="image/image-20261114061915238.png" alt="image-20261114061915238" style="zoom: 33%;" />
-
-开启`Refresh after each match`后, 程序会检测SF6是否运行, 若在运行, 则会以设置频率截取游戏画面用来判断游戏是否结束, 判断结束后等待设置秒数后刷新, 开启`Show latest match after refresh`后则会自动滚动到最新一条.
+<img src="image/refresh-settings.png" alt="刷新设置：对局结束后刷新、结算后等待时间和采样频率" width="740">
 
 > 实现原理: 截取游戏顶部截图, 出现结算画面时认为是对局结束, 判定方式为判断是否出现英文"RESULT"或者中文"结果", 目前只测试了中日英三语, 其他语言未测试.
 >
@@ -78,31 +57,47 @@ ZIP 默认保存在 `artifacts\packages`.
 > | 测试进程整体 CPU 占用   |             约 0.16% |
 > | 单次截图＋识别平均耗时  |           11.88 毫秒 |
 
-在开启了`Refresh after each match`且游戏正在运行中时 ,战绩面板会弹出软件启动后的分数曲线变化.
+开启 "对局结束后刷新" 后, 我的战绩页底部会显示 "最近比赛".
 
-<img src="image/image-20261114064948390.png" alt="image-20261114064948390" style="zoom:33%;" />
+<img src="image/recent-matches.png" alt="最近比赛示例：区间加减分、胜率和逐局分数走势" width="960">
 
+## 战绩浮窗与 OBS 采集
 
+在 "最近比赛" (Recent matches) 右侧点击 "打开战绩浮窗" (Open overlay), 即可把战绩单独放进直播画面; 再次点击同一位置可关闭. 浮窗默认显示当前 LP 或 MR, 本次加减分, 对局数和胜率.
+
+![image-20261123072517374](image/overlay-scorebar.png)
+
+右键浮窗, 勾选 "显示走势图" (Show trend chart) 即可展开曲线. 在 "样式设置" (Style settings) 里可以选择显示哪些指标, 把走势图放在右侧或下方, 并调整间距, 颜色和背景不透明度.
+
+![image-20261123072540969](image/overlay-trend.png)
+
+**添加到 OBS**
+
+1. 保持浮窗开启, 在 OBS 的 "来源" 中添加 "窗口采集", 选择 "SF6 Recorder OBS".
+2. 采集方式可先使用 "自动". 若预览黑屏, 打开该来源的属性, 将采集方式改为 "新版 (WGC)".
+3. 在 "设置 → 战绩浮窗" 点击 "在浮窗中预览" (Preview in overlay), 即使还没打排位, 也能用示例数据在 OBS 中调整位置, 大小和透明度. 调好后点击 "结束预览" (End preview), 即可恢复显示自己的战绩.
+
+如果希望每次直播都能直接采集, 在 "设置 → 战绩浮窗" 的 "窗口" 页开启 "启动软件时打开战绩浮窗".
 
 ## 对局详情与历史交手
 
-<img src="image/image-20261114063209913.png" alt="image-20261114063209913" style="zoom:33%;" />
+点击列表中的任意一场对局, 右侧面板会展示双方角色, 分数, 各回合结果和历史交手.
 
-点击列表中的任意一场对局, 右侧面板会展示双方信息与单局明细.
+![image-20261123072806139](image/match-detail.png)
 
-在右上角玩家搜索框 (`Ctrl+K`) 输入 10 位 UID 按回车, 或者在右侧对局详情面板中点击任意一方头像下方的 "查看战绩", 都可以切换到该玩家的档案.
+在右上角玩家搜索框 (`Ctrl+K`) 输入 10 位 UID 后回车, 或在右侧对局详情面板中点击头像下方 "查看战绩", 可切换到该玩家的档案.
 
-点击对局详情中的 "历史段位" 会打开独立窗口, 可按 "达到最高" 或指定赛季查询该玩家所有角色的 "段位积分" (LP 与 MR) 或 "最高 MR".
+点击对局详情中的 "历史段位" (Ranks), 可查看各角色的生涯最高段位 (All-time best), 也可选择赛季查看当季段位与积分 (Rank / Points) 或最高 MR (Peak MR).
 
-<img src="image/image-20261114063630308.png" alt="image-20261114063630308" style="zoom:33%;" />
-
-<img src="image/image-20261114064052137.png" alt="image-20261114064052137" style="zoom:33%;" />
+![image-20261123072846880](image/rank-history.png)
 
 ## 排位分数结算说明
 
 CAPCOM 官网战绩接口记录的 LP 和 MR 均为开赛前的分数, 单条回放本身不包含赛后结算值.
 
-> 程序按同一角色在排位赛中的连续对局顺序, 用 "下一场排位赛的赛前分数减去本场赛前分数" 得出本场的赛后分数与单局增减. 对于最新一场排位赛, 如果刷新时成功读取了官网的当前角色分数, 程序会用当前分数减去本场赛前分数来推算结算, 并在悬浮提示中说明该差值可能包含未收录的对局; 如果缺少相邻记录或跨赛季无法确认连续性, 则会保留赛前分数并提示 "本场结算未知".
+> 程序按同一角色在排位赛中的连续对局顺序, 用 "下一场排位赛的赛前分数减去本场赛前分数" 得出本场的赛后分数与单局增减.
+>
+> 对于最新一场排位赛, 如果刷新时成功读取了官网的当前角色分数, 程序会用当前分数减去本场赛前分数来推算结算, 并在悬浮提示中说明该差值可能包含未收录的对局; 如果缺少相邻记录或跨赛季无法确认连续性, 则会保留赛前分数并提示 "本场结算未知".
 
 ## 标签与收藏
 
@@ -115,7 +110,7 @@ CAPCOM 官网战绩接口记录的 LP 和 MR 均为开赛前的分数, 单条回
 
 ## 设置与数据备份
 
-点击右上角齿轮按钮 (`Ctrl+,`)，或从托盘右键菜单选择“设置”，打开设置窗口。
+点击右上角齿轮按钮 (`Ctrl+,`), 或从托盘右键菜单选择 "设置", 打开设置窗口.
 
 代理支持无认证的 `http://`, `https://` 和 `socks5://` 代理, 保存后对后续登录和同步生效.
 

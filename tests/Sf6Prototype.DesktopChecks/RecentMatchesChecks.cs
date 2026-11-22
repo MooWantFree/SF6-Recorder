@@ -48,7 +48,7 @@ internal static class RecentMatchesChecks
         }
         Check(chart.Compact && chart.Points.Count==3 && chart.Points[0].Caption==Strings.SessionBaseline && chart.Points[1].Connect && !chart.Points[2].Settled,"The Scores chart is reused with a baseline, connected confirmed score and pending last point");
         Check(((TextBlock)recent.FindName("HighestScore")).Text=="1,050" && ((TextBlock)recent.FindName("LowestScore")).Text=="1,000" &&
-            ((TextBlock)recent.FindName("ScoreChange")).Text=="+50*" && ((TextBlock)recent.FindName("ScoreWinRate")).Text=="50.0%","Visible interval metrics preserve unknown settlements and match outcomes");
+            ((TextBlock)recent.FindName("ScoreChange")).Text=="+50" && ((TextBlock)recent.FindName("ScoreWinRate")).Text=="50.0%","Pending settlements show the numeric interval change and win rate");
         var before=chart.Points.Select(p=>p.ReplayId).ToArray();
         var collapse=(Button)recent.FindName("CollapseButton");var expandedHeight=history.ActualHeight;
         collapse.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));Layout(1120,720);
@@ -88,7 +88,7 @@ internal static class RecentMatchesChecks
         Check(!preferences.OverlayStyle.ShowTrend && ((Border)card.FindName("TrendPanel")).Visibility==Visibility.Collapsed, "The overlay starts with a score bar");
         var withTrend = preferences with {OverlayStyle = preferences.OverlayStyle with {ShowTrend=true}};
         stream.ApplyBackground(withTrend);
-        Check(plot.Points[^1] is { ReplayId: "second", Value: 1010 } && stream.DataContext is RecentMatchDisplay { Unit: "LP" } display && display.Change == settledChange,
+        Check(plot.Points[^1] is { ReplayId: "second", Value: 1010 } && stream.DataContext is RecentMatchDisplay { Unit: "LP", CurrentScore: "1,010", Change: "+10" } display && display.Change == settledChange,
             "A hidden recent panel continues publishing the signed-in player's settled session on another player's page");
         var metric = (ListBox)recent.FindName("ScoreMetric");
         metric.SelectedIndex = 1;

@@ -31,12 +31,11 @@ public sealed record RecentMatchDisplay(string Character, string Unit, string Hi
         }
         var latest = summary.Samples.LastOrDefault();
         var hasLatest = latest != null && latest.Battle.ReplayId == summary.Matches.LastOrDefault()?.ReplayId;
-        var rangeChange = summary.Change is { } net
-            ? net.ToString("+0;−0;0") + (summary.Pending || summary.Estimated ? "*" : "") : "—";
+        var rangeChange = summary.Change?.ToString("+0;−0;0") ?? "—";
         var emptyText = summary.Matches.Count == 0 ? Strings.NoRecentRankedMatches : mr ? Strings.NoMrForMatches : Strings.NoScores;
         return new(character,mr ? "MR" : "LP",summary.Highest?.ToString("N0") ?? "—",summary.Lowest?.ToString("N0") ?? "—",
             rangeChange,summary.Change > 0 ? "Win" : summary.Change < 0 ? "Loss" : "Ink",
             summary.WinRate is { } winRate ? $"{winRate:F1}%" : "—",chart,emptyText,summary.Matches.Count == 0) {
-            Summary = summary, CurrentScore = hasLatest ? latest!.Value.ToString("N0") + (latest.Settled && !latest.Point.Estimated ? "" : "*") : "—" };
+            Summary = summary, CurrentScore = hasLatest ? latest!.Value.ToString("N0") : "—" };
     }
 }
