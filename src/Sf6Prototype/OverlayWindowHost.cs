@@ -12,7 +12,8 @@ namespace Sf6Prototype;
 // the capture interface and must stay the same across launches and releases.
 internal sealed class OverlayWindowHost(RecentMatchesStreamWindow view) : Forms.NativeWindow
 {
-    internal const string CaptureClass = "SF6Recorder.MatchOverlay";
+    // OBS Automatic capture selects WGC for classes containing "Mozilla", preserving per-pixel alpha.
+    internal const string CaptureClass = "SF6Recorder.Mozilla.MatchOverlay";
     private const int Child = 0x40000000, Visible = 0x10000000, Popup = unchecked((int)0x80000000);
     private const int ThickFrame = 0x40000, SystemMenu = 0x80000, MinimizeBox = 0x20000;
     private const int AppWindow = 0x40000, Layered = 0x80000;

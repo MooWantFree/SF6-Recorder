@@ -8,14 +8,9 @@ namespace Sf6Prototype;
 public partial class OverlayOpacityPicker : UserControl
 {
     public int Value { get => (int)OpacitySlider.Value; set => OpacitySlider.Value = value; }
-    public bool IncludeCaptureHelp { get; set; } = true;
     public bool GreenScreen
     {
-        set
-        {
-            GreenHint.Visibility = value ? Visibility.Visible : Visibility.Collapsed;
-            UpdateCaptureHelp();
-        }
+        set => GreenHint.Visibility = value ? Visibility.Visible : Visibility.Collapsed;
     }
     public event Action? Changed;
     public event Action? Committed;
@@ -25,7 +20,6 @@ public partial class OverlayOpacityPicker : UserControl
         InitializeComponent();
         OpacitySlider.ValueChanged += (_,_) =>
         {
-            UpdateCaptureHelp();
             Changed?.Invoke();
             if (HintLayer.IsVisible) UpdateHint(Mouse.GetPosition(OpacitySlider));
             if (Mouse.LeftButton != MouseButtonState.Pressed) Committed?.Invoke();
@@ -33,14 +27,6 @@ public partial class OverlayOpacityPicker : UserControl
         OpacitySlider.AddHandler(Mouse.PreviewMouseUpEvent, new MouseButtonEventHandler((_,_) => Committed?.Invoke()), true);
         OpacitySlider.AddHandler(Thumb.DragCompletedEvent, new DragCompletedEventHandler((_,_) => Committed?.Invoke()));
         IsVisibleChanged += (_,_) => { if (!IsVisible) HintLayer.Visibility = Visibility.Hidden; };
-        Unloaded += (_,_) => CaptureHelp.IsExpanded = false;
-    }
-
-    private void UpdateCaptureHelp()
-    {
-        var show = IncludeCaptureHelp && GreenHint.Visibility != Visibility.Visible && Value < 100;
-        if (!show) CaptureHelp.IsExpanded = false;
-        CaptureHelp.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private void PointerMoved(object sender, MouseEventArgs e) => UpdateHint(e.GetPosition(OpacitySlider));

@@ -49,8 +49,6 @@ public record ConnectionSettings
     public bool OpenOverlayOnStartup { get; init; }
     public bool OverlayAlwaysOnTop { get; init; }
     public OverlayStyle OverlayStyle { get; init; } = new();
-    public bool OverlayCaptureTipAcknowledged { get; init; }
-    public bool OverlayCaptureHelpExpanded { get; init; } = true;
     public int MatchEndWaitSeconds { get; init; } = DefaultMatchEndWaitSeconds;
     public int MatchEndRetrySeconds { get; init; } = 8;
     public double MatchEndSamplesPerSecond { get; init; } = 4;

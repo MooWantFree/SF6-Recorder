@@ -55,36 +55,6 @@
         </StackPanel>
 
         <StackPanel x:Name="OverlayPage" Visibility="Hidden">
-          <Expander x:Name="OverlayCaptureHelp" Header="{DynamicResource I18n.OverlayCaptureTitle}" Margin="0,0,0,10"
-                    AutomationProperties.Name="{DynamicResource I18n.OverlayCaptureTitle}">
-            <Expander.Template>
-              <ControlTemplate TargetType="Expander">
-                <Border Style="{StaticResource Card}" Padding="14,2">
-                  <StackPanel>
-                    <ToggleButton x:Name="HelpButton" HorizontalContentAlignment="Stretch" Cursor="Hand" FocusVisualStyle="{StaticResource FocusRing}"
-                                  IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
-                      <ToggleButton.Template><ControlTemplate TargetType="ToggleButton">
-                        <Border Background="Transparent" Padding="0,6"><ContentPresenter/></Border>
-                      </ControlTemplate></ToggleButton.Template>
-                      <DockPanel>
-                        <TextBlock x:Name="HelpAction" DockPanel.Dock="Right" Text="{DynamicResource I18n.OverlayExpandHelp}" Foreground="{StaticResource AccentText}" VerticalAlignment="Center"/>
-                        <TextBlock Text="{TemplateBinding Header}" FontWeight="SemiBold"/>
-                      </DockPanel>
-                    </ToggleButton>
-                    <ContentPresenter Margin="0,0,0,8" Visibility="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource VisibleWhenTrue}}"/>
-                  </StackPanel>
-                </Border>
-                <ControlTemplate.Triggers>
-                  <Trigger Property="IsExpanded" Value="True"><Setter TargetName="HelpAction" Property="Text" Value="{DynamicResource I18n.OverlayCollapseHelp}"/></Trigger>
-                </ControlTemplate.Triggers>
-              </ControlTemplate>
-            </Expander.Template>
-            <StackPanel>
-              <TextBlock Text="{DynamicResource I18n.OverlayCaptureSource}" Foreground="{StaticResource Ink2}" TextWrapping="Wrap"/>
-              <TextBlock Text="{DynamicResource I18n.OverlayCaptureOpacityTip}" Foreground="{StaticResource Ink2}" TextWrapping="Wrap" Margin="0,2,0,0"/>
-            </StackPanel>
-          </Expander>
-
           <DockPanel Margin="0,0,0,4">
             <Button x:Name="PreviewOnStream" DockPanel.Dock="Right" Style="{StaticResource GhostButton}" MinHeight="24"
                     Padding="8,2" Foreground="{StaticResource AccentText}" Content="{DynamicResource I18n.OverlayPreviewOnStream}"
@@ -145,7 +115,7 @@
                       <CheckBox x:Name="OverlayGreen" Style="{StaticResource LabeledSwitch}" Content="{DynamicResource I18n.StreamGreenScreen}"/>
                       <CheckBox x:Name="OverlayPulse" Grid.Column="2" Style="{StaticResource LabeledSwitch}" Content="{DynamicResource I18n.OverlayHighlight}"/>
                     </Grid>
-                    <local:OverlayOpacityPicker x:Name="OverlayOpacity" IncludeCaptureHelp="False" Margin="0,2,0,0"/>
+                    <local:OverlayOpacityPicker x:Name="OverlayOpacity" Margin="0,2,0,0"/>
                   </StackPanel>
                   <StackPanel Visibility="{Binding IsSelected,ElementName=WindowTab,Converter={StaticResource VisibleWhenTrue}}">
                     <CheckBox x:Name="OverlayStartup" Style="{StaticResource LabeledSwitch}" Content="{DynamicResource I18n.OpenOverlayOnStartup}"/>
@@ -157,6 +127,10 @@
               </Border>
             </StackPanel>
           </Border>
+          <Expander x:Name="OverlayCaptureHelp" Style="{StaticResource OverlayDisclosure}" Margin="0,10,0,0"
+                    Header="{DynamicResource I18n.OverlayCaptureHelp}" AutomationProperties.Name="{DynamicResource I18n.OverlayCaptureHelp}">
+            <TextBlock Text="{DynamicResource I18n.OverlayCaptureHint}" Style="{StaticResource Caption}" TextWrapping="Wrap"/>
+          </Expander>
         </StackPanel>
 
         <StackPanel x:Name="NetworkPage" Visibility="Hidden">

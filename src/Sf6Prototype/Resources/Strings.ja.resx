@@ -1346,12 +1346,8 @@
   <data name="StreamWindowTitle" xml:space="preserve"><value>SF6 Recorder OBS</value></data>
   <data name="OpenOverlayWindow" xml:space="preserve"><value>戦績ウィンドウを開く</value></data>
   <data name="CloseOverlayWindow" xml:space="preserve"><value>戦績ウィンドウを閉じる</value></data>
-  <data name="OverlayCaptureTitle" xml:space="preserve"><value>「ウィンドウキャプチャ」</value></data>
-  <data name="OverlayCaptureSource" xml:space="preserve"><value>OBS の「ソース」に「ウィンドウキャプチャ」を追加し、ウィンドウに「SF6 Recorder OBS」を選んでください。</value></data>
-  <data name="OverlayCaptureOpacityTip" xml:space="preserve"><value>設定した不透明度を反映するには、OBS の「ウィンドウキャプチャ」のプロパティで Windows Graphics Capture（WGC）を選んでください。</value></data>
-  <data name="GotIt" xml:space="preserve"><value>わかりました</value></data>
-  <data name="OverlayCaptureHelp" xml:space="preserve"><value>OBS に何も映らないとき</value></data>
-  <data name="OverlayCaptureHint" xml:space="preserve"><value>自動キャプチャを使うには、不透明度を 100% にするか、グリーンバックをオンにします。半透明のまま取り込むには、OBS の「ウィンドウキャプチャ」のプロパティで Windows Graphics Capture（WGC）を選んでください。</value></data>
+  <data name="OverlayCaptureHelp" xml:space="preserve"><value>OBS でウィンドウを取り込むには？ 画面が真っ黒な場合は？</value></data>
+  <data name="OverlayCaptureHint" xml:space="preserve"><value>OBS の「ウィンドウキャプチャ」のプロパティで「SF6 Recorder OBS」を選びます。画面が真っ黒な場合は、キャプチャ方法を Windows Graphics Capture（WGC）に切り替えてください。</value></data>
   <data name="OverlayAlwaysOnTop" xml:space="preserve"><value>常に最前面に表示</value></data>
   <data name="PinOverlay" xml:space="preserve"><value>最前面に固定</value></data>
   <data name="UnpinOverlay" xml:space="preserve"><value>最前面の固定を解除</value></data>
@@ -1374,8 +1370,6 @@
   <data name="OverlayBlue" xml:space="preserve"><value>スカイブルー</value></data>
   <data name="OverlayOrange" xml:space="preserve"><value>オレンジ</value></data>
   <data name="OverlayWhite" xml:space="preserve"><value>ホワイト</value></data>
-  <data name="OverlayExpandHelp" xml:space="preserve"><value>説明を開く</value></data>
-  <data name="OverlayCollapseHelp" xml:space="preserve"><value>説明を閉じる</value></data>
   <data name="OverlayMetricsTab" xml:space="preserve"><value>戦績</value></data>
   <data name="OverlayAppearanceTab" xml:space="preserve"><value>外観</value></data>
   <data name="OverlayWindowTab" xml:space="preserve"><value>ウィンドウ</value></data>

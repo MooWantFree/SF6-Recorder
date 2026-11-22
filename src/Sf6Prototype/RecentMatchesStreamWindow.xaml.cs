@@ -15,7 +15,6 @@ public partial class RecentMatchesStreamWindow : UserControl
     internal bool? PinOverride { get; private set; }
     public bool Topmost { get; private set; }
     public bool AllowsTransparency { get; }
-    internal nint Handle => _host?.Handle ?? 0;
     internal System.Drawing.Rectangle? Bounds => _host?.Bounds;
     internal bool Minimized => _host?.Minimized == true;
 

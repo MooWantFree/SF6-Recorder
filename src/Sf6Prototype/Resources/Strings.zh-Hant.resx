@@ -1346,12 +1346,8 @@
   <data name="StreamWindowTitle" xml:space="preserve"><value>SF6 Recorder OBS</value></data>
   <data name="OpenOverlayWindow" xml:space="preserve"><value>開啟戰績浮窗</value></data>
   <data name="CloseOverlayWindow" xml:space="preserve"><value>關閉戰績浮窗</value></data>
-  <data name="OverlayCaptureTitle" xml:space="preserve"><value>「視窗擷取」</value></data>
-  <data name="OverlayCaptureSource" xml:space="preserve"><value>在 OBS「來源」中新增「視窗擷取」，選擇「SF6 Recorder OBS」視窗。</value></data>
-  <data name="OverlayCaptureOpacityTip" xml:space="preserve"><value>為了保留設定的不透明度，請在 OBS「視窗擷取」屬性中將擷取方式設為 Windows Graphics Capture（WGC）。</value></data>
-  <data name="GotIt" xml:space="preserve"><value>我知道了</value></data>
-  <data name="OverlayCaptureHelp" xml:space="preserve"><value>OBS 擷取時黑畫面？</value></data>
-  <data name="OverlayCaptureHint" xml:space="preserve"><value>使用「自動」擷取時，將不透明度調到 100%，或開啟綠幕。若要保留半透明效果，請在 OBS「視窗擷取」屬性中選擇 Windows Graphics Capture（WGC）。</value></data>
+  <data name="OverlayCaptureHelp" xml:space="preserve"><value>OBS 如何擷取戰績浮窗？出現黑畫面怎麼辦？</value></data>
+  <data name="OverlayCaptureHint" xml:space="preserve"><value>在 OBS「視窗擷取」屬性中選擇「SF6 Recorder OBS」。若出現黑畫面，請將擷取方式改為 Windows Graphics Capture（WGC）。</value></data>
   <data name="OverlayAlwaysOnTop" xml:space="preserve"><value>一律置頂</value></data>
   <data name="PinOverlay" xml:space="preserve"><value>置頂浮窗</value></data>
   <data name="UnpinOverlay" xml:space="preserve"><value>取消置頂</value></data>
@@ -1374,8 +1370,6 @@
   <data name="OverlayBlue" xml:space="preserve"><value>天藍</value></data>
   <data name="OverlayOrange" xml:space="preserve"><value>橙色</value></data>
   <data name="OverlayWhite" xml:space="preserve"><value>白色</value></data>
-  <data name="OverlayExpandHelp" xml:space="preserve"><value>展開說明</value></data>
-  <data name="OverlayCollapseHelp" xml:space="preserve"><value>收合說明</value></data>
   <data name="OverlayMetricsTab" xml:space="preserve"><value>戰績</value></data>
   <data name="OverlayAppearanceTab" xml:space="preserve"><value>外觀</value></data>
   <data name="OverlayWindowTab" xml:space="preserve"><value>視窗</value></data>

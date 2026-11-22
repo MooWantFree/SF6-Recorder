@@ -1346,12 +1346,8 @@ The saved sign-in will be removed from this device. Local match records will be 
   <data name="StreamWindowTitle" xml:space="preserve"><value>SF6 Recorder OBS</value></data>
   <data name="OpenOverlayWindow" xml:space="preserve"><value>Open overlay</value></data>
   <data name="CloseOverlayWindow" xml:space="preserve"><value>Close overlay</value></data>
-  <data name="OverlayCaptureTitle" xml:space="preserve"><value>Window Capture</value></data>
-  <data name="OverlayCaptureSource" xml:space="preserve"><value>In OBS Sources, add Window Capture and select the window “SF6 Recorder OBS”.</value></data>
-  <data name="OverlayCaptureOpacityTip" xml:space="preserve"><value>To preserve the selected opacity, choose Modern (WGC) in the OBS Window Capture properties.</value></data>
-  <data name="GotIt" xml:space="preserve"><value>Got it</value></data>
-  <data name="OverlayCaptureHelp" xml:space="preserve"><value>Black screen in OBS?</value></data>
-  <data name="OverlayCaptureHint" xml:space="preserve"><value>For Automatic capture, set opacity to 100% or turn on green screen. To keep the background translucent, choose Modern (WGC) in the OBS Window Capture properties.</value></data>
+  <data name="OverlayCaptureHelp" xml:space="preserve"><value>How do I capture the window in OBS or fix a black screen?</value></data>
+  <data name="OverlayCaptureHint" xml:space="preserve"><value>In OBS Window Capture properties, select “SF6 Recorder OBS”. If the screen is black, switch the capture method to Modern (WGC).</value></data>
   <data name="OverlayAlwaysOnTop" xml:space="preserve"><value>Always on top</value></data>
   <data name="PinOverlay" xml:space="preserve"><value>Pin overlay</value></data>
   <data name="UnpinOverlay" xml:space="preserve"><value>Unpin overlay</value></data>
@@ -1374,8 +1370,6 @@ The saved sign-in will be removed from this device. Local match records will be 
   <data name="OverlayBlue" xml:space="preserve"><value>Sky blue</value></data>
   <data name="OverlayOrange" xml:space="preserve"><value>Orange</value></data>
   <data name="OverlayWhite" xml:space="preserve"><value>White</value></data>
-  <data name="OverlayExpandHelp" xml:space="preserve"><value>Show guide</value></data>
-  <data name="OverlayCollapseHelp" xml:space="preserve"><value>Hide guide</value></data>
   <data name="OverlayMetricsTab" xml:space="preserve"><value>Statistics</value></data>
   <data name="OverlayAppearanceTab" xml:space="preserve"><value>Appearance</value></data>
   <data name="OverlayWindowTab" xml:space="preserve"><value>Window</value></data>

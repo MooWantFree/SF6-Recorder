@@ -55,20 +55,6 @@ public partial class MainWindow
         UpdateRecentMatches();
         window.Show(activate, bounds, minimized);
         RecentMatches.StreamButton.IsChecked = true;
-        if (!_settings.OverlayCaptureTipAcknowledged)
-            new OverlayCaptureNotice(window, AcknowledgeOverlayCaptureTip).Show();
-    }
-
-    private bool AcknowledgeOverlayCaptureTip()
-    {
-        var settings = _settings with { OverlayCaptureTipAcknowledged = true };
-        try
-        {
-            settings.Save(App.DataDirectory);
-            _settings = settings;
-            return true;
-        }
-        catch (Exception error) { ReportError(error); return false; }
     }
 
     private OverlayContextMenu CreateOverlayMenu()

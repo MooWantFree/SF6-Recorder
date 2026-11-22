@@ -20,9 +20,5 @@
     </Grid>
     <TextBlock x:Name="GreenHint" Text="{DynamicResource I18n.OverlayGreenOpacityHint}" Style="{StaticResource Caption}"
                TextWrapping="Wrap" Visibility="Collapsed"/>
-    <Expander Style="{StaticResource OverlayDisclosure}" x:Name="CaptureHelp" Visibility="Collapsed" Header="{DynamicResource I18n.OverlayCaptureHelp}" HorizontalContentAlignment="Stretch">
-
-      <TextBlock Text="{DynamicResource I18n.OverlayCaptureHint}" Style="{StaticResource Caption}" TextWrapping="Wrap"/>
-    </Expander>
   </StackPanel>
 </UserControl>

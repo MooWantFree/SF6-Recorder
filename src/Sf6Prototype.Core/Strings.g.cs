@@ -142,7 +142,6 @@ public static class Strings
     public static string ForwardShortcut => Localization.Get(nameof(ForwardShortcut));
     public static string GoogleHttpError => Localization.Get(nameof(GoogleHttpError));
     public static string GoogleLatency => Localization.Get(nameof(GoogleLatency));
-    public static string GotIt => Localization.Get(nameof(GotIt));
     public static string HeadToHead => Localization.Get(nameof(HeadToHead));
     public static string HighestReached => Localization.Get(nameof(HighestReached));
     public static string HighestScore => Localization.Get(nameof(HighestScore));
@@ -285,13 +284,8 @@ public static class Strings
     public static string OverlayBlue => Localization.Get(nameof(OverlayBlue));
     public static string OverlayCaptureHelp => Localization.Get(nameof(OverlayCaptureHelp));
     public static string OverlayCaptureHint => Localization.Get(nameof(OverlayCaptureHint));
-    public static string OverlayCaptureOpacityTip => Localization.Get(nameof(OverlayCaptureOpacityTip));
-    public static string OverlayCaptureSource => Localization.Get(nameof(OverlayCaptureSource));
-    public static string OverlayCaptureTitle => Localization.Get(nameof(OverlayCaptureTitle));
-    public static string OverlayCollapseHelp => Localization.Get(nameof(OverlayCollapseHelp));
     public static string OverlayCurrentScore => Localization.Get(nameof(OverlayCurrentScore));
     public static string OverlayEndPreview => Localization.Get(nameof(OverlayEndPreview));
-    public static string OverlayExpandHelp => Localization.Get(nameof(OverlayExpandHelp));
     public static string OverlayGreenOpacityHint => Localization.Get(nameof(OverlayGreenOpacityHint));
     public static string OverlayHighlight => Localization.Get(nameof(OverlayHighlight));
     public static string OverlayLavender => Localization.Get(nameof(OverlayLavender));

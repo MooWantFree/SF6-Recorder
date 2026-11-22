@@ -523,7 +523,7 @@
       <Setter Property="Template"><Setter.Value>
         <ControlTemplate TargetType="Expander">
           <StackPanel>
-            <ToggleButton HorizontalAlignment="Left" Background="Transparent" BorderThickness="0"
+            <ToggleButton x:Name="HeaderSite" HorizontalAlignment="Left" Background="Transparent" BorderThickness="0"
                           IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                           Content="{TemplateBinding Header}" Cursor="Hand" FocusVisualStyle="{StaticResource FocusRing}">
               <ToggleButton.Template>

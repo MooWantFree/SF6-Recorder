@@ -466,12 +466,6 @@ public partial class MainWindow : ChromeWindow
             return;
         }
         var dialog = CreateSettingsWindow();
-        dialog.OverlayHelpExpansionChanged += expanded =>
-        {
-            var next = _settings with { OverlayCaptureHelpExpanded = expanded };
-            try { next.Save(App.DataDirectory); _settings = next; }
-            catch (Exception error) { ReportError(error); }
-        };
         dialog.OverlayPreviewChanged += () => ApplyOverlaySettings(dialog.OverlayAppearance(_settings));
         var openedForSample = false;
         dialog.StreamSampleChanged += () =>
@@ -519,8 +513,7 @@ public partial class MainWindow : ChromeWindow
         _savingSettings=true;
         try
         {
-            var settings=dialog.Result with {PlayerId=_settings.PlayerId, UpdateReminder=_settings.UpdateReminder,
-                OverlayCaptureTipAcknowledged=_settings.OverlayCaptureTipAcknowledged};
+            var settings=dialog.Result with {PlayerId=_settings.PlayerId, UpdateReminder=_settings.UpdateReminder};
             settings.Save(App.DataDirectory); _settings=settings;
             ApplyOverlaySettings(_settings);
             if (!_settings.CheckForUpdatesOnStartup) CancelAutomaticUpdateCheck();

@@ -16,7 +16,6 @@ public partial class SettingsWindow
     private bool _previewOnStream;
     internal RecentMatchDisplay? StreamSample => _previewOnStream ? _sampleDisplay : null;
     internal event Action? StreamSampleChanged;
-    internal event Action<bool>? OverlayHelpExpansionChanged;
 
     private void ToggleStreamPreview(object sender, RoutedEventArgs e) => SetStreamPreview(!_previewOnStream);
 
@@ -74,9 +73,6 @@ public partial class SettingsWindow
         }
         OverlayStartup.IsChecked = current.OpenOverlayOnStartup;
         OverlayTopmost.IsChecked = current.OverlayAlwaysOnTop;
-        OverlayCaptureHelp.IsExpanded = current.OverlayCaptureHelpExpanded;
-        OverlayCaptureHelp.Expanded += (_,_) => OverlayHelpExpansionChanged?.Invoke(true);
-        OverlayCaptureHelp.Collapsed += (_,_) => OverlayHelpExpansionChanged?.Invoke(false);
         DisplaySample();
         LoadStyle(current);
         foreach (var check in new[] { OverlayGreen,OverlayTopmost,OverlayPulse,OverlayCurrent,OverlayExtremes,OverlayWinRate,OverlayChange })
@@ -138,5 +134,5 @@ public partial class SettingsWindow
 
     internal ConnectionSettings OverlayAppearance(ConnectionSettings settings) => settings with {
         OverlayAlwaysOnTop=OverlayTopmost.IsChecked == true, OverlayGreenScreen=OverlayGreen.IsChecked == true,
-        OverlayBackgroundOpacity=OverlayOpacity.Value, OverlayStyle=_draftStyle, OverlayCaptureHelpExpanded=OverlayCaptureHelp.IsExpanded };
+        OverlayBackgroundOpacity=OverlayOpacity.Value, OverlayStyle=_draftStyle };
 }

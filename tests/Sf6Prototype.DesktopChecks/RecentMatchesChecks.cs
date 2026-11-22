@@ -138,13 +138,7 @@ internal static class RecentMatchesChecks
         menu.SetAppearance(custom);
         Check(picker.Value == 37 && ((TextBlock)picker.FindName("GreenHint")).Visibility == Visibility.Collapsed,
             "The context menu restores the same custom opacity after green screen is disabled");
-        var help = (Expander)picker.FindName("CaptureHelp");
-        Check(help.Visibility == Visibility.Visible && !help.IsExpanded, "Translucent capture offers help on demand");
-        help.IsExpanded = true;
-        picker.Value = 100;
-        Check(help.Visibility == Visibility.Collapsed && !help.IsExpanded, "Opaque automatic capture clears the help");
-        menu.SetAppearance(custom with {OverlayGreenScreen = true});
-        Check(help.Visibility == Visibility.Collapsed, "Green-screen capture needs no WGC hint");
+        Check(picker.FindName("CaptureHelp") == null, "The quick controls omit OBS troubleshooting");
         stream.ApplyBackground(custom);
         Check(((Border)card.FindName("Backdrop")).Opacity == 0.37,"Custom opacity only adjusts the backdrop");
         var keyed = new RecentMatchesStreamWindow(owner, custom with {OverlayGreenScreen = true});
@@ -196,14 +190,20 @@ internal static class RecentMatchesChecks
         foreach(var toggle in switches) toggle.IsChecked=false;
         Check(((FrameworkElement)sampleCard.FindName("Metrics")).Visibility == Visibility.Collapsed,"Hiding all interval metrics removes the entire metrics row");
         var helpSection = (Expander)settingsWindow.FindName("OverlayCaptureHelp");
-        Check(helpSection.IsExpanded,"Settings open with OBS capture help expanded by default");
-        helpSection.IsExpanded = false;
+        var overlayPage = (StackPanel)settingsWindow.FindName("OverlayPage");
+        Check(!helpSection.IsExpanded && overlayPage.Children[overlayPage.Children.Count - 1] == helpSection,
+            "OBS troubleshooting starts collapsed at the bottom of overlay settings");
+        helpSection.ApplyTemplate();
+        var helpToggle = (System.Windows.Controls.Primitives.ToggleButton)helpSection.Template.FindName("HeaderSite", helpSection);
+        var togglePeer = new System.Windows.Automation.Peers.ToggleButtonAutomationPeer(helpToggle);
+        ((System.Windows.Automation.Provider.IToggleProvider)togglePeer).Toggle();
+        Check(helpSection.IsExpanded, "Activating the disclosure opens OBS troubleshooting");
         ((CheckBox)settingsWindow.FindName("OverlayStartup")).IsChecked = true;
         ((CheckBox)settingsWindow.FindName("OverlayTopmost")).IsChecked = true;
         ((CheckBox)settingsWindow.FindName("OverlayGreen")).IsChecked = true;
         var draft = (ConnectionSettings)typeof(SettingsWindow).GetMethod("Draft",flags)!.Invoke(settingsWindow,[true])!;
         Check(draft is {OverlayGreenScreen:true,OverlayBackgroundOpacity:37,OpenOverlayOnStartup:true,OverlayAlwaysOnTop:true,
-            OverlayCaptureHelpExpanded:false,OverlayStyle.MatchLimit:5,OverlayStyle.ShowExtremes:false},
+            OverlayStyle.MatchLimit:5,OverlayStyle.ShowExtremes:false},
             "The dedicated settings page preserves custom opacity independently of the green screen and startup toggle");
         draft.Save(path);
         Check(ConnectionSettings.Load(path) == draft,"Overlay options survive relaunch");
