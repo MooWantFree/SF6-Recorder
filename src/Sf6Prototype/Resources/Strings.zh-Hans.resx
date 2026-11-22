@@ -1360,8 +1360,9 @@
   <data name="OverlayCurrentScore" xml:space="preserve"><value>当前分数</value></data>
   <data name="OverlayScoreExtremes" xml:space="preserve"><value>最高分和最低分</value></data>
   <data name="OverlayMatchLimit" xml:space="preserve"><value>最近对局数</value></data>
-  <data name="OverlayAllSession" xml:space="preserve"><value>本次全部</value></data>
-  <data name="OverlayLimitError" xml:space="preserve"><value>请输入 5 或更大的整数。</value></data>
+  <data name="OverlayPreviewOnStream" xml:space="preserve"><value>在浮窗中预览</value></data>
+  <data name="OverlayEndPreview" xml:space="preserve"><value>结束预览</value></data>
+  <data name="OverlayLimitError" xml:space="preserve"><value>请输入 5 到 50 之间的整数。</value></data>
   <data name="OverlayWinColor" xml:space="preserve"><value>胜点颜色</value></data>
   <data name="OverlayLossColor" xml:space="preserve"><value>负点颜色</value></data>
   <data name="OverlayLineColor" xml:space="preserve"><value>折线颜色</value></data>

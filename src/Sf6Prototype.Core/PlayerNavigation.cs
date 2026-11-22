@@ -26,7 +26,10 @@ public sealed record HistoryViewState
     public double ScrollOffset { get; init; }
     public IReadOnlyList<string> VisibleReplays { get; init; }=[];
 }
-public sealed record ScoresViewState(int? CharacterId=null,bool ShowMr=false,int Count=20,string? SelectedReplay=null,DateTime? Start=null,DateTime? End=null);
+public sealed record ScoresViewState(int? CharacterId=null,bool ShowMr=false,int Count=20,string? SelectedReplay=null,DateTime? Start=null,DateTime? End=null)
+{
+    public bool UseRankDefault { get; init; } = CharacterId == null;
+}
 public sealed record PlayerViewState
 {
     public HistoryViewState History { get; init; }=new();

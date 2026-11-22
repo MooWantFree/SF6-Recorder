@@ -391,7 +391,18 @@ public partial class SettingsWindow : ChromeWindow
     private void Save_Click(object sender, RoutedEventArgs e)
     {
         try { Result = Draft(); DialogResult = true; }
-        catch (ArgumentException ex) { if(InvalidPage() is { } page) ShowCategory(page); ShowError(ex.Message); }
+        catch (ArgumentException ex)
+        {
+            var page = InvalidPage();
+            if (page != null) ShowCategory(page);
+            if (page == OverlayPage)
+            {
+                ShowError(null);
+                MatchLimitError.Visibility = Visibility.Visible;
+                OverlayLimit.Focus();
+            }
+            else ShowError(ex.Message);
+        }
     }
     private async void Test_Click(object sender, RoutedEventArgs e)
     {

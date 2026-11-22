@@ -1360,8 +1360,9 @@
   <data name="OverlayCurrentScore" xml:space="preserve"><value>現在のスコア</value></data>
   <data name="OverlayScoreExtremes" xml:space="preserve"><value>最高・最低スコア</value></data>
   <data name="OverlayMatchLimit" xml:space="preserve"><value>直近の試合数</value></data>
-  <data name="OverlayAllSession" xml:space="preserve"><value>今回の全試合</value></data>
-  <data name="OverlayLimitError" xml:space="preserve"><value>5 以上の整数を入力してください。</value></data>
+  <data name="OverlayPreviewOnStream" xml:space="preserve"><value>オーバーレイでプレビュー</value></data>
+  <data name="OverlayEndPreview" xml:space="preserve"><value>プレビューを終了</value></data>
+  <data name="OverlayLimitError" xml:space="preserve"><value>5～50 の整数を入力してください。</value></data>
   <data name="OverlayWinColor" xml:space="preserve"><value>勝利点の色</value></data>
   <data name="OverlayLossColor" xml:space="preserve"><value>敗北点の色</value></data>
   <data name="OverlayLineColor" xml:space="preserve"><value>折れ線の色</value></data>

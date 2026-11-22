@@ -280,7 +280,6 @@ public static class Strings
     public static string OutcomeLoss => Localization.Get(nameof(OutcomeLoss));
     public static string OutcomePending => Localization.Get(nameof(OutcomePending));
     public static string OutcomeWin => Localization.Get(nameof(OutcomeWin));
-    public static string OverlayAllSession => Localization.Get(nameof(OverlayAllSession));
     public static string OverlayAlwaysOnTop => Localization.Get(nameof(OverlayAlwaysOnTop));
     public static string OverlayAppearanceTab => Localization.Get(nameof(OverlayAppearanceTab));
     public static string OverlayBlue => Localization.Get(nameof(OverlayBlue));
@@ -291,6 +290,7 @@ public static class Strings
     public static string OverlayCaptureTitle => Localization.Get(nameof(OverlayCaptureTitle));
     public static string OverlayCollapseHelp => Localization.Get(nameof(OverlayCollapseHelp));
     public static string OverlayCurrentScore => Localization.Get(nameof(OverlayCurrentScore));
+    public static string OverlayEndPreview => Localization.Get(nameof(OverlayEndPreview));
     public static string OverlayExpandHelp => Localization.Get(nameof(OverlayExpandHelp));
     public static string OverlayGreenOpacityHint => Localization.Get(nameof(OverlayGreenOpacityHint));
     public static string OverlayHighlight => Localization.Get(nameof(OverlayHighlight));
@@ -302,6 +302,7 @@ public static class Strings
     public static string OverlayMetricsTab => Localization.Get(nameof(OverlayMetricsTab));
     public static string OverlayMint => Localization.Get(nameof(OverlayMint));
     public static string OverlayOrange => Localization.Get(nameof(OverlayOrange));
+    public static string OverlayPreviewOnStream => Localization.Get(nameof(OverlayPreviewOnStream));
     public static string OverlayResetStyle => Localization.Get(nameof(OverlayResetStyle));
     public static string OverlayRose => Localization.Get(nameof(OverlayRose));
     public static string OverlaySamplePreview => Localization.Get(nameof(OverlaySamplePreview));

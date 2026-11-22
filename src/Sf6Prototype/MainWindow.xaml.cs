@@ -473,6 +473,22 @@ public partial class MainWindow : ChromeWindow
             catch (Exception error) { ReportError(error); }
         };
         dialog.OverlayPreviewChanged += () => ApplyOverlaySettings(dialog.OverlayAppearance(_settings));
+        var openedForSample = false;
+        dialog.StreamSampleChanged += () =>
+        {
+            if (dialog.StreamSample != null && _streamWindow == null)
+            {
+                openedForSample = true;
+                ShowStreamWindow(_archive.SignedInId, activate: false);
+                _streamWindow?.PlaceBehindSettings(dialog);
+            }
+            else if (dialog.StreamSample == null && openedForSample)
+            {
+                openedForSample = false;
+                _streamWindow?.Close();
+            }
+            else if (_streamWindow != null) UpdateRecentMatches();
+        };
         dialog.Loaded += (_,_) => _streamWindow?.AllowInputDuringSettings();
         if (overlayPage)
         {
@@ -490,7 +506,11 @@ public partial class MainWindow : ChromeWindow
         bool? saved;
         _overlayEditor = dialog;
         try { saved = dialog.ShowDialog(); }
-        finally { _overlayEditor = null; }
+        finally
+        {
+            _overlayEditor = null;
+            dialog.SetStreamPreview(false);
+        }
         if (saved != true || dialog.Result == null)
         {
             ApplyOverlaySettings(_settings);
@@ -1191,5 +1211,5 @@ public partial class MainWindow : ChromeWindow
         _exitReady=true;Close();
     }
     protected override void OnClosed(EventArgs e)
-    { _automaticUpdateCheck?.Cancel();_updateReminderTimer.Stop();_tray?.Dispose();_imageRefreshTimer.Stop();_refreshReminderTimer.Stop();_autoRefreshTimer.Stop();_progressTimer.Stop();_refreshResultTimer.Stop();_matchEndStatusTimer.Stop();base.OnClosed(e); }
+    { _streamWindow?.Close();_automaticUpdateCheck?.Cancel();_updateReminderTimer.Stop();_tray?.Dispose();_imageRefreshTimer.Stop();_refreshReminderTimer.Stop();_autoRefreshTimer.Stop();_progressTimer.Stop();_refreshResultTimer.Stop();_matchEndStatusTimer.Stop();base.OnClosed(e); }
 }

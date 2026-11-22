@@ -8,13 +8,15 @@ public partial class ScoresView : UserControl
 {
     private Archive? _archive;
     private bool _ready, _loading;
+    private bool _useRankDefault = true;
     private Dictionary<string, Battle> _battles = [];
     public event Action<MatchListRow?>? SelectionChanged;
     public event Action? DataRequested;
     public MatchListRow? Selected { get; private set; }
     private int SelectedCount => int.TryParse((ScoreCount.SelectedItem as ComboBoxItem)?.Tag?.ToString(),out var n) ? n : 20;
     public ScoreRange Range => new((CharacterList.SelectedItem as CharacterCard)?.Id,SelectedCount,DateRanges.Epoch(ScoreDates.Start),DateRanges.Epoch(ScoreDates.End?.AddDays(1)));
-    public ScoresViewState CaptureState() => new(Range.CharacterId,ScoreMetric.SelectedIndex==1,SelectedCount,Selected?.Battle.ReplayId,ScoreDates.Start,ScoreDates.End);
+    public ScoresViewState CaptureState() => new(Range.CharacterId,ScoreMetric.SelectedIndex==1,SelectedCount,Selected?.Battle.ReplayId,ScoreDates.Start,ScoreDates.End)
+        { UseRankDefault = _useRankDefault };
     public void SetLoading(bool loading) { _loading=loading; UpdateLoading(); }
     private void UpdateLoading()
     {
@@ -41,6 +43,7 @@ public partial class ScoresView : UserControl
     public void ResetSelection()
     {
         _ready = false; Selected = null; CharacterList.SelectedIndex = -1;
+        _useRankDefault = true;
         ScoreCount.SelectedIndex = ScoreMetric.SelectedIndex = 0;
         ScoreDates.SetRange(null,null);
     }
@@ -53,7 +56,10 @@ public partial class ScoresView : UserControl
         var cards = a.All.Where(b => b.Category == "rank").GroupBy(b => b.CharacterId).OrderByDescending(g => g.Count()).Select(g => Card(a, g.ToList())).ToList();
         CharacterList.ItemsSource = cards;
         CharacterList.SelectedItem = cards.FirstOrDefault(c => c.Id == state.CharacterId) ?? cards.FirstOrDefault();
-        ScoreMetric.SelectedIndex=state.ShowMr ? 1 : 0;
+        var card = CharacterList.SelectedItem as CharacterCard;
+        _useRankDefault = state.UseRankDefault || card?.Id != state.CharacterId;
+        if (_useRankDefault) SelectRankMetric();
+        else ScoreMetric.SelectedIndex = state.ShowMr ? 1 : 0;
         ScoreCount.SelectedItem=ScoreCount.Items.OfType<ComboBoxItem>().FirstOrDefault(i=>i.Tag?.ToString()==state.Count.ToString()) ?? ScoreCount.Items[0];
         ScoreDates.SetRange(state.Start,state.End);
         _ready = true; Update(state.SelectedReplay);
@@ -65,8 +71,9 @@ public partial class ScoresView : UserControl
         var point = a.Points.GetValueOrDefault(last.ReplayId);
         var lp = point?.LpAfter ?? last.Lp;
         var rating = last.Mr > 0 && (point?.MrAfter ?? last.Mr) is { } mr ? $"{mr:N0} MR" : ScoreDisplay.WithUnit(lp,"LP");
-        var now = a.Current?.Characters.FirstOrDefault(c => c.CharacterId == last.CharacterId && c.Ranked);
-        var rank = now ?? new CharacterRank(last.CharacterId, last.Character, lp, last.Mr, last.LeagueRank, last.MasterLeague,last.MasterRatingRanking);
+        var rank = new CharacterRank(last.CharacterId, last.Character, lp, last.Mr, last.LeagueRank, last.MasterLeague,last.MasterRatingRanking);
+        if (a.Current is { } current && (current.FetchedAt.ToUnixTimeSeconds() >= last.PlayedAt || !rank.Ranked))
+            rank = current.Characters.FirstOrDefault(c => c.CharacterId == last.CharacterId && c.Ranked) ?? rank;
         var wins = games.Count(b => b.Outcome == "胜"); var decided = games.Count(b => b.Outcome is "胜" or "负" or "平");
         var detail = string.Join(" · ", new[] { Localization.Format(Strings.MatchCount, games.Count), decided == 0 ? null : Localization.Format(Strings.WinRateRounded, 100d * wins / decided) }.OfType<string>());
         return new(last.CharacterId, a.Profiles.Names.Display(last.CharacterId,last.Character), a.Image(last.CharacterId, last.Character), rating, detail, rank);
@@ -121,7 +128,25 @@ public partial class ScoresView : UserControl
         SelectionChanged?.Invoke(Selected);
     }
     private void Chart_PointInvoked(object? sender, ChartPoint e) { Select(e); }
-    private void Character_Changed(object sender, SelectionChangedEventArgs e) { if (!_ready) return; Selected = null; Update(); DataRequested?.Invoke(); }
-    private void Option_Changed(object sender, SelectionChangedEventArgs e) { if(!_ready) return; Update(); DataRequested?.Invoke(); }
+    private void SelectRankMetric() =>
+        ScoreMetric.SelectedIndex = (CharacterList.SelectedItem as CharacterCard)?.Rank?.BadgeId is >= 36 ? 1 : 0;
+    private void Character_Changed(object sender, SelectionChangedEventArgs e)
+    {
+        if (!_ready) return;
+        _ready = false;
+        _useRankDefault = true;
+        SelectRankMetric();
+        _ready = true;
+        Selected = null;
+        Update();
+        DataRequested?.Invoke();
+    }
+    private void Option_Changed(object sender, SelectionChangedEventArgs e)
+    {
+        if (!_ready) return;
+        if (sender == ScoreMetric) _useRankDefault = false;
+        Update();
+        DataRequested?.Invoke();
+    }
     private void Date_Changed(object? sender,EventArgs e) {if(!_ready) return;Update();DataRequested?.Invoke();}
 }

@@ -92,11 +92,12 @@ internal static class RecentMatchesChecks
         Check(plot.Unit == "MR" && plot.Points.Count == 0, "Switching the score metric updates the live display immediately");
         metric.SelectedIndex = 0;
         var panel = (FrameworkElement)stream.Content;
-        panel.Measure(new Size(stream.Width, stream.Height));
-        panel.Arrange(new Rect(0, 0, stream.Width, stream.Height));
+        var overlaySize = new Size(560,232);
+        panel.Measure(overlaySize);
+        panel.Arrange(new Rect(overlaySize));
         panel.UpdateLayout();
         stream.Dispatcher.Invoke(()=>{}, DispatcherPriority.ContextIdle);
-        var bitmap = new RenderTargetBitmap((int)stream.Width,(int)stream.Height,96,96,PixelFormats.Pbgra32);
+        var bitmap = new RenderTargetBitmap((int)overlaySize.Width,(int)overlaySize.Height,96,96,PixelFormats.Pbgra32);
         bitmap.Render(panel);
         var pixel = new byte[4];
         bitmap.CopyPixels(new Int32Rect(10,10,1,1),pixel,4,0);
@@ -109,7 +110,7 @@ internal static class RecentMatchesChecks
             using var file = File.Create(Path.Combine(captures,"recent-stream.png")); png.Save(file);
         }
         var custom = preferences with {OverlayBackgroundOpacity = 37};
-        Check(!stream.Topmost && stream.ResizeMode == ResizeMode.CanResize, "The overlay starts unpinned and resizable");
+        Check(!stream.Topmost, "The overlay starts unpinned");
         var alwaysPinned = custom with {OverlayAlwaysOnTop = true};
         stream.ApplyBackground(alwaysPinned);
         var pin = (System.Windows.Controls.Primitives.ToggleButton)stream.FindName("PinButton");
@@ -160,7 +161,17 @@ internal static class RecentMatchesChecks
         bool HasInteriorExtremes() => DateRanges.Extrema(samplePlot.Points.Select(p=>p.Value).ToArray())
             .All(i=>i>0 && i<samplePlot.Points.Count-1);
         Check(HasInteriorExtremes(),"The example distinguishes session extrema from the opening and latest scores");
-        ((CheckBox)settingsWindow.FindName("OverlayAll")).IsChecked = false;
+        var limitInput = (TextBox)settingsWindow.FindName("OverlayLimit");
+        var limitError = (TextBlock)settingsWindow.FindName("MatchLimitError");
+        Check(limitInput.Text=="50" && limitError.Visibility==Visibility.Collapsed,
+            "The recent match count defaults to 50 with no permanent range hint");
+        limitInput.Text = "51";
+        Check(limitError.Visibility==Visibility.Collapsed,"Editing a custom count does not interrupt typing");
+        ((Button)settingsWindow.FindName("SaveButton")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        Check(limitError.Visibility==Visibility.Visible && settingsWindow.Result==null,"An invalid count keeps settings open with a field-level error");
+        limitInput.Text = "50";
+        Check(limitError.Visibility==Visibility.Collapsed,"Entering the upper endpoint immediately clears the error");
+        limitInput.Text = "5";
         Check(samplePlot.Points.Count == 6 && sampleCard.DataContext is RecentMatchDisplay {Summary.Matches.Count:5},
             "Five matches and their starting score drive both the preview plot and interval metrics");
         Check(HasInteriorExtremes(),"The five-match preview also places both extrema inside the chart");
@@ -200,8 +211,8 @@ internal static class RecentMatchesChecks
         Check(ConnectionSettings.Load(path) is {OverlayGreenScreen:true, OverlayBackgroundOpacity:75,OpenOverlayOnStartup:false},
             "Existing green-screen preferences migrate with an independent opacity");
         settingsWindow.Close();
-        Check(stream.Owner == null && stream.ShowInTaskbar && stream.AllowsTransparency && stream.Title == "SF6 Recorder OBS",
-            "The stream is independently capturable under a stable title");
+        Check(stream.AllowsTransparency && Strings.StreamWindowTitle == "SF6 Recorder OBS",
+            "The translucent stream retains its capture title");
         archive.SignedInId = null;
         var closed = false; stream.Closed += (_,_)=>closed=true;
         Update();

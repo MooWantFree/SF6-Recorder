@@ -19,12 +19,12 @@ public partial class MainWindow
     }
 
     private void ShowStreamWindow(string? account, bool activate = true) =>
-        ShowStreamWindow(new RecentMatchesStreamWindow(account, OverlayAppearance) { ShowActivated = activate });
+        ShowStreamWindow(new RecentMatchesStreamWindow(account, OverlayAppearance), activate);
 
-    private void ShowStreamWindow(RecentMatchesStreamWindow window)
+    private void ShowStreamWindow(RecentMatchesStreamWindow window, bool activate, System.Drawing.Rectangle? bounds = null, bool minimized = false)
     {
         _streamWindow = window;
-        RecentMatches.DisplayChanged += window.Display;
+        RecentMatches.DisplayChanged += DisplayStreamMatches;
         var menu = _overlayMenu ??= CreateOverlayMenu();
         window.Panel.ContextMenu = menu;
         window.ContextMenuOpening += (_, e) =>
@@ -43,16 +43,17 @@ public partial class MainWindow
         };
         window.Closed += (_, _) =>
         {
-            RecentMatches.DisplayChanged -= window.Display;
+            RecentMatches.DisplayChanged -= DisplayStreamMatches;
             window.Panel.ContextMenu = null;
             if (_streamWindow != window) return;
             _streamWindow = null;
             RecentMatches.StreamButton.IsChecked = false;
             _streamArchive = null;
             menu.IsOpen = false;
+            _overlayEditor?.SetStreamPreview(false);
         };
         UpdateRecentMatches();
-        window.Show();
+        window.Show(activate, bounds, minimized);
         RecentMatches.StreamButton.IsChecked = true;
         if (!_settings.OverlayCaptureTipAcknowledged)
             new OverlayCaptureNotice(window, AcknowledgeOverlayCaptureTip).Show();
@@ -129,15 +130,17 @@ public partial class MainWindow
             return;
         }
         // WPF fixes AllowsTransparency when the HWND is created.
-        var bounds = current.RestoreBounds;
-        var replacement = new RecentMatchesStreamWindow(current.Account, appearance, current.PinOverride) {
-            ShowActivated = false, WindowStartupLocation = WindowStartupLocation.Manual,
-            Left = bounds.Left, Top = bounds.Top, Width = bounds.Width, Height = bounds.Height, WindowState = current.WindowState };
+        var bounds = current.Bounds;
+        var minimized = current.Minimized;
+        var replacement = new RecentMatchesStreamWindow(current.Account, appearance, current.PinOverride);
         _streamWindow = null;
         current.Close();
-        ShowStreamWindow(replacement);
+        ShowStreamWindow(replacement, false, bounds, minimized);
         if (_overlayEditor is { IsActive: true } editor) replacement.PlaceBehindSettings(editor);
     }
+
+    private void DisplayStreamMatches(RecentMatchDisplay live) =>
+        _streamWindow?.Display(_overlayEditor?.StreamSample ?? live);
 
     private void UpdateRecentMatches()
     {
@@ -151,7 +154,7 @@ public partial class MainWindow
             if (!_ready || stream.Account != _archive.SignedInId) stream.Close();
             else if (stream.Account == null)
             {
-                stream.Display(new("", "", "—", "—", "—", "Ink", "—", [], Strings.NoRecentRankedMatches, true));
+                DisplayStreamMatches(new("", "", "—", "—", "—", "Ink", "—", [], Strings.NoRecentRankedMatches, true));
                 return;
             }
         }

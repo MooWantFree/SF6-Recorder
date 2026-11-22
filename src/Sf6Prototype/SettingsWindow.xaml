@@ -85,7 +85,12 @@
             </StackPanel>
           </Expander>
 
-          <TextBlock Text="{DynamicResource I18n.OverlaySamplePreview}" Style="{StaticResource Caption}" Margin="0,0,0,4"/>
+          <DockPanel Margin="0,0,0,4">
+            <Button x:Name="PreviewOnStream" DockPanel.Dock="Right" Style="{StaticResource GhostButton}" MinHeight="24"
+                    Padding="8,2" Foreground="{StaticResource AccentText}" Content="{DynamicResource I18n.OverlayPreviewOnStream}"
+                    Click="ToggleStreamPreview"/>
+            <TextBlock Text="{DynamicResource I18n.OverlaySamplePreview}" Style="{StaticResource Caption}" VerticalAlignment="Center"/>
+          </DockPanel>
           <Border Background="{StaticResource OverlayPreviewGrid}" CornerRadius="6" Padding="6" Margin="0,0,0,10">
             <Viewbox Stretch="Uniform" Height="155" IsHitTestVisible="False">
               <local:OverlayMatchCard x:Name="SampleCard" Width="560" Height="208"/>
@@ -114,15 +119,16 @@
                       <CheckBox x:Name="OverlayWinRate" Grid.Row="1" Grid.Column="2" Style="{StaticResource LabeledSwitch}" Content="{DynamicResource I18n.RangeWinRate}"/>
                     </Grid>
                     <Border BorderBrush="{StaticResource LineSubtle}" BorderThickness="0,1,0,0" Padding="0,9,0,0" Margin="0,6,0,0">
-                      <DockPanel>
-                        <StackPanel x:Name="LimitControls" DockPanel.Dock="Right" Orientation="Horizontal" Margin="12,0,0,0">
-                          <Button Content="−" Width="28" Padding="0" Click="DecreaseLimit"/>
-                          <TextBox x:Name="OverlayLimit" Width="54" TextAlignment="Center" Margin="3,0" AutomationProperties.Name="{DynamicResource I18n.OverlayMatchLimit}"/>
-                          <Button Content="+" Width="28" Padding="0" Click="IncreaseLimit"/>
-                        </StackPanel>
-                        <CheckBox x:Name="OverlayAll" DockPanel.Dock="Right" Style="{StaticResource LabeledSwitch}" MinWidth="108" Content="{DynamicResource I18n.OverlayAllSession}"/>
-                        <TextBlock Text="{DynamicResource I18n.OverlayMatchLimit}" VerticalAlignment="Center"/>
-                      </DockPanel>
+                      <StackPanel>
+                        <DockPanel>
+                          <TextBox x:Name="OverlayLimit" DockPanel.Dock="Right" Width="64" TextAlignment="Center"
+                                   AutomationProperties.Name="{DynamicResource I18n.OverlayMatchLimit}" LostKeyboardFocus="CheckOverlayLimit"/>
+                          <TextBlock Text="{DynamicResource I18n.OverlayMatchLimit}" VerticalAlignment="Center"/>
+                        </DockPanel>
+                        <TextBlock x:Name="MatchLimitError" Style="{StaticResource Caption}" Foreground="{StaticResource Loss}" HorizontalAlignment="Right"
+                                   Text="{DynamicResource I18n.OverlayLimitError}" Visibility="Collapsed" Margin="0,3,0,0"
+                                   AutomationProperties.LiveSetting="Polite"/>
+                      </StackPanel>
                     </Border>
                   </StackPanel>
                   <StackPanel Visibility="{Binding IsSelected,ElementName=AppearanceTab,Converter={StaticResource VisibleWhenTrue}}">

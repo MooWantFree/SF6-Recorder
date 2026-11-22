@@ -74,6 +74,33 @@ internal static class ArchiveSnapshotChecks
         Complete(restarted.PrepareAsync(owner,CancellationToken.None));restarted.Load(owner);scores.Bind(restarted);scores.Reload();
         Check(chart.Points.Last() is {ReplayId:"third",Value:60100,Settled:true,Connect:true},
             "A cold local archive read retains the settled endpoint and connecting line without another refresh");
+        var diamond = Row("diamond",2200,24500) with { CharacterId=2, Mr=null, LeagueRank=35 };
+        store.SavePage([diamond]);
+        archive.Load(owner);
+        scores.Bind(archive);
+        scores.ResetSelection();
+        scores.Reload();
+        Check(chart.Unit=="MR","Opening the scores page on a Master character defaults to MR");
+        var characters=(System.Windows.Controls.ListBox)scores.FindName("CharacterList");
+        var metric=(System.Windows.Controls.ListBox)scores.FindName("ScoreMetric");
+        var requests=0;
+        scores.DataRequested+=()=>requests++;
+        characters.SelectedItem=characters.Items.Cast<CharacterCard>().Single(c=>c.Id==2);
+        Check(chart.Unit=="LP" && requests==1,"Switching to a Diamond character defaults to LP with one data request");
+        current=current with {Characters=[new(2,"Ken",24500,null,35,null)]};
+        File.WriteAllText(scoreFile,JsonSerializer.Serialize(current));
+        store.SavePage([diamond with {ReplayId="promoted",PlayedAt=2300,Lp=25000,LeagueRank=36}]);
+        archive.Load(owner);
+        scores.Reload();
+        Check(chart.Unit=="MR","Promotion in a newer ranked match selects MR even before the profile or first MR value arrives");
+        metric.SelectedIndex=0;
+        var manual=scores.CaptureState();
+        scores.Reload();
+        Check(chart.Unit=="LP","Refreshing preserves the manually selected LP view for the Master character");
+        characters.SelectedItem=characters.Items.Cast<CharacterCard>().Single(c=>c.Id==1);
+        Check(chart.Unit=="MR","A different Master character gets its own rank default");
+        scores.Reload(manual);
+        Check(chart.Unit=="LP" && scores.Range.CharacterId==2,"Restoring navigation also restores the manual metric");
         return count;
     }
 }

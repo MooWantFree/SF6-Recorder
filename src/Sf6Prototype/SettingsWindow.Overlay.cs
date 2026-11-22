@@ -8,11 +8,26 @@ namespace Sf6Prototype;
 public partial class SettingsWindow
 {
     private bool _loadingStyle;
-    private int _lastValidLimit = 5;
+    private int _lastValidLimit = OverlayStyle.MaxMatches;
     private OverlayStyle _draftStyle = new();
     private readonly CharacterNames _sampleNames = new(App.DataDirectory);
     private static readonly RecentMatchSummary SampleSession = CreateSampleSession();
+    private RecentMatchDisplay? _sampleDisplay;
+    private bool _previewOnStream;
+    internal RecentMatchDisplay? StreamSample => _previewOnStream ? _sampleDisplay : null;
+    internal event Action? StreamSampleChanged;
     internal event Action<bool>? OverlayHelpExpansionChanged;
+
+    private void ToggleStreamPreview(object sender, RoutedEventArgs e) => SetStreamPreview(!_previewOnStream);
+
+    internal void SetStreamPreview(bool enabled)
+    {
+        if (_previewOnStream == enabled) return;
+        _previewOnStream = enabled;
+        PreviewOnStream.SetResourceReference(ContentControl.ContentProperty,
+            enabled ? "I18n.OverlayEndPreview" : "I18n.OverlayPreviewOnStream");
+        StreamSampleChanged?.Invoke();
+    }
 
     private static RecentMatchSummary CreateSampleSession()
     {
@@ -33,7 +48,12 @@ public partial class SettingsWindow
         return RecentMatchScores.Build(matches,points,"sample",start,false);
     }
 
-    private void DisplaySample() => SampleCard.Display(RecentMatchDisplay.From(SampleSession,_sampleNames.Display(1,"Ryu"),false));
+    private void DisplaySample()
+    {
+        _sampleDisplay = RecentMatchDisplay.From(SampleSession,_sampleNames.Display(1,"Ryu"),false);
+        SampleCard.Display(_sampleDisplay);
+        if (StreamSample != null) StreamSampleChanged?.Invoke();
+    }
 
     private void InitializeOverlay(ConnectionSettings current)
     {
@@ -59,7 +79,7 @@ public partial class SettingsWindow
         OverlayCaptureHelp.Collapsed += (_,_) => OverlayHelpExpansionChanged?.Invoke(false);
         DisplaySample();
         LoadStyle(current);
-        foreach (var check in new[] { OverlayGreen,OverlayTopmost,OverlayPulse,OverlayCurrent,OverlayExtremes,OverlayWinRate,OverlayChange,OverlayAll })
+        foreach (var check in new[] { OverlayGreen,OverlayTopmost,OverlayPulse,OverlayCurrent,OverlayExtremes,OverlayWinRate,OverlayChange })
         {
             check.Checked += (_,_) => PreviewOverlay();
             check.Unchecked += (_,_) => PreviewOverlay();
@@ -78,8 +98,7 @@ public partial class SettingsWindow
         OverlayChange.IsChecked = style.ShowChange;
         OverlayWinRate.IsChecked = style.ShowWinRate;
         OverlayPulse.IsChecked = style.HighlightNewMatch;
-        OverlayAll.IsChecked = style.MatchLimit == 0;
-        OverlayLimit.Text = Math.Max(5,style.MatchLimit).ToString(CultureInfo.InvariantCulture);
+        OverlayLimit.Text = style.MatchLimit.ToString(CultureInfo.InvariantCulture);
         WinColor.SelectedValue = style.WinColor;
         LossColor.SelectedValue = style.LossColor;
         LineColor.SelectedValue = style.LineColor;
@@ -89,25 +108,28 @@ public partial class SettingsWindow
         PreviewOverlay();
     }
 
-    private bool ValidOverlayLimit() => OverlayAll.IsChecked == true ||
-        int.TryParse(OverlayLimit.Text,out var limit) && limit >= 5;
+    private bool TryOverlayLimit(out int limit) => int.TryParse(OverlayLimit.Text,out limit) &&
+        limit is >= OverlayStyle.MinMatches and <= OverlayStyle.MaxMatches;
 
-    private void DecreaseLimit(object sender,RoutedEventArgs e) =>
-        OverlayLimit.Text = Math.Max(5,_lastValidLimit-1).ToString(CultureInfo.InvariantCulture);
-    private void IncreaseLimit(object sender,RoutedEventArgs e) =>
-        OverlayLimit.Text = Math.Min(int.MaxValue,(long)_lastValidLimit+1).ToString(CultureInfo.InvariantCulture);
+    private bool ValidOverlayLimit() => TryOverlayLimit(out _);
+
+    private void CheckOverlayLimit(object sender, RoutedEventArgs e) =>
+        MatchLimitError.Visibility = ValidOverlayLimit() ? Visibility.Collapsed : Visibility.Visible;
 
     private void ResetOverlayStyle(object sender,RoutedEventArgs e) => LoadStyle(new());
 
     private void PreviewOverlay()
     {
         if (_loadingStyle) return;
-        if (int.TryParse(OverlayLimit.Text,out var limit) && limit >= 5) _lastValidLimit = limit;
-        LimitControls.IsEnabled = OverlayAll.IsChecked != true;
+        if (TryOverlayLimit(out var limit))
+        {
+            _lastValidLimit = limit;
+            MatchLimitError.Visibility = Visibility.Collapsed;
+        }
         OverlayOpacity.GreenScreen = OverlayGreen.IsChecked == true;
         _draftStyle = new() { ShowCurrent=OverlayCurrent.IsChecked == true, ShowExtremes=OverlayExtremes.IsChecked == true,
             ShowChange=OverlayChange.IsChecked == true, ShowWinRate=OverlayWinRate.IsChecked == true,
-            HighlightNewMatch=OverlayPulse.IsChecked == true, MatchLimit=LimitControls.IsEnabled ? _lastValidLimit : 0,
+            HighlightNewMatch=OverlayPulse.IsChecked == true, MatchLimit=_lastValidLimit,
             WinColor=(OverlayColor)WinColor.SelectedValue, LossColor=(OverlayColor)LossColor.SelectedValue,
             LineColor=(OverlayColor)LineColor.SelectedValue };
         SampleCard.ApplyAppearance(OverlayAppearance(_current));
