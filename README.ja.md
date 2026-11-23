@@ -1,7 +1,7 @@
 [简体中文](README.md) | [日本語](README.ja.md) | [English](README.en.md)
 
 # SF6 Recorder
-
+https://github.com/user-attachments/assets/7ce6a944-e4d6-458a-bda5-87e9c972eace
 [CAPCOM の Buckler's Boot Camp](https://www.streetfighter.com/6/buckler/profile/) に掲載されている『ストリートファイター6』の対戦履歴を PC に保存するアプリです。公式サイトには直近の戦績しか残りませんが、`SF6 Recorder` は更新のたびに新しい戦績をローカルの SQLite データベースに永続保存するため、公式サイトから古い履歴が消えても、保存済みの記録は残ります。
 
 ## 自動ビルドと配布パッケージ
