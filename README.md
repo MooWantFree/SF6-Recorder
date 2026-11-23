@@ -1,6 +1,7 @@
 [简体中文](README.md) | [日本語](README.ja.md) | [English](README.en.md)
 
 # SF6 Recorder
+https://github.com/user-attachments/assets/7ce6a944-e4d6-458a-bda5-87e9c972eace
 
 用于将 [CAPCOM Buckler's Boot Camp](https://www.streetfighter.com/6/buckler/profile/) 上的`Street Fighter 6`对局记录保存到本机. 官网只保留最近一段时间的战绩, `SF6 Recorder`每次刷新会把新增战绩记录写入本地 SQLite 数据库持久保存, 不随官网历史滚动而消失.
 
