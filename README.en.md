@@ -1,7 +1,7 @@
 [简体中文](README.md) | [日本語](README.ja.md) | [English](README.en.md)
 
 # SF6 Recorder
-
+https://github.com/user-attachments/assets/7ce6a944-e4d6-458a-bda5-87e9c972eace
 Save your `Street Fighter 6` match history from [CAPCOM's Buckler's Boot Camp](https://www.streetfighter.com/6/buckler/profile/) to your PC. The official website only keeps recent matches. Each time you refresh, `SF6 Recorder` saves new match records to a local SQLite database for long-term storage, so they remain available after they disappear from the website.
 
 ## Automated builds and packages
