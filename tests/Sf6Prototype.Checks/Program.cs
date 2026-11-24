@@ -14,6 +14,7 @@ if(Environment.GetCommandLineArgs().Contains("--name-cache-checks"))
 }
 Localization.Apply("zh");
 var assertions = PersistenceRecoveryChecks.Run() + ScoreProjectionChecks.Run() + ScoreSettlementChecks.Run() + await RefreshWorkflowChecks.Run();
+assertions += await PlayerRefreshChecks.Run();
 void Check(bool condition, string description)
 {
     if (!condition) throw new Exception(description);

@@ -43,7 +43,7 @@ internal static class CachedPagingChecks
         {
             Check(list.Items.OfType<MatchListRow>().Count()==20 && !history.Pager!.MoreNeedsNetwork(history.Filtered,""),
                 "The fixture has twenty visible matches and another local page ready without a session");
-            var work=(Task)Call("BeginLoadAsync",false,true,false)!;
+            var work=(Task)Call("BeginLoadAsync",PlayerLoadIntent.More)!;
             var deadline=DateTime.UtcNow.AddSeconds(10);
             do {main.Dispatcher.Invoke(()=>{},DispatcherPriority.ContextIdle);Thread.Yield();} while(!work.IsCompleted && DateTime.UtcNow<deadline);
             Check(work.IsCompleted,"Cached pagination completes without a network source or login window");work.GetAwaiter().GetResult();
@@ -52,6 +52,22 @@ internal static class CachedPagingChecks
                 "A complete cached load never exposes the refresh animation, including a completion flash");
             Check(!coordinator.IsBusy && ((Button)main.FindName("CancelButton")).Visibility==Visibility.Hidden,
                 "Cached pagination releases busy state without exposing a cancel action");
+            list.SelectedIndex=12;
+            var before=history.CaptureState();
+            var view=(RefreshViewTarget)Call("CurrentRefreshView")!;
+            store.SavePage([archive.All[0] with {ReplayId="NEW-HEAD",PlayedAt=3000}]);
+            Call("ReloadRefreshView",view with {Owner="9999999999"},CancellationToken.None,true,false);
+            Call("ReloadRefreshView",view with {NavigationVersion=view.NavigationVersion-1},CancellationToken.None,true,false);
+            var after=history.CaptureState();
+            Check(!archive.All.Any(b=>b.ReplayId=="NEW-HEAD") && after.SelectedReplay==before.SelectedReplay &&
+                after.ScrollOffset==before.ScrollOffset && after.VisibleReplays.SequenceEqual(before.VisibleReplays),
+                "Results for another player or an earlier visit leave the displayed list, selection and viewport intact");
+            Call("ReloadRefreshView",view,CancellationToken.None,true,false);
+            Check(archive.All.Any(b=>b.ReplayId=="NEW-HEAD"),"The matching visit can publish its committed page");
+            history.Reload(restore:new HistoryViewState {FavoritesOnly=true});
+            var favoriteRefresh=(Task)Call("SynchronizeAsync")!;
+            Check(favoriteRefresh.IsCompletedSuccessfully && history.FavoritesOnly && requests==0 && !coordinator.IsBusy,
+                "Refreshing the favorites view without a session stays local");
             Check(App.DataDirectory=="" && new WindowInteropHelper(main).Handle==IntPtr.Zero,
                 "Cached paging checks use synthetic data and never open the application or a native window");
         }

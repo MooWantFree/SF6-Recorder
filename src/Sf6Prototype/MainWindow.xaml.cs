@@ -108,7 +108,7 @@ public partial class MainWindow : ChromeWindow
         Detail.RanksRequested += OpenPlayerRanks;
         Detail.PlayerRequested += player => _ = ViewPlayerAsync(player);
         Detail.Notice += message => ShowNotice(message);
-        History.MoreRequested += () => _ = BeginLoadAsync(more:true);
+        History.MoreRequested += () => _ = BeginLoadAsync(PlayerLoadIntent.More);
         History.CategoryChanged += () => _ = CategoryChangedAsync();
         History.PlayerChanged += RequestCancellation;
         History.TagsChanged += ()=>ReloadLocal(preserveViewport:true,refreshImages:false);
@@ -236,65 +236,6 @@ public partial class MainWindow : ChromeWindow
         }
         catch(Exception ex) { _autoRefresh.Pause(); ReportError(ex); }
     }
-    private Task<bool> AutoRefreshAccountAsync(SavedSession session) =>
-        _sync.RunAsync(new(SyncOperation.AutomaticRefresh,Quiet:true,Background:true,SilentCancellation:true), context=>AutoRefreshAccountCoreAsync(session,context));
-    private async Task<bool> AutoRefreshAccountCoreAsync(SavedSession session,SyncContext context)
-    {
-        var token=context.Token;
-        var owner=session.AccountId;
-        var daily=new DailyProfileRefresh(_profiles,owner,DateTimeOffset.UtcNow);
-        var pager=new BattlePager(_store,owner);var completed=false;
-        try
-        {
-            using var client=CreateClient(session,owner,observeCharacterNames:daily.Required);
-            var workflow=await RefreshWorkflow.RunAsync(client,daily.Required,()=>
-            {
-                if(client.AccountId!=owner) throw new LoginRequiredException(Strings.AccountChanged);
-                _pagers[owner]=pager;
-                return Task.FromResult(new RefreshPlan(pager,RefreshMode.Account,Profile:daily));
-            },new()
-            {
-                Request=context.Report,Progress=(progress,metadata)=>context.Report(progress,metadata),
-                PrepareImages=()=>PrepareImageDownloadsAsync(token),ImagesReady=StartImageDownloads,AvatarUpdated=RefreshAccountUi,
-                PageSaved=async ()=>
-                {
-                    if(_navigation.Current.Id==owner)
-                    {
-                        await _archive.PrepareAsync(owner,token);token.ThrowIfCancellationRequested();
-                        if(_navigation.Current.Id==owner) ReloadLocal(preserveViewport:true,refreshImages:false,automaticRefresh:true);
-                    }
-                    await Dispatcher.InvokeAsync(()=>{},DispatcherPriority.Background);
-                },
-                PreferredCategory=()=>PreferredHistoryCategory(owner),
-                BattlesLoaded=()=> {if(_navigation.Current.Id==owner) ReloadLocal(preserveViewport:true,refreshImages:false,automaticRefresh:true);},
-                BeforeProfile=duringPaging=>
-                {
-                    if(duringPaging) _refreshProgress.SetStage(Strings.UpdatingCharacterProfiles);
-                    else _refreshProgress.Metadata(1);
-                    UpdateButtonProgress();
-                }
-            },automatic:true,token);
-            if(_navigation.Current.Id==owner) ReloadLocal(preserveViewport:true);
-            RefreshAccountUi();
-            RecordRefreshResult(owner,workflow.Sync.Inserted);
-            if(workflow.ScoresPending) ShowNotice(Strings.RecordsUpdatedScoresPending,true);
-            completed=true;context.Complete();
-        }
-        catch(OperationCanceledException) when(token.IsCancellationRequested) { }
-        catch(Exception ex)
-        {
-            if(ex is LoginRequiredException) _autoRefresh.Pause();
-            context.Fail(ex);
-            ReportError(ex);
-        }
-        finally
-        {
-            _autoRefresh.Restart(DateTimeOffset.UtcNow);
-            History.ContinueAutoLoad();
-        }
-        return completed;
-    }
-
     private async void Login_Click(object sender, RoutedEventArgs e) { await CancelDownloadsAsync(); await LoginAsync(); }
     private Task LoginAsync()
     {
@@ -657,8 +598,7 @@ public partial class MainWindow : ChromeWindow
             if(_navigation.Current.Id==player.Id)
             {
                 RefreshViewedPlayerUi();
-                if(PageTabs.SelectedIndex==1) await BeginLoadAsync(scoreRange:true);
-                else if(Pager.NeedsInitial(History.Category)) await BeginLoadAsync();
+                await BeginLoadAsync(PageTabs.SelectedIndex == 1 ? PlayerLoadIntent.ScoreRange : PlayerLoadIntent.Initial);
                 return;
             }
             await ViewPlayerAsync(player);
@@ -716,113 +656,6 @@ public partial class MainWindow : ChromeWindow
             }
         }
         finally {_stoppingRefresh=false;}
-    }
-    private Task SynchronizeAsync(bool full = false)
-    {
-        ClosePlayerSearch();
-        if(_ready && PageTabs.SelectedIndex==0 && History.FavoritesOnly)
-        {ReloadLocal(preserveViewport:true);return Task.CompletedTask;}
-        return BeginLoadAsync(reset:true);
-    }
-    private Task BeginLoadAsync(bool reset=false,bool more=false,bool scoreRange=false)
-    {
-        if(_busy || _preparingViews>0 || !_ready || _exitRequested || _stoppingRefresh) return Task.CompletedTask;
-        if(PageTabs.SelectedIndex==0 && History.FavoritesOnly) return Task.CompletedTask;
-        if(scoreRange && (PageTabs.SelectedIndex!=1 || !Pager.NeedsScoreRange(Scores.Range))) return Task.CompletedTask;
-        History.AllowPageUpdates();
-        return _sync.RunAsync(new(reset ? SyncOperation.ManualRefresh : SyncOperation.LoadHistory,Quiet:!reset && PageTabs.SelectedIndex!=1), context=>LoadPagesAsync(reset,more,scoreRange,context));
-    }
-    private async Task LoadPagesAsync(bool reset,bool more,bool scoreRange,SyncContext context)
-    {
-        HideNotice();
-        var token=context.Token;
-        var pager=Pager; var category=PageTabs.SelectedIndex==1 ? "rank" : History.Category;
-        var fillScores=PageTabs.SelectedIndex==1;
-        var requestedScores=Scores.Range;
-        var completed=false;
-        DailyProfileRefresh? daily=null;
-        if(reset) pager.Reset(category);
-        async Task PageSaved()
-        {
-            token.ThrowIfCancellationRequested();
-            await _archive.PrepareAsync(_navigation.Current.Id,token);
-            token.ThrowIfCancellationRequested();
-            ReloadLocal(preserveViewport:true,refreshImages:false);
-            await Dispatcher.InvokeAsync(() => { },DispatcherPriority.Background);
-        }
-        try
-        {
-            if(more && !pager.MoreNeedsNetwork(History.Filtered,category))
-            {
-                await pager.LoadMoreAsync(null,category,History.Filtered,token,PageSaved);
-                completed=true;context.Complete();
-                return;
-            }
-            var session = _vault.Load();
-            if (session == null)
-            {
-                await StopBackgroundDownloadsAsync();
-                SetStatus("login_needed", Strings.CompleteCapcomSignIn);
-                ProgressStage(Strings.WaitingForSignIn);
-                session = await LoginWindow.SignInAsync(this, _settings, _vault);
-                if (session == null) { SetStatus("login_cancelled", Strings.SignInCancelled); return; }
-                var sameAccount=session.AccountId==_settings.PlayerId;
-                SetActiveAccount(session, preserveView:sameAccount);
-                if(!sameAccount) requestedScores=Scores.Range;
-                pager=Pager;
-                if(reset) pager.Reset(category);
-            }
-            token.ThrowIfCancellationRequested();
-            var profileRefreshAt=DateTimeOffset.UtcNow;
-            if(!more) daily=new(_profiles,pager.Owner,profileRefreshAt);
-            using var client = CreateClient(session,observeCharacterNames:daily?.Required==true);
-            var workflow=await RefreshWorkflow.RunAsync(client,daily?.Required==true,async ()=>
-            {
-                if(client.AccountId!=_settings.PlayerId && _vault.Load() is { } validated)
-                {await StopBackgroundDownloadsAsync();SetActiveAccount(validated);requestedScores=Scores.Range;if(reset) Pager.Reset(category);}
-                pager=Pager;
-                if(!more) daily=new(_profiles,pager.Owner,profileRefreshAt);
-                client.CharacterObserver=daily?.Required==true ? ObserveCharacterNames : null;
-                RefreshAccountUi();
-                var syncAccount=pager.Owner==_settings.PlayerId && !more && (reset || !scoreRange && category.Length==0);
-                var mode=syncAccount ? RefreshMode.Account : fillScores ? RefreshMode.Scores : more ? RefreshMode.More : RefreshMode.Initial;
-                return new RefreshPlan(pager,mode,category,requestedScores,reset,History.Filtered,daily);
-            },new()
-            {
-                Request=context.Report,Progress=(progress,metadata)=>context.Report(progress,metadata),
-                BeforeValidation=()=> {ProgressStage(Strings.CheckingSession);SetStatus("validating",Strings.CheckingSessionProgress);},
-                PrepareImages=()=>PrepareImageDownloadsAsync(token),ImagesReady=StartImageDownloads,AvatarUpdated=RefreshAccountUi,
-                PageSaved=PageSaved,PreferredCategory=()=>PreferredHistoryCategory(pager.Owner),
-                BattlesLoaded=()=>ReloadLocal(preserveViewport:true,refreshImages:false),
-                BeforeProfile=duringPaging=>
-                {
-                    SetStatus("profiles",Strings.UpdatingProfilesProgress);
-                    if(_progressVisible)
-                    {
-                        if(duringPaging) _refreshProgress.SetStage(Strings.UpdatingCharacterProfiles);
-                        else _refreshProgress.Metadata(1);
-                        UpdateButtonProgress();
-                    }
-                }
-            },automatic:false,token);
-            _lastSync=workflow.Sync;
-            RecordRefreshResult(pager.Owner,_lastSync.Inserted);
-            ReloadLocal(preserveViewport: true); RefreshAccountUi();
-            SetStatus(workflow.ScoresPending ? "sync_complete_scores_pending" : "sync_complete",
-                Localization.Format(Strings.RefreshCompleteSummary, _lastSync.Inserted, _lastSync.Pages, _lastSync.Requests, ""));
-            completed=true;context.Complete();
-            if(pager.Owner==_settings.PlayerId) _autoRefresh.Resume(DateTimeOffset.UtcNow);
-        }
-        catch (OperationCanceledException) when (token.IsCancellationRequested)
-        { if(!context.SilentCancellation) SetStatus("cancelled", Strings.CancelledLoadedSaved); }
-        catch (Exception ex) { context.Fail(ex);ReloadLocal(preserveViewport: true); ReportError(ex); }
-        finally
-        {
-            if(reset && pager.Owner==_settings.PlayerId) _autoRefresh.Restart(DateTimeOffset.UtcNow);
-            if(completed && !token.IsCancellationRequested && !_closeRequested) History.ContinueAutoLoad();
-            else History.StopAutoLoad();
-            if (App.Capture) { await Task.Delay(200); Capture(); }
-        }
     }
     private void ReportError(Exception ex)
     {
@@ -925,8 +758,7 @@ public partial class MainWindow : ChromeWindow
         // Filters update locally now; the newest view gets its turn after active work finishes.
         if(_busy) await _sync.PendingWork;
         if(version!=_viewLoadVersion || navigationVersion!=_navigationVersion || _busy || _exitRequested) return;
-        if(PageTabs.SelectedIndex==1) await BeginLoadAsync(scoreRange:true);
-        else if(!History.FavoritesOnly && Pager.NeedsInitial(History.Category)) await BeginLoadAsync();
+        await BeginLoadAsync(PageTabs.SelectedIndex == 1 ? PlayerLoadIntent.ScoreRange : PlayerLoadIntent.Initial);
     }
 
     private void RefreshViewedPlayerUi()
