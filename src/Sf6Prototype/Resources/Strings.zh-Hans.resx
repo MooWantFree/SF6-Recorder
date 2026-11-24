@@ -1384,4 +1384,19 @@
   <data name="OverlayMetricsTab" xml:space="preserve"><value>战绩</value></data>
   <data name="OverlayAppearanceTab" xml:space="preserve"><value>外观</value></data>
   <data name="OverlayWindowTab" xml:space="preserve"><value>窗口</value></data>
+  <data name="QuickLaunch" xml:space="preserve"><value>快捷启动</value></data>
+  <data name="QuickLaunchGame" xml:space="preserve"><value>启动 SF6</value></data>
+  <data name="QuickLaunchAccelerator" xml:space="preserve"><value>启动加速器</value></data>
+  <data name="QuickLaunchOff" xml:space="preserve"><value>关闭</value></data>
+  <data name="QuickLaunchBrowse" xml:space="preserve"><value>选择文件…</value></data>
+  <data name="QuickLaunchDetect" xml:space="preserve"><value>自动查找</value></data>
+  <data name="QuickLaunchNoGame" xml:space="preserve"><value>Steam 游戏库中未找到 SF6。</value></data>
+  <data name="QuickLaunchChooseAccelerator" xml:space="preserve"><value>请选择加速器的 EXE 或 LNK 文件。</value></data>
+  <data name="QuickLaunchExeFilter" xml:space="preserve"><value>程序 (*.exe)|*.exe</value></data>
+  <data name="QuickLaunchShortcutFilter" xml:space="preserve"><value>程序和快捷方式 (*.exe, *.lnk)|*.exe;*.lnk</value></data>
+  <data name="QuickLaunchFileMissing" xml:space="preserve"><value>启动文件不可用，请在常规设置中重新选择。</value></data>
+  <data name="QuickLaunchFailed" xml:space="preserve"><value>无法启动所选程序。</value></data>
+  <data name="QuickLaunchGameName" xml:space="preserve"><value>SF6</value></data>
+  <data name="QuickLaunchAcceleratorName" xml:space="preserve"><value>加速器</value></data>
+  <data name="QuickLaunchHint" xml:space="preserve"><value>软件右上角的位置出现快速启动对应程序的快捷方式</value></data>
 </root>

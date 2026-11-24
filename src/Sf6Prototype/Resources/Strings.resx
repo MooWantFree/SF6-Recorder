@@ -1384,4 +1384,19 @@ The saved sign-in will be removed from this device. Local match records will be 
   <data name="OverlayMetricsTab" xml:space="preserve"><value>Statistics</value></data>
   <data name="OverlayAppearanceTab" xml:space="preserve"><value>Appearance</value></data>
   <data name="OverlayWindowTab" xml:space="preserve"><value>Window</value></data>
+  <data name="QuickLaunch" xml:space="preserve"><value>Quick launch</value></data>
+  <data name="QuickLaunchGame" xml:space="preserve"><value>Launch SF6</value></data>
+  <data name="QuickLaunchAccelerator" xml:space="preserve"><value>Launch accelerator</value></data>
+  <data name="QuickLaunchOff" xml:space="preserve"><value>Off</value></data>
+  <data name="QuickLaunchBrowse" xml:space="preserve"><value>Choose file…</value></data>
+  <data name="QuickLaunchDetect" xml:space="preserve"><value>Find in Steam</value></data>
+  <data name="QuickLaunchNoGame" xml:space="preserve"><value>SF6 was not found in your Steam libraries.</value></data>
+  <data name="QuickLaunchChooseAccelerator" xml:space="preserve"><value>Choose an accelerator executable or shortcut.</value></data>
+  <data name="QuickLaunchExeFilter" xml:space="preserve"><value>Programs (*.exe)|*.exe</value></data>
+  <data name="QuickLaunchShortcutFilter" xml:space="preserve"><value>Programs and shortcuts (*.exe, *.lnk)|*.exe;*.lnk</value></data>
+  <data name="QuickLaunchFileMissing" xml:space="preserve"><value>Launch file unavailable. Choose it again in General settings.</value></data>
+  <data name="QuickLaunchFailed" xml:space="preserve"><value>Could not launch the selected application.</value></data>
+  <data name="QuickLaunchGameName" xml:space="preserve"><value>SF6</value></data>
+  <data name="QuickLaunchAcceleratorName" xml:space="preserve"><value>Accelerator</value></data>
+  <data name="QuickLaunchHint" xml:space="preserve"><value>A shortcut to launch the selected program appears in the upper-right corner of the app.</value></data>
 </root>

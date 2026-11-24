@@ -52,6 +52,36 @@
               </Border>
             </StackPanel>
           </Border>
+          <Border Style="{StaticResource Card}" Margin="0,12,0,0" Padding="16,12">
+            <StackPanel>
+              <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                  <TextBlock Text="{DynamicResource I18n.QuickLaunch}" VerticalAlignment="Center"/>
+                  <Border x:Name="QuickLaunchHelp" Margin="4,0,0,0" Padding="3" Background="Transparent" Cursor="Help"
+                          Focusable="True" ToolTipService.ShowsToolTipOnKeyboardFocus="True" ToolTipService.InitialShowDelay="200"
+                          ToolTip="{DynamicResource I18n.QuickLaunchHint}" AutomationProperties.Name="{DynamicResource I18n.QuickLaunchHint}">
+                    <Border Width="16" Height="16" CornerRadius="8" BorderThickness="1" BorderBrush="{DynamicResource Ink3}">
+                      <TextBlock Text="?" FontSize="11" Foreground="{DynamicResource Ink2}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                  </Border>
+                </StackPanel>
+                <ListBox x:Name="LaunchTargetBox" Grid.Column="1" Style="{StaticResource Segmented}" HorizontalAlignment="Left"
+                         SelectedValuePath="Tag" AutomationProperties.Name="{DynamicResource I18n.QuickLaunch}">
+                  <ListBoxItem Tag="Game" Content="{DynamicResource I18n.QuickLaunchGameName}"/>
+                  <ListBoxItem Tag="Accelerator" Content="{DynamicResource I18n.QuickLaunchAcceleratorName}"/>
+                  <ListBoxItem Tag="Off" Content="{DynamicResource I18n.QuickLaunchOff}"/>
+                </ListBox>
+              </Grid>
+              <StackPanel x:Name="LaunchFilePanel" Margin="0,12,0,0">
+                <TextBlock x:Name="LaunchFileLabel" Width="{Binding ActualWidth,ElementName=LaunchFilePanel}" TextTrimming="CharacterEllipsis"
+                           Foreground="{DynamicResource Ink2}" AutomationProperties.Name="{Binding ToolTip,RelativeSource={RelativeSource Self},TargetNullValue=''}"/>
+                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                  <Button x:Name="FindGameButton" Click="FindGame_Click" Content="{DynamicResource I18n.QuickLaunchDetect}" Margin="0,0,8,0"/>
+                  <Button Click="ChooseLaunchFile_Click" Content="{DynamicResource I18n.QuickLaunchBrowse}"/>
+                </StackPanel>
+              </StackPanel>
+            </StackPanel>
+          </Border>
         </StackPanel>
 
         <StackPanel x:Name="OverlayPage" Visibility="Hidden">

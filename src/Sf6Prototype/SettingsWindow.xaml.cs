@@ -47,6 +47,7 @@ public partial class SettingsWindow : ChromeWindow
         ProxyEnabled.IsChecked = current.UseProxy; ProxyAddressBox.Text = current.ProxyAddress;
         StartupUpdateEnabled.IsChecked = current.CheckForUpdatesOnStartup;
         InitializeOverlay(current);
+        InitializeQuickLaunch(current.QuickLaunch);
         ReminderSecondsBox.Text=current.RefreshReminderSeconds.ToString(CultureInfo.InvariantCulture);
         AutoRefreshSecondsBox.Text=current.AutoRefreshSeconds.ToString(CultureInfo.InvariantCulture);
         RefreshAfterMatchEnabled.IsChecked=current.RefreshAfterMatch;
@@ -94,6 +95,7 @@ public partial class SettingsWindow : ChromeWindow
     /// <summary>The page holding the first value that would make saving fail.</summary>
     private FrameworkElement? InvalidPage()
     {
+        if (LaunchNeedsAccelerator) return GeneralPage;
         if (!ValidOverlayLimit()) { TrendTab.IsSelected = true; return OverlayPage; }
         try
         {
@@ -284,9 +286,10 @@ public partial class SettingsWindow : ChromeWindow
     }
     private ConnectionSettings Draft(bool includeIntervals=true)
     {
+        if (includeIntervals && LaunchNeedsAccelerator) throw new ArgumentException(Strings.QuickLaunchChooseAccelerator);
         if (includeIntervals && !ValidOverlayLimit()) throw new ArgumentException(Strings.OverlayLimitError);
         var settings = OverlayAppearance(_current) with { UseProxy = ProxyEnabled.IsChecked == true, ProxyAddress = ProxyAddressBox.Text.Trim(),
-            WindowCloseAction=(CloseAction)CloseActionBox.SelectedIndex,
+            WindowCloseAction=(CloseAction)CloseActionBox.SelectedIndex, QuickLaunch=_launchDraft,
             OpenOverlayOnStartup=OverlayStartup.IsChecked==true,
             CheckForUpdatesOnStartup=StartupUpdateEnabled.IsChecked==true,
             Language=LanguageBox.SelectedValue as string ?? Localization.SystemLanguage,

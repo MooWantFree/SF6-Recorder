@@ -190,6 +190,7 @@ internal static class Program
         count+=PresentationLayoutChecks.Run();
         count+=HistoryAlignmentChecks.Run();
         count+=TitleBarChecks.Run();
+        count+=LaunchIconChecks.Run();
         count+=OpponentChromeChecks.Run();
         count+=AuxiliaryChromeChecks.Run();
         count+=LocalizationChecks.Run();

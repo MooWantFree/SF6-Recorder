@@ -25,8 +25,27 @@ internal static class LocalizationChecks
         var archive=new Archive(store,new ProfileCache(root));archive.Load(owner);
         var history=new HistoryView();history.Bind(archive);
         history.Reload(restore:new(){Outcome="胜",Character="RYU",SelectedReplay=battle.ReplayId});
-        var settings=new SettingsWindow(null!,new ConnectionSettings {Language="system"});
+        var longDirectory=@"C:\Games\"+new string('W',120)+@"\bin\";
+        var gamePath=longDirectory+"StreetFighter6.exe";
+        var acceleratorPath=longDirectory+"加速器.lnk";
+        var acceleratorSettings=new SettingsWindow(null!,new ConnectionSettings {
+            QuickLaunch=new() {Target=QuickLaunchTarget.Accelerator,AcceleratorPath=acceleratorPath}});
+        var selector=(ListBox)acceleratorSettings.FindName("LaunchTargetBox");
+        var label=(TextBlock)acceleratorSettings.FindName("LaunchFileLabel");
+        var find=(Button)acceleratorSettings.FindName("FindGameButton");
+        var steamPath=SteamGame.Find();
+        acceleratorSettings.Dispatcher.Invoke(()=>{selector.SelectedValue="Game";},DispatcherPriority.Normal);
+        var deadline=DateTime.UtcNow.AddSeconds(10);
+        while (!find.IsEnabled && DateTime.UtcNow<deadline)
+            acceleratorSettings.Dispatcher.Invoke(()=>{},DispatcherPriority.ContextIdle);
+        Check(find.IsEnabled && (steamPath==null ? label.Text==Strings.QuickLaunchNoGame :
+            Equals(label.ToolTip,steamPath) && label.Text.EndsWith(Path.GetFileName(steamPath))),
+            "Switching from a saved accelerator to SF6 displays the detected installation or the missing-game message without clicking Find");
+        var settings=new SettingsWindow(null!,new ConnectionSettings {Language="system",
+            QuickLaunch=new() {GamePath=gamePath,AcceleratorPath=acceleratorPath}});
         var language=(ComboBox)settings.FindName("LanguageBox");
+        var launchTargets=(ListBox)settings.FindName("LaunchTargetBox");
+        settings.ShowCategory((FrameworkElement)settings.FindName("GeneralPage"));
         var save=(Button)settings.FindName("SaveButton");
         var scores=new ScoresView();scores.Bind(archive);scores.Reload();var requested=0;scores.DataRequested+=()=>requested++;
         Check(language.Items.OfType<ComboBoxItem>().Select(i=>i.Tag?.ToString()).SequenceEqual(["system","en","zh-Hans","zh-Hant","ja"]),"Language choices use stable persisted identifiers in the requested order");
@@ -51,6 +70,28 @@ internal static class LocalizationChecks
                 Check(draft.Language==culture,"Settings draft stores the language code, not its translated label");
                 var content=(FrameworkElement)settings.Content;
                 content.Measure(new Size(settings.Width-16,double.PositiveInfinity));content.Arrange(new Rect(content.DesiredSize));content.UpdateLayout();
+                settings.Dispatcher.Invoke(()=>{},DispatcherPriority.ContextIdle);
+                content.UpdateLayout();
+                var options=launchTargets.Items.Cast<ListBoxItem>().ToArray();
+                var pathLabel=(TextBlock)settings.FindName("LaunchFileLabel");
+                Check(pathLabel.Text==@"C:\…\bin\StreetFighter6.exe" && Equals(pathLabel.ToolTip,gamePath),
+                    $"SF6 keeps its filename visible at {pathLabel.ActualWidth} DIP: {pathLabel.Text}");
+                var help=(FrameworkElement)settings.FindName("QuickLaunchHelp");
+                Check(Equals(help.ToolTip,Strings.QuickLaunchHint) && (culture!="zh-Hans" ||
+                    Equals(help.ToolTip,"软件右上角的位置出现快速启动对应程序的快捷方式")),"Quick launch displays the localized help on hover");
+                Check(options.Select(item=>item.Content).SequenceEqual(new[] {Strings.QuickLaunchGameName,Strings.QuickLaunchAcceleratorName,Strings.QuickLaunchOff}) &&
+                    options.All(item=>item.ActualWidth>0 && item.TranslatePoint(new Point(item.ActualWidth,0),launchTargets).X<=launchTargets.ActualWidth+1),
+                    $"All quick launch targets are shown inline and fit in {culture}");
+                launchTargets.SelectedValue="Accelerator";
+                Check(pathLabel.Text==@"C:\…\bin\加速器.lnk" && Equals(pathLabel.ToolTip,acceleratorPath),
+                    "Accelerator shortcuts use the same middle ellipsis as game executables");
+                Check(((FrameworkElement)settings.FindName("LaunchFilePanel")).Visibility==Visibility.Visible &&
+                    ((Button)settings.FindName("FindGameButton")).Visibility==Visibility.Collapsed,"Selecting the accelerator exposes its file picker");
+                launchTargets.SelectedValue="Off";
+                Check(((FrameworkElement)settings.FindName("LaunchFilePanel")).Visibility==Visibility.Collapsed,"Turning quick launch off hides its file controls");
+                launchTargets.SelectedIndex=-1;
+                Check(Equals(launchTargets.SelectedValue,"Off"),"Clearing the selection retains the active quick launch choice");
+                launchTargets.SelectedValue="Game";
                 // Content includes the custom title bar; reserve only the outer frame.
                 var windowHeight=content.DesiredSize.Height+2*SystemParameters.ResizeFrameHorizontalBorderHeight;
                 Check(windowHeight<=720,$"The localized settings window fits the minimum height in {culture} ({windowHeight:F2} DIP)");

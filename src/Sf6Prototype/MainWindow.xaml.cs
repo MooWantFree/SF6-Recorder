@@ -132,6 +132,7 @@ public partial class MainWindow : ChromeWindow
     private async Task InitializeAsync()
     {
         _settings = ConnectionSettings.Load(App.DataDirectory);
+        UpdateQuickLaunchAsync();
         RequestGate.Shared.Interval=TimeSpan.FromSeconds(_settings.ApiIntervalSeconds);
         _vault = new CookieVault(App.DataDirectory);
         _playerSearch=new PlayerSearchHistory(App.DataDirectory);
@@ -456,6 +457,7 @@ public partial class MainWindow : ChromeWindow
         {
             var settings=dialog.Result with {PlayerId=_settings.PlayerId, UpdateReminder=_settings.UpdateReminder};
             settings.Save(App.DataDirectory); _settings=settings;
+            UpdateQuickLaunchAsync();
             ApplyOverlaySettings(_settings);
             if (!_settings.CheckForUpdatesOnStartup) CancelAutomaticUpdateCheck();
             ConfigureUpdateReminder();

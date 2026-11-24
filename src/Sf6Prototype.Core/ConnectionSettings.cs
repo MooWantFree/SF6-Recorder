@@ -60,6 +60,7 @@ public record ConnectionSettings
     public double MatchEndSamplesPerSecond { get; init; } = 4;
     public static bool ValidMatchEndFrequency(double value)=>double.IsFinite(value) && value is >=0.5 and <=10;
     public CloseAction WindowCloseAction { get; init; } = CloseAction.Ask;
+    public QuickLaunchSettings QuickLaunch { get; init; } = new();
     public bool CheckForUpdatesOnStartup { get; init; } = true;
     public UpdateReminder UpdateReminder { get; init; } = new();
     public string Language { get; init; } = Localization.SystemLanguage;
@@ -139,6 +140,7 @@ public record ConnectionSettings
             MatchEndSamplesPerSecond=ValidMatchEndFrequency(settings.MatchEndSamplesPerSecond) ? settings.MatchEndSamplesPerSecond : 4,
             ApiIntervalSeconds=ValidApiInterval(settings.ApiIntervalSeconds) ? settings.ApiIntervalSeconds : DefaultApiIntervalSeconds,
             WindowCloseAction=Enum.IsDefined(settings.WindowCloseAction) ? settings.WindowCloseAction : CloseAction.Ask,
+            QuickLaunch=settings.QuickLaunch is { } launch && Enum.IsDefined(launch.Target) ? launch : new(),
             OverlayBackgroundOpacity=Math.Clamp(settings.OverlayBackgroundOpacity,0,100),
             OverlayStyle=(settings.OverlayStyle ?? new()).Normalized(),
             UpdateReminder=settings.UpdateReminder ?? new(),
