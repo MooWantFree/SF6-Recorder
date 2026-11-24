@@ -354,6 +354,7 @@ public static class Strings
     public static string QuickLaunchHint => Localization.Get(nameof(QuickLaunchHint));
     public static string QuickLaunchNoGame => Localization.Get(nameof(QuickLaunchNoGame));
     public static string QuickLaunchOff => Localization.Get(nameof(QuickLaunchOff));
+    public static string QuickLaunchProgramPath => Localization.Get(nameof(QuickLaunchProgramPath));
     public static string QuickLaunchShortcutFilter => Localization.Get(nameof(QuickLaunchShortcutFilter));
     public static string RangeChange => Localization.Get(nameof(RangeChange));
     public static string RangeWinRate => Localization.Get(nameof(RangeWinRate));

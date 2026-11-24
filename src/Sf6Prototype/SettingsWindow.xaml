@@ -72,14 +72,22 @@
                   <ListBoxItem Tag="Off" Content="{DynamicResource I18n.QuickLaunchOff}"/>
                 </ListBox>
               </Grid>
-              <StackPanel x:Name="LaunchFilePanel" Margin="0,12,0,0">
-                <TextBlock x:Name="LaunchFileLabel" Width="{Binding ActualWidth,ElementName=LaunchFilePanel}" TextTrimming="CharacterEllipsis"
-                           Foreground="{DynamicResource Ink2}" AutomationProperties.Name="{Binding ToolTip,RelativeSource={RelativeSource Self},TargetNullValue=''}"/>
-                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                  <Button x:Name="FindGameButton" Click="FindGame_Click" Content="{DynamicResource I18n.QuickLaunchDetect}" Margin="0,0,8,0"/>
-                  <Button Click="ChooseLaunchFile_Click" Content="{DynamicResource I18n.QuickLaunchBrowse}"/>
-                </StackPanel>
-              </StackPanel>
+              <Border x:Name="LaunchFilePanel" BorderBrush="{StaticResource LineSubtle}" BorderThickness="0,1,0,0"
+                      Margin="0,12,0,0" Padding="0,12,0,0">
+                <Grid>
+                  <Grid.ColumnDefinitions><ColumnDefinition Width="160"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                  <TextBlock Text="{DynamicResource I18n.QuickLaunchProgramPath}" VerticalAlignment="Top"/>
+                  <StackPanel Grid.Column="1">
+                    <TextBlock x:Name="LaunchFileLabel" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource Ink2}"
+                               AutomationProperties.Name="{Binding ToolTip,RelativeSource={RelativeSource Self},TargetNullValue=''}"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                      <Button Click="ChooseLaunchFile_Click" Content="{DynamicResource I18n.QuickLaunchBrowse}"/>
+                      <Button x:Name="FindGameButton" Click="FindGame_Click" Content="{DynamicResource I18n.QuickLaunchDetect}"
+                              Style="{StaticResource GhostButton}" Foreground="{StaticResource AccentText}" Margin="6,0,0,0"/>
+                    </StackPanel>
+                  </StackPanel>
+                </Grid>
+              </Border>
             </StackPanel>
           </Border>
         </StackPanel>

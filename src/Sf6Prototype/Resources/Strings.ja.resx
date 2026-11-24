@@ -1389,6 +1389,7 @@
   <data name="QuickLaunchAccelerator" xml:space="preserve"><value>ゲームブースターを起動</value></data>
   <data name="QuickLaunchOff" xml:space="preserve"><value>オフ</value></data>
   <data name="QuickLaunchBrowse" xml:space="preserve"><value>ファイルを選択…</value></data>
+  <data name="QuickLaunchProgramPath" xml:space="preserve"><value>プログラムのパス</value></data>
   <data name="QuickLaunchDetect" xml:space="preserve"><value>Steam で検索</value></data>
   <data name="QuickLaunchNoGame" xml:space="preserve"><value>Steam ライブラリに SF6 が見つかりません。</value></data>
   <data name="QuickLaunchChooseAccelerator" xml:space="preserve"><value>ブースターの EXE または LNK を選択してください。</value></data>

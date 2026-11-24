@@ -1389,7 +1389,8 @@
   <data name="QuickLaunchAccelerator" xml:space="preserve"><value>啟動加速器</value></data>
   <data name="QuickLaunchOff" xml:space="preserve"><value>關閉</value></data>
   <data name="QuickLaunchBrowse" xml:space="preserve"><value>選擇檔案…</value></data>
-  <data name="QuickLaunchDetect" xml:space="preserve"><value>自動尋找</value></data>
+  <data name="QuickLaunchProgramPath" xml:space="preserve"><value>程式路徑</value></data>
+  <data name="QuickLaunchDetect" xml:space="preserve"><value>從 Steam 尋找</value></data>
   <data name="QuickLaunchNoGame" xml:space="preserve"><value>Steam 遊戲庫中找不到 SF6。</value></data>
   <data name="QuickLaunchChooseAccelerator" xml:space="preserve"><value>請選擇加速器的 EXE 或 LNK 檔案。</value></data>
   <data name="QuickLaunchExeFilter" xml:space="preserve"><value>程式 (*.exe)|*.exe</value></data>
